@@ -17,6 +17,7 @@ import com.walkingforrochester.walkingforrochester.android.network.RestApiServic
 import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
+import com.walkingforrochester.walkingforrochester.android.roundDouble
 import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
@@ -178,7 +179,11 @@ class ProfileViewModel @Inject constructor(
                 )
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "Check out my stats with Walking For Rochester!\nDistance, last walk: $distanceToday mi. overall: ${distanceOverall}\nDuration, last walk: ${
+                    "Check out my stats with Walking For Rochester!\nDistance, last walk: ${
+                        roundDouble(
+                            distanceToday
+                        )
+                    } mi. overall: ${roundDouble(distanceOverall)} mi\nDuration, last walk: ${
                         DateUtils.formatElapsedTime(durationToday / 1000)
                     }. overall: ${DateUtils.formatElapsedTime(durationOverall / 1000)}"
                 )

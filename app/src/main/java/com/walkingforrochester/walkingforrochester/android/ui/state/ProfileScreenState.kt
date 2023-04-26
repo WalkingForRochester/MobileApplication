@@ -20,7 +20,8 @@ data class ProfileScreenState(
     var durationOverall: Long = 0L,
     var profileDataLoading: Boolean = false,
     var profileDataSaving: Boolean = false,
-    var communityService: Boolean = false
+    var communityService: Boolean = false,
+    var facebookId: String? = null
 )
 
 enum class ProfileScreenEvent {

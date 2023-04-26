@@ -9,5 +9,6 @@ data class UpdateProfileRequest (
     val phone: String,
     val nickname: String,
     val communityService: Boolean,
-    val imgUrl: String
+    val imgUrl: String,
+    val facebookId: String?
 )

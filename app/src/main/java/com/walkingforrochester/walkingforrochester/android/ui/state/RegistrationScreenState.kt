@@ -22,7 +22,8 @@ data class RegistrationScreenState constructor(
     var confirmPasswordVisible: Boolean = false,
     var showDatePicker: Boolean = false,
     var loading: Boolean = false,
-    var communityService: Boolean = false
+    var communityService: Boolean = false,
+    val facebookId: String? = null
 )
 
 enum class RegistrationScreenEvent {

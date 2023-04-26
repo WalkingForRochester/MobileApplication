@@ -80,7 +80,8 @@ class ProfileViewModel @Inject constructor(
                         distanceToday = result.distance ?: 0.0,
                         distanceOverall = result.totalDistance ?: 0.0,
                         durationToday = result.duration ?: 0L,
-                        durationOverall = result.totalDuration ?: 0L
+                        durationOverall = result.totalDuration ?: 0L,
+                        facebookId = result.facebookId
                     )
                 }
             } else {
@@ -153,6 +154,7 @@ class ProfileViewModel @Inject constructor(
                         nickname = nickname,
                         communityService = communityService,
                         imgUrl = profilePic,
+                        facebookId = facebookId
                     )
                 )
                 _uiState.update { it.copy(localProfilePicUri = null, editProfile = false) }

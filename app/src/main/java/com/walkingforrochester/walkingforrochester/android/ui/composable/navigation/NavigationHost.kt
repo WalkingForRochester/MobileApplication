@@ -15,6 +15,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.login.L
 import com.walkingforrochester.walkingforrochester.android.ui.composable.newsfeed.NewsFeedScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.profile.ProfileScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.registration.RegistrationScreen
+import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 
 @Composable
 fun NavigationHost(
@@ -33,8 +34,14 @@ fun NavigationHost(
                 onRegister = {
                     navController.navigate(Destination.Registration.route)
                 },
-                onRegisterPrefill = { email, firstName, lastName ->
-                    navController.navigate("${Destination.Registration.route}/$email/$firstName/$lastName") {
+                onRegisterPrefill = { email, firstName, lastName, facebookId ->
+                    navController.navigate(
+                        Destination.Registration.route +
+                                "?email=$email" +
+                                "&fname=$firstName" +
+                                "&lname=$lastName" +
+                                "&fbid=$facebookId"
+                    ) {
                         popUpTo(Destination.Login.route)
                     }
                 },
@@ -51,12 +58,17 @@ fun NavigationHost(
             arguments = Destination.Registration.arguments,
         ) { navBackStackEntry ->
             val email = navBackStackEntry.arguments?.getString("email")
-            val fname = navBackStackEntry.arguments?.getString("fname")
-            val lname = navBackStackEntry.arguments?.getString("lname")
+            val firstName = navBackStackEntry.arguments?.getString("fname")
+            val lastName = navBackStackEntry.arguments?.getString("lname")
+            val facebookId = navBackStackEntry.arguments?.getString("fbid")
 
-            RegistrationScreen(email = email,
-                firstName = fname,
-                lastName = lname,
+            RegistrationScreen(
+                initState = RegistrationScreenState(
+                    email = email ?: "",
+                    firstName = firstName ?: "",
+                    lastName = lastName ?: "",
+                    facebookId = facebookId
+                ),
                 onRegistrationComplete = { navController.navigateSingleTopTo(Destination.LogAWalk.route) })
         }
         composable(

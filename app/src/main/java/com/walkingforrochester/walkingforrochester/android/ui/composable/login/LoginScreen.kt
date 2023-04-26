@@ -38,7 +38,7 @@ fun LoginScreen(
     loginViewModel: LoginViewModel = hiltViewModel(),
     onForgotPassword: () -> Unit,
     onRegister: () -> Unit,
-    onRegisterPrefill: (String, String, String) -> Unit,
+    onRegisterPrefill: (String?, String?, String?, String?) -> Unit,
     onLoginComplete: () -> Unit
 ) {
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
@@ -57,7 +57,7 @@ fun LoginScreen(
 
                 LoginScreenEvent.NeedsRegistration -> with(uiState.registrationScreenState) {
                     LoginManager.getInstance().unregisterCallback(callbackManager)
-                    onRegisterPrefill(email, firstName, lastName)
+                    onRegisterPrefill(email, firstName, lastName, facebookId ?: "")
                 }
             }
         }

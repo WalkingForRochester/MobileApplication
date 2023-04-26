@@ -17,19 +17,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenEvent
+import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import com.walkingforrochester.walkingforrochester.android.viewmodel.RegistrationViewModel
 
 @Composable
 fun RegistrationScreen(
     modifier: Modifier = Modifier,
-    email: String? = null,
-    firstName: String? = null,
-    lastName: String? = null,
+    initState: RegistrationScreenState? = null,
     registrationViewModel: RegistrationViewModel = hiltViewModel(),
     onRegistrationComplete: () -> Unit
 ) {
     LaunchedEffect(Unit) {
-        registrationViewModel.prefill(email, firstName, lastName)
+        initState?.let {
+            registrationViewModel.prefill(it)
+        }
         registrationViewModel.eventFlow.collect { event ->
             when (event) {
                 RegistrationScreenEvent.RegistrationComplete -> onRegistrationComplete()

@@ -8,8 +8,10 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
+import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
 import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
@@ -73,27 +75,50 @@ class LoginViewModel @Inject constructor(
 
     fun continueWithFacebook(obj: JSONObject) = viewModelScope.launch {
         socialSignIn(
-            obj.getString("email"),
-            obj.getString("first_name"),
-            obj.getString("last_name")
+            email = obj.getString("email"),
+            firstName = obj.getString("first_name"),
+            lastName = obj.getString("last_name"),
+            facebookId = obj.getString("id")
         )
     }
 
-    private suspend fun socialSignIn(email: String, firstName: String, lastName: String) =
+    private suspend fun socialSignIn(
+        email: String,
+        firstName: String,
+        lastName: String,
+        facebookId: String? = null
+    ) =
         flow<Nothing> {
             _uiState.update { it.copy(socialLoading = true) }
             val result: AccountResponse =
                 restApiService.accountByEmail(EmailAddressRequest(email = email))
 
             if (result.accountId != null) {
-                completeLogin(result.accountId)
+                completeLogin(accountId = result.accountId)
+
+                facebookId?.let {
+                    with(restApiService.userProfile(AccountIdRequest(accountId = result.accountId))) {
+                        restApiService.updateProfile(
+                            UpdateProfileRequest(
+                                accountId = result.accountId,
+                                email = email,
+                                phone = phoneNumber ?: "",
+                                nickname = nickname ?: "",
+                                communityService = communityService ?: false,
+                                imgUrl = imgUrl ?: "",
+                                facebookId = facebookId
+                            )
+                        )
+                    }
+                }
             } else {
                 _uiState.update {
                     it.copy(
                         registrationScreenState = RegistrationScreenState(
                             email = email,
                             firstName = firstName,
-                            lastName = lastName
+                            lastName = lastName,
+                            facebookId = facebookId
                         )
                     )
                 }

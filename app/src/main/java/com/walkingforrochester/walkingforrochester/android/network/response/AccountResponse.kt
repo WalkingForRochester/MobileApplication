@@ -20,5 +20,6 @@ data class AccountResponse(
     val totalDistance: Double?,
     val duration: Long?,
     val totalDuration: Long?,
+    val facebookId: String?,
     override val error: String?
 ) : ErrorMessage

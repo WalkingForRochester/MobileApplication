@@ -45,13 +45,7 @@ class RegistrationViewModel @Inject constructor(
 
     val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
-    fun prefill(email: String?, firstName: String?, lastName: String?) = _uiState.update {
-        it.copy(
-            email = email ?: "",
-            firstName = firstName ?: "",
-            lastName = lastName ?: "",
-        )
-    }
+    fun prefill(initState: RegistrationScreenState) = _uiState.update { initState }
 
     fun onEmailChange(newEmail: String) =
         _uiState.update { it.copy(email = newEmail, emailValidationMessage = "") }
@@ -118,7 +112,8 @@ class RegistrationViewModel @Inject constructor(
                         nickname = nickname,
                         dateOfBirth = dateOfBirth,
                         password = password,
-                        communityService = communityService
+                        communityService = communityService,
+                        facebookId = facebookId
                     )
                 )
 

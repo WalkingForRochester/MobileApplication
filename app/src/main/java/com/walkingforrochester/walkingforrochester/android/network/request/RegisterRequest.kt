@@ -12,5 +12,6 @@ data class RegisterRequest(
     val password: String,
     val dateOfBirth: LocalDate,
     val nickname: String,
-    val communityService: Boolean
+    val communityService: Boolean,
+    val facebookId: String?
 )

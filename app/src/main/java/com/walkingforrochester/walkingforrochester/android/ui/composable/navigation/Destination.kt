@@ -2,7 +2,6 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.naviga
 
 import androidx.annotation.DrawableRes
 import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.walkingforrochester.walkingforrochester.android.R
 
@@ -42,10 +41,11 @@ enum class Destination(
         showBackButton = true,
         showProfileButton = false,
         arguments = listOf(
-            navArgument("email") { type = NavType.StringType },
-            navArgument("fname") { type = NavType.StringType },
-            navArgument("lname") { type = NavType.StringType }),
-        routeWithArgs = "registration/{email}/{fname}/{lname}"
+            navArgument("email") { nullable = true },
+            navArgument("fname") { nullable = true },
+            navArgument("lname") { nullable = true },
+            navArgument("fbid") { nullable = true }),
+        routeWithArgs = "registration?email={email}&fname={fname}&lname={lname}&fbid={fbid}"
     ),
     LogAWalk(
         "logAWalk",

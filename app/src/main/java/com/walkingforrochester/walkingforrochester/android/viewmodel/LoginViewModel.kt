@@ -75,9 +75,9 @@ class LoginViewModel @Inject constructor(
 
     fun continueWithFacebook(obj: JSONObject) = viewModelScope.launch {
         socialSignIn(
-            email = obj.getString("email"),
-            firstName = obj.getString("first_name"),
-            lastName = obj.getString("last_name"),
+            email = obj.optString("email",""),
+            firstName = obj.optString("first_name","Firstname"),
+            lastName = obj.optString("last_name","Lastname"),
             facebookId = obj.getString("id")
         )
     }

@@ -24,7 +24,7 @@ fun WFRDialog(
     modifier: Modifier = Modifier,
     contentTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     buttonsArrangement: Arrangement.Horizontal = Arrangement.End,
-    dialogPadding: PaddingValues = PaddingValues(all = 24.dp),
+    dialogPadding: PaddingValues = PaddingValues(all = 16.dp),
     dialogProperties: DialogProperties = DialogProperties(),
     onDismissRequest: () -> Unit,
     icon: @Composable (() -> Unit)? = null,

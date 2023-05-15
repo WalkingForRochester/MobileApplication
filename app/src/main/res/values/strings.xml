@@ -58,9 +58,12 @@
     <string name="wfr_dont_ask_location_permissions">walking_for_rochester_dont_ask_location_permissions</string>
     <string name="wfr_asked_location_permission_once">walking_for_rochester_asked_location_permission_once</string>
     <string name="accept">Accept</string>
-    <string name="safety_guidelines_dialog">You agree to follow the safety guidelines on your walk today</string>
+    <string name="safety_guidelines_dialog">I agree to abide by the guidelines and consent to the waiver.</string>
     <string name="guidelines_url">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/guidelines.pdf</string>
+    <string name="waiver_url">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/waiver.pdf</string>
     <string name="safety_guidelines">Safety Guidelines</string>
+    <string name="waiver">Waiver</string>
+    <string name="walk_dialog_title">Safety Guidelines and Waiver</string>
     <string name="did_you_pick_up_litter">Did you pick up litter?</string>
     <string name="continue_walking">"Continue\nWalking"</string>
     <string name="discard">Discard</string>

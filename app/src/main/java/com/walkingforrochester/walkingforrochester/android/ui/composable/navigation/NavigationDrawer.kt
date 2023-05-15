@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -78,6 +79,7 @@ fun DrawerContent(
 ) {
     val uriHandler = LocalUriHandler.current
     val guidelinesUrl = stringResource(R.string.guidelines_url)
+    val waiverUrl = stringResource(id = R.string.waiver_url)
 
     ModalDrawerSheet(modifier = modifier) {
         Text(
@@ -107,6 +109,22 @@ fun DrawerContent(
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+                NavigationDrawerItem(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = stringResource(id = R.string.waiver)
+                        )
+                    },
+                    label = { Text(stringResource(id = R.string.waiver)) },
+                    selected = false,
+                    onClick = {
+                        uriHandler.openUri(waiverUrl)
+                        onCloseDrawer()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
                 menuItems.forEach {
                     NavigationDrawerItem(
                         icon = {

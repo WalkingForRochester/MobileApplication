@@ -3,11 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.kapt'
     id 'com.google.dagger.hilt.android'
-}
-
-Properties properties = new Properties()
-if (rootProject.file("local.properties").exists()) {
-    properties.load(rootProject.file("local.properties").newDataInputStream())
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
@@ -25,12 +21,6 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-
-        resValue "string", "google_maps_key", properties.getProperty("google.maps.key", "")
-        resValue "string", "server_client_id", properties.getProperty("google.server.client.id", "")
-        resValue "string", "facebook_app_id", properties.getProperty("facebook.app.id", "")
-        resValue "string", "facebook_login_protocol_scheme", properties.getProperty("facebook.login.protocol.scheme", "")
-        resValue "string", "facebook_client_token", properties.getProperty("facebook.client.token", "")
     }
 
     buildTypes {
@@ -140,6 +130,18 @@ dependencies {
 
     testImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
     kaptTest "com.google.dagger:hilt-compiler:$hilt_version"
+}
+
+secrets {
+    // Change the properties file from the default "local.properties" in your root project
+    // to another properties file in your root project.
+    propertiesFileName 'secrets.properties'
+
+    // A properties file containing default secret values. This file can be checked in version
+    // control.
+    defaultPropertiesFileName = 'secrets.defaults.properties'
+
+    // See https://github.com/google/secrets-gradle-plugin/tree/main for full options
 }
 
 kapt {

@@ -24,20 +24,19 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="${googleMapsKey}" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_app_id" />
+            android:value="fb${facebookAppId}" />
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
-            android:value="@string/facebook_client_token" />
+            android:value="${facebookClientToken}" />
 
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:launchMode="singleInstance"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.App.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,12 +56,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="@string/facebook_login_protocol_scheme" />
+                <!--suppress AndroidDomInspection -->
+                <data android:scheme="fb${facebookAppId}" />
             </intent-filter>
         </activity>
 
         <service
-            android:name="com.walkingforrochester.walkingforrochester.android.service.ForegroundLocationService"
+            android:name=".service.ForegroundLocationService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location" />

@@ -26,7 +26,7 @@ import com.walkingforrochester.walkingforrochester.android.LocalFacebookCallback
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.FacebookLoginCallback
 import com.walkingforrochester.walkingforrochester.android.network.GoogleApiContract
-import com.walkingforrochester.walkingforrochester.android.network.GoogleLoginCallback
+import com.walkingforrochester.walkingforrochester.android.network.googleLoginCallback
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
@@ -68,7 +68,7 @@ fun LoginScreen(
 
     val authResultLauncher =
         rememberLauncherForActivityResult(contract = GoogleApiContract()) { task ->
-            GoogleLoginCallback(context, task, loginViewModel::continueWithGoogle)
+            googleLoginCallback(context, task, loginViewModel::continueWithGoogle)
         }
 
 
@@ -84,7 +84,7 @@ fun LoginScreen(
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
             },
-            onContinueWithGoogle = { authResultLauncher.launch(R.string.server_client_id) },
+            onContinueWithGoogle = { authResultLauncher.launch(null) },
             onContinueWithFacebook = {
                 LoginManager.getInstance().logInWithReadPermissions(
                     activity!!, callbackManager, listOf("email", "public_profile")

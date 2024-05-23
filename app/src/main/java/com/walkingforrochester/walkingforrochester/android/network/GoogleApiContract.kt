@@ -9,14 +9,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import timber.log.Timber
 
-class GoogleApiContract : ActivityResultContract<Int, Task<GoogleSignInAccount>?>() {
-    override fun createIntent(context: Context, input: Int): Intent {
+class GoogleApiContract : ActivityResultContract<Void?, Task<GoogleSignInAccount>?>() {
+    override fun createIntent(context: Context, input: Void?): Intent {
         val gso: GoogleSignInOptions =
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(context.getString(input))
+                .requestIdToken(BuildConfig.googleServerClientId)
                 .requestEmail()
                 .build()
         val intent = GoogleSignIn.getClient(context, gso)
@@ -35,7 +35,7 @@ class GoogleApiContract : ActivityResultContract<Int, Task<GoogleSignInAccount>?
 
 }
 
-fun GoogleLoginCallback(
+fun googleLoginCallback(
     context: Context,
     task: Task<GoogleSignInAccount>?,
     parseResult: (GoogleSignInAccount) -> Unit
@@ -43,7 +43,7 @@ fun GoogleLoginCallback(
     try {
         val gso: GoogleSignInOptions =
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(context.getString(R.string.server_client_id))
+                .requestIdToken(BuildConfig.googleServerClientId)
                 .requestEmail()
                 .build()
         val googleSignInClient = GoogleSignIn.getClient(context, gso)

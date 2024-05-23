@@ -16,7 +16,7 @@ import com.google.maps.PlacesApi
 import com.google.maps.model.AutocompletePrediction
 import com.google.maps.model.LatLng
 import com.google.maps.model.PlaceDetails
-import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.model.LocationTrackingEvent
 import com.walkingforrochester.walkingforrochester.android.model.LocationTrackingEventType
 import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
@@ -124,7 +124,7 @@ class AddressSearchFieldViewModel @Inject constructor(
     fun onAddressSearchActiveChange(addressSearchActive: Boolean) = flow<Nothing> {
         if (addressSearchActive) {
             geoContext =
-                GeoApiContext.Builder().apiKey(context.getString(R.string.google_maps_key)).build()
+                GeoApiContext.Builder().apiKey(BuildConfig.googleMapsKey).build()
             geoSession = PlaceAutocompleteRequest.SessionToken()
 
             if (ActivityCompat.checkSelfPermission(

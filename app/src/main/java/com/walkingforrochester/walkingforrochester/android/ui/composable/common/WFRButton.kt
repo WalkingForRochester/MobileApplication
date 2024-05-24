@@ -2,8 +2,17 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,20 +27,20 @@ fun WFRButton(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int? = null,
     @StringRes label: Int,
-    buttonColor: Color = Color.Black,
-    labelColor: Color = Color.White,
+    buttonColor: Color = MaterialTheme.colorScheme.inverseSurface,
+    labelColor: Color = MaterialTheme.colorScheme.inverseOnSurface,
     onClick: () -> Unit,
     enabled: Boolean = true,
     loading: Boolean = false
 ) {
-    ElevatedButton(
+    Button(
         onClick = { if (!loading) onClick() },
-        colors = ButtonDefaults.elevatedButtonColors(
+        colors = ButtonDefaults.buttonColors(
             containerColor = buttonColor,
             contentColor = labelColor
         ),
         enabled = enabled,
-        modifier = modifier.height(54.dp)
+        modifier = modifier.height(52.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {
             if (loading) {
@@ -55,7 +64,7 @@ fun WFRButton(
                 Text(
                     text = stringResource(label),
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
         }

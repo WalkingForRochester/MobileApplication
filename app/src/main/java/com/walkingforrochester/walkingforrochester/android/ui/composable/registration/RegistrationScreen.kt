@@ -3,6 +3,8 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.regist
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -10,7 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,20 +42,21 @@ fun RegistrationScreen(
     val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .imePadding(),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier)
+        Spacer(Modifier.height(8.dp))
         RegistrationForm(registrationViewModel = registrationViewModel, uiState = uiState)
+        Spacer(modifier = Modifier.height(24.dp))
         WFRButton(
             label = R.string.sign_up,
-            buttonColor = Color.Black,
-            labelColor = Color.White,
             onClick = registrationViewModel::onSignUp,
             loading = uiState.loading
         )
-        Spacer(Modifier)
+        Spacer(Modifier.height(24.dp))
     }
 }
 

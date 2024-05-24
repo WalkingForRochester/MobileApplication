@@ -4,12 +4,21 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +36,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import com.walkingforrochester.walkingforrochester.android.viewmodel.RegistrationViewModel
 import java.time.Instant
-import java.time.ZoneId
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,8 +131,7 @@ fun RegistrationForm(
                     Button(onClick = {
                         datePickerState.selectedDateMillis?.let {
                             registrationViewModel.onDateOfBirthChange(
-                                Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault())
-                                    .toLocalDate()
+                                Instant.ofEpochMilli(it).atOffset(ZoneOffset.UTC).toLocalDate()
                             )
                         }
                         registrationViewModel.toggleDatePicker()
@@ -140,7 +148,7 @@ fun RegistrationForm(
             modifier = Modifier
                 .padding(horizontal = 8.dp)
                 .clickable(onClick = registrationViewModel::toggleDatePicker),
-            value = uiState.dateOfBirth.format(registrationViewModel.dateFormatter),
+            value = uiState.dateOfBirth.atStartOfDay().format(registrationViewModel.dateFormatter),
             onValueChange = { },
             labelRes = R.string.date_of_birth,
             readOnly = true,

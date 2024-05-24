@@ -140,7 +140,8 @@ fun RegistrationForm(
                     }
                 }) {
                 DatePicker(
-                    state = datePickerState
+                    state = datePickerState,
+                    dateValidator = { it < System.currentTimeMillis() }
                 )
             }
         }
@@ -207,7 +208,7 @@ fun RegistrationForm(
             validationErrorColor = Color.Red,
         )
         CommunityServiceCheckbox(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 8.dp),
             checked = uiState.communityService,
             onCheckedChange = registrationViewModel::onCommunityServiceChange
         )

@@ -14,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -63,13 +64,15 @@ fun WalkingForRochesterAppScreen(
         if (notConnected) {
             NoConnectionOverlay()
         }
-        WFRNavigationDrawer(
-            uiState = uiState,
-            onToggleDarkMode = mainViewModel::onToggleDarkMode,
-            onStartWalking = onStartWalking,
-            onStopWalking = onStopWalking,
-            isLoggedIn = wfrAccountId != 0L
-        )
+        Surface {
+            WFRNavigationDrawer(
+                uiState = uiState,
+                onToggleDarkMode = mainViewModel::onToggleDarkMode,
+                onStartWalking = onStartWalking,
+                onStopWalking = onStopWalking,
+                isLoggedIn = wfrAccountId != 0L
+            )
+        }
     }
 }
 

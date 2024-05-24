@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
@@ -43,7 +44,7 @@ class RegistrationViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<RegistrationScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+    val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
     fun prefill(initState: RegistrationScreenState) = _uiState.update { initState }
 

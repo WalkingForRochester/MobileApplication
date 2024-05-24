@@ -106,7 +106,7 @@ fun WFRNavigationDrawer(
         },
         onToggleDarkMode = onToggleDarkMode
     ) {
-        AppScreen(backgroundImage = if (Destination.Login == currentScreen) R.drawable.rainbowbg else R.drawable.background,
+        AppScreen(backgroundImage = if (Destination.Login == currentScreen) R.drawable.rainbowbg else null,
             topBar = {
                 TopBar(currentScreen = currentScreen,
                     onBackButtonClick = { navController.popBackStack() },

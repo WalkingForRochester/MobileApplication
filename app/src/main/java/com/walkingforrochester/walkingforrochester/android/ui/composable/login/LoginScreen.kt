@@ -4,8 +4,10 @@ import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.facebook.login.LoginManager
@@ -77,9 +80,15 @@ fun LoginScreen(
     ConstraintLayout(
         modifier = modifier.fillMaxHeight()
     ) {
-        val (socialButtons, orText, loginForm, loginButton, textButtons) = createRefs()
+        val (spacerTop, socialButtons, orText, loginForm, loginButton, textButtons, spacerBottom) = createRefs()
+        Spacer(modifier = Modifier.constrainAs(spacerTop) {
+            top.linkTo(parent.top, margin = 20.dp)
+            bottom.linkTo(socialButtons.top)
+            height = Dimension.fillToConstraints
+        })
         SocialLoginButtons(
             modifier = Modifier.constrainAs(socialButtons) {
+                top.linkTo(spacerTop.bottom)
                 bottom.linkTo(orText.top)
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
@@ -95,8 +104,8 @@ fun LoginScreen(
             modifier = Modifier
                 .padding(16.dp)
                 .constrainAs(orText) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
+                    top.linkTo(socialButtons.bottom)
+                    bottom.linkTo(loginForm.top)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 },
@@ -106,6 +115,7 @@ fun LoginScreen(
         LoginForm(
             modifier = Modifier.constrainAs(loginForm) {
                 top.linkTo(orText.bottom)
+                bottom.linkTo(loginButton.top)
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
             },
@@ -121,7 +131,8 @@ fun LoginScreen(
         WFRButton(
             modifier = Modifier
                 .constrainAs(loginButton) {
-                    top.linkTo(loginForm.bottom)
+                    top.linkTo(loginForm.bottom, margin = 24.dp)
+                    bottom.linkTo(textButtons.top)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 },
@@ -135,22 +146,33 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .constrainAs(textButtons) {
-                    top.linkTo(loginButton.bottom)
+                    top.linkTo(loginButton.bottom, margin = 16.dp)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
+                    bottom.linkTo(spacerBottom.top)
                 },
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TextButton(onClick = { onForgotPassword() }) {
+            TextButton(onClick = { onForgotPassword() },
+                modifier = Modifier.height(48.dp)) {
                 Text(
                     text = stringResource(R.string.forgot_password_question),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     color = Color.White
                 )
             }
-            TextButton(onClick = { onRegister() }) {
-                Text(text = stringResource(R.string.new_here_sign_up), color = Color.White)
+            TextButton(onClick = { onRegister() },
+                Modifier.height(48.dp)) {
+                Text(text = stringResource(R.string.new_here_sign_up),
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = Color.White)
             }
         }
+        Spacer(modifier = Modifier.constrainAs(spacerBottom) {
+            top.linkTo(textButtons.bottom, margin = 20.dp)
+            bottom.linkTo(parent.bottom)
+            height = Dimension.fillToConstraints
+        })
     }
 }
 

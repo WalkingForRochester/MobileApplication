@@ -44,7 +44,7 @@
     <string name="email_already_registered">Email already registered</string>
     <string name="email_in_use">Email is already in use</string>
     <string name="choose_new_photo">Choose new photo</string>
-    <string name="empty_leaderboard">No activity found for specified filters</string>
+    <string name="empty_leaderboard">No activity found for the specified filters</string>
     <string name="logout">Logout</string>
     <string name="walking_notification">You are Walking For Rochester!</string>
     <string name="stop_walking">Stop Walking</string>

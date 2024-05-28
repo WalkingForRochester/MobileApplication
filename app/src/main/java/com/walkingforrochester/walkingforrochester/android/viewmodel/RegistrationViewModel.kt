@@ -25,10 +25,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,8 +39,6 @@ class RegistrationViewModel @Inject constructor(
 
     private val _eventFlow = MutableSharedFlow<RegistrationScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
-
-    val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
     fun prefill(initState: RegistrationScreenState) = _uiState.update { initState }
 
@@ -77,9 +71,6 @@ class RegistrationViewModel @Inject constructor(
 
     fun onNicknameChange(newNickname: String) =
         _uiState.update { state -> state.copy(nickname = newNickname.filter { it != '\n' }) }
-
-    fun onDateOfBirthChange(newDateOfBirth: LocalDate) =
-        _uiState.update { it.copy(dateOfBirth = newDateOfBirth, dateOfBirthValidationMessage = "") }
 
     fun onPasswordChange(newPassword: String) =
         _uiState.update { state ->
@@ -173,10 +164,6 @@ class RegistrationViewModel @Inject constructor(
             }
             if (phone.length != 10) {
                 phoneValidationMessage = context.getString(R.string.invalid_phone)
-                isValid = false
-            }
-            if (ChronoUnit.YEARS.between(dateOfBirth, LocalDate.now()) < 18) {
-                dateOfBirthValidationMessage = context.getString(R.string.invalid_date_of_birth)
                 isValid = false
             }
             if (password.length < 6) {

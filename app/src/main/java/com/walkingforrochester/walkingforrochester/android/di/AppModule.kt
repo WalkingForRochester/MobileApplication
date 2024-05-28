@@ -48,19 +48,23 @@ class AppModule {
             chain.proceed(request)
         }
 
-        return if (BuildConfig.DEBUG) {
-            val loggingInterceptor = HttpLoggingInterceptor()
-            loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-            OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
-                .addInterceptor(securityInterceptor)
-                .build()
-        } else {
-            OkHttpClient
-                .Builder()
-                .addInterceptor(securityInterceptor)
-                .build()
-        }
+
+        return OkHttpClient.Builder().apply {
+            addInterceptor(securityInterceptor)
+            followSslRedirects(false)
+
+            if (BuildConfig.DEBUG) {
+                val redactText = Regex("\"password\":\".+\"")
+                addInterceptor(
+                    HttpLoggingInterceptor {
+                        val msg = redactText.replace(it, "\"password\":\"******\"")
+                        HttpLoggingInterceptor.Logger.DEFAULT.log(msg)
+                    }.apply {
+                        level = HttpLoggingInterceptor.Level.BASIC
+                    }
+                )
+            }
+        }.build()
     }
 
     @Singleton

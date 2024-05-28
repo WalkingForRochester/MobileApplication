@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace 'com.walkingforrochester.walkingforrochester.android'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.walkingforrochester.walkingforrochester.android"
@@ -95,6 +95,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.android.gms:play-services-location:21.0.1'
     // DO NOT UPDATE TO VERSION 2.2.0 - https://github.com/googlemaps/google-maps-services-java/issues/906
+    // Used for places api vs official sdk
     implementation 'com.google.maps:google-maps-services:2.1.2'
     implementation "com.googlecode.libphonenumber:libphonenumber:8.11.1"
     implementation 'com.google.maps.android:android-maps-utils:3.4.0'

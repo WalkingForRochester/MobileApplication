@@ -23,7 +23,6 @@ enum class Destination(
         "Login",
         showBottomBar = false,
         showTopBar = false,
-        enableDrawerGestures = true
     ),
     ForgotPassword(
         "forgotPassword",
@@ -51,7 +50,7 @@ enum class Destination(
         "logAWalk",
         "Log a Walk",
         icon = R.drawable.ic_walk,
-        showTitleComposable = true
+        showTitleComposable = false
     ),
     Leaderboard(
         "leaderboard",

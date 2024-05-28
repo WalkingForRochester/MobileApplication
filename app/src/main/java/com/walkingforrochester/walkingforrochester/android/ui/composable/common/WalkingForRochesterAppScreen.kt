@@ -4,12 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -26,13 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk.AddressSearchField
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.BottomBar
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.Destination
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.NavigationDrawer
@@ -113,7 +108,7 @@ fun WFRNavigationDrawer(
                     onNavigationButtonClick = { scope.launch { drawerState.open() } },
                     onProfileButtonClick = { navController.navigateSingleTopTo(Destination.Profile.route) },
                     titleComposable = {
-                        if (Destination.LogAWalk == currentScreen) {
+                        /*if (Destination.LogAWalk == currentScreen) {
                             ProvideTextStyle(value = MaterialTheme.typography.bodyLarge) {
                                 AddressSearchField(
                                     modifier = Modifier
@@ -121,7 +116,7 @@ fun WFRNavigationDrawer(
                                         .padding(bottom = 8.dp)
                                 )
                             }
-                        }
+                        }*/
                     }, isLoggedIn = isLoggedIn
                 )
             },

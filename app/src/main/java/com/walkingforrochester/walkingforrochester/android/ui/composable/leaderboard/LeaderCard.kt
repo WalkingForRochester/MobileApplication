@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
@@ -56,12 +55,11 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
         ) {
             Text(
                 leader.place.toString(),
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = when (leader.place) {
-                        1L, 2L, 3L -> Color.Black
-                        else -> MaterialTheme.colorScheme.onSurface
-                    }
-                ),
+                style = MaterialTheme.typography.labelLarge,
+                color = when (leader.place) {
+                    1L, 2L, 3L -> Color.Black
+                    else -> MaterialTheme.colorScheme.onSurface
+                },
                 modifier = Modifier
                     .weight(0.2f)
                     .padding(8.dp)
@@ -90,14 +88,13 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
                 Text(
                     (if (leader.nickname.isNullOrBlank()) leader.firstName else leader.nickname)
                         ?: "",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        color = when (leader.place) {
-                            1L, 2L, 3L -> Color.Black
-                            else -> MaterialTheme.colorScheme.onSurface
-                        }
-                    )
+                    style = MaterialTheme.typography.labelLarge,
+                    color = when (leader.place) {
+                        1L, 2L, 3L -> Color.Black
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
                 )
-                Text(
+                /*Text(
                     "${leader.accountId}",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = when (leader.place) {
@@ -106,7 +103,7 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
                         },
                         fontWeight = FontWeight.Light
                     )
-                )
+                )*/
             }
             Text(
                 text = when (type) {
@@ -115,12 +112,12 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
                     TypeFilter.Duration -> DateUtils.formatElapsedTime(
                         (leader.duration ?: 0) / 1000
                     )
-                }, style = MaterialTheme.typography.labelLarge.copy(
-                    color = when (leader.place) {
-                        1L, 2L, 3L -> Color.Black
-                        else -> MaterialTheme.colorScheme.onSurface
-                    }
-                ), modifier = Modifier.padding(8.dp)
+                },
+                style = MaterialTheme.typography.labelLarge,
+                color = when (leader.place) {
+                    1L, 2L, 3L -> Color.Black
+                    else -> MaterialTheme.colorScheme.onSurface
+                }, modifier = Modifier.padding(8.dp)
             )
         }
     }

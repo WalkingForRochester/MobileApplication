@@ -44,7 +44,7 @@ fun RegistrationForm(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             value = uiState.firstName,
             onValueChange = registrationViewModel::onFirstNameChange,
             labelRes = R.string.first_name,
@@ -57,7 +57,7 @@ fun RegistrationForm(
             clearFieldIconEnabled = true
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             value = uiState.lastName,
             onValueChange = registrationViewModel::onLastNameChange,
             labelRes = R.string.last_name,
@@ -70,7 +70,7 @@ fun RegistrationForm(
             clearFieldIconEnabled = true
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             value = uiState.email,
             onValueChange = registrationViewModel::onEmailChange,
             labelRes = R.string.email_address,
@@ -83,7 +83,7 @@ fun RegistrationForm(
             clearFieldIconEnabled = true
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             value = uiState.phone,
             onValueChange = registrationViewModel::onPhoneChange,
             labelRes = R.string.phone_number,
@@ -97,7 +97,7 @@ fun RegistrationForm(
             clearFieldIconEnabled = true
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             value = uiState.nickname,
             onValueChange = registrationViewModel::onNicknameChange,
             labelRes = R.string.nickname,
@@ -112,7 +112,7 @@ fun RegistrationForm(
         )
 
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             value = uiState.password,
             onValueChange = registrationViewModel::onPasswordChange,
             labelRes = R.string.password,
@@ -133,7 +133,7 @@ fun RegistrationForm(
             validationErrorColor = Color.Red,
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             value = uiState.confirmPassword,
             onValueChange = registrationViewModel::onPasswordConfirmationChange,
             labelRes = R.string.confirm_password,

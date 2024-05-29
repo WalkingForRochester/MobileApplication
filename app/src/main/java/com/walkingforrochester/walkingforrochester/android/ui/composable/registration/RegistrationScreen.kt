@@ -3,6 +3,7 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.regist
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
@@ -43,6 +44,7 @@ fun RegistrationScreen(
 
     Column(
         modifier = modifier
+            .fillMaxHeight()
             .verticalScroll(rememberScrollState())
             .imePadding(),
         verticalArrangement = Arrangement.Top,
@@ -51,6 +53,7 @@ fun RegistrationScreen(
         Spacer(Modifier.height(8.dp))
         RegistrationForm(registrationViewModel = registrationViewModel, uiState = uiState)
         Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.weight(1f))
         WFRButton(
             label = R.string.sign_up,
             onClick = registrationViewModel::onSignUp,

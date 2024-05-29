@@ -134,7 +134,7 @@ class LoginViewModel @Inject constructor(
     fun onEmailAddressValueChange(newEmailAddress: String) {
         _uiState.update { state ->
             state.copy(
-                emailAddress = newEmailAddress.filter { it != '\n' },
+                emailAddress = newEmailAddress.trim(),
                 emailAddressValidationMessage = "",
                 authenticationErrorMessage = ""
             )
@@ -144,7 +144,7 @@ class LoginViewModel @Inject constructor(
     fun onPasswordValueChange(newPassword: String) {
         _uiState.update { state ->
             state.copy(
-                password = newPassword.filter { it != '\n' },
+                password = newPassword,
                 passwordValidationMessage = "",
                 authenticationErrorMessage = ""
             )

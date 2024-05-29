@@ -27,7 +27,10 @@ fun LoginForm(
     onPasswordValueChange: (String) -> Unit,
     onPasswordVisibilityChange: () -> Unit
 ) {
-    Column(modifier = modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        modifier = modifier.padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         WFRTextField(
             value = loginScreenState.emailAddress,
             onValueChange = onEmailAddressValueChange,

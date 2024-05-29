@@ -14,10 +14,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.android.gms.location.*
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.*
-import com.google.maps.android.compose.*
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.RoundCap
+import com.google.maps.android.compose.CameraMoveStartedReason
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.MapPathBlue
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import kotlin.math.roundToInt
@@ -45,6 +56,14 @@ fun LogAWalkMap(
     LaunchedEffect(Unit) {
         LocationServices
             .getFusedLocationProviderClient(context)
+            .lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    cameraPosition.position =
+                        CameraPosition.fromLatLngZoom(LatLng(it.latitude, it.longitude), 16f)
+                }
+            }
+        LocationServices
+            .getFusedLocationProviderClient(context)
             .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { location ->
                 location?.let {
@@ -54,7 +73,7 @@ fun LogAWalkMap(
             }
     }
 
-    LaunchedEffect(lastLocation) {
+    LaunchedEffect(followCamera, lastLocation) {
         if (followCamera && lastLocation != null) {
             cameraPosition.animate(CameraUpdateFactory.newLatLng(lastLocation), Int.MAX_VALUE)
         }

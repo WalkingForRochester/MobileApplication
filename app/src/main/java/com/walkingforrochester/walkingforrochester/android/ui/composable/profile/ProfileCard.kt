@@ -6,8 +6,6 @@ import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,6 +48,7 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.roundDouble
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedTextField
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
@@ -62,11 +61,8 @@ fun ProfileCard(
     profileViewModel: ProfileViewModel
 ) {
     Card(
-        modifier = modifier.animateContentSize(
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow
-            )
-        ), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        modifier = modifier.animateContentSize(),
+        elevation = CardDefaults.elevatedCardElevation()
     ) {
         if (uiState.profileDataLoading) {
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -81,27 +77,29 @@ fun ProfileCard(
                 uiState = uiState,
                 profileViewModel = profileViewModel
             )
-            Divider(
-                thickness = 1.dp,
-                color = Color.LightGray,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            ProfileStats(
-                label = "Distances",
-                previousStat = "${roundDouble(uiState.distanceToday)} mi",
-                overallStat = "${roundDouble(uiState.distanceOverall)} mi"
-            )
-            Divider(
-                thickness = 1.dp,
-                color = Color.LightGray,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            ProfileStats(
-                label = "Durations",
-                previousStat = DateUtils.formatElapsedTime(uiState.durationToday / 1000),
-                overallStat = DateUtils.formatElapsedTime(uiState.durationOverall / 1000),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            if (!uiState.editProfile) {
+                Divider(
+                    thickness = 1.dp,
+                    color = Color.LightGray,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                ProfileStats(
+                    label = "Distances",
+                    previousStat = "${roundDouble(uiState.distanceToday)} mi",
+                    overallStat = "${roundDouble(uiState.distanceOverall)} mi"
+                )
+                Divider(
+                    thickness = 1.dp,
+                    color = Color.LightGray,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                ProfileStats(
+                    label = "Durations",
+                    previousStat = DateUtils.formatElapsedTime(uiState.durationToday / 1000),
+                    overallStat = DateUtils.formatElapsedTime(uiState.durationOverall / 1000),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
         }
     }
 }
@@ -112,13 +110,7 @@ fun EditableProfile(
     uiState: ProfileScreenState,
     profileViewModel: ProfileViewModel
 ) {
-    Box(
-        modifier = modifier.animateContentSize(
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow
-            )
-        )
-    ) {
+    Box(modifier = modifier) {
         if (uiState.editProfile) {
             EditProfile(
                 uiState = uiState,
@@ -170,9 +162,16 @@ fun ProfileDataAndActions(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        ProfilePic(modifier = Modifier.padding(16.dp), profilePic = uiState.profilePic)
+        ProfilePic(
+            modifier = Modifier.padding(16.dp),
+            profilePic = uiState.profilePic
+        )
         Column {
-            ProfileActions(enabled = uiState.accountId != 0L, onEdit = onEdit, onShare = onShare)
+            ProfileActions(
+                enabled = uiState.accountId != 0L,
+                onEdit = onEdit,
+                onShare = onShare
+            )
             ProfileInfo(
                 accountId = uiState.accountId,
                 email = uiState.email,
@@ -205,13 +204,18 @@ fun EditProfile(
             uiState = uiState,
             profileViewModel = profileViewModel
         )
-        Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            WFROutlinedButton(label = R.string.cancel, onClick = profileViewModel::onCancel)
             WFRButton(
                 label = R.string.save,
                 onClick = profileViewModel::onSave,
                 loading = uiState.profileDataSaving
             )
-            WFRButton(label = R.string.cancel, onClick = profileViewModel::onCancel)
         }
     }
 }
@@ -252,7 +256,7 @@ fun EditProfilePic(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (uiState.profilePic.isBlank()) {
             Icon(
@@ -290,11 +294,16 @@ fun EditProfilePic(
         if (uiState.tooLargeImage) {
             Text(
                 text = stringResource(R.string.too_large_image),
-                style = MaterialTheme.typography.bodySmall.copy(color = Color.Red),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center
             )
         }
-        WFRButton(label = R.string.choose_new_photo, onClick = { launcher.launch("image/*") })
+
+        WFROutlinedButton(
+            onClick = { launcher.launch("image/*") },
+            label = R.string.choose_new_photo,
+        )
     }
 }
 
@@ -358,6 +367,7 @@ fun EditProfileInfo(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .wrapContentHeight()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .fillMaxWidth()
     ) {
         WFROutlinedTextField(
@@ -381,6 +391,7 @@ fun EditProfileInfo(
             clearFieldIconEnabled = true
         )
         CommunityServiceCheckbox(
+            modifier = Modifier.padding(top = 8.dp),
             checked = uiState.communityService,
             onCheckedChange = profileViewModel::onCommunityServiceChange,
             labelColor = MaterialTheme.colorScheme.onSurface,

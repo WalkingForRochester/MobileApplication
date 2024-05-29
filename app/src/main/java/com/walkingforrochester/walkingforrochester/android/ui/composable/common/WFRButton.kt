@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,14 +37,6 @@ fun WFRButton(
     enabled: Boolean = true,
     loading: Boolean = false
 ) {
-    val defaultPadding = ButtonDefaults.ContentPadding
-    val contentPadding = PaddingValues(
-        start = defaultPadding.calculateStartPadding(LayoutDirection.Ltr) + 12.dp,
-        top = defaultPadding.calculateTopPadding() + 4.dp,
-        end = defaultPadding.calculateEndPadding(LayoutDirection.Ltr) + 12.dp,
-        bottom = defaultPadding.calculateBottomPadding() + 4.dp
-    )
-
     Button(
         onClick = { if (!loading) onClick() },
         colors = ButtonDefaults.buttonColors(
@@ -50,7 +45,7 @@ fun WFRButton(
         ),
         enabled = enabled,
         modifier = modifier,
-        contentPadding = contentPadding
+        contentPadding = WFRButtonDefaults.ContentPadding
 
     ) {
         if (loading) {
@@ -74,19 +69,92 @@ fun WFRButton(
     }
 }
 
+@Composable
+fun WFROutlinedButton(
+    onClick: () -> Unit,
+    @StringRes label: Int,
+    modifier: Modifier = Modifier,
+    labelColor: Color = MaterialTheme.colorScheme.onSurface,
+    enabled: Boolean = true,
+    loading: Boolean = false
+) {
+    OutlinedButton(
+        onClick = { if (!loading) onClick() },
+        colors = ButtonDefaults.outlinedButtonColors(
+            //containerColor = buttonColor,
+            contentColor = labelColor
+        ),
+        enabled = enabled,
+        modifier = modifier,
+        contentPadding = WFRButtonDefaults.ContentPadding
+
+    ) {
+        if (loading) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier.size(ButtonDefaults.IconSize),
+                    color = LocalContentColor.current
+                )
+                Text(
+                    text = stringResource(label),
+                    color = Color.Transparent
+                )
+            }
+        } else {
+            Text(
+                text = stringResource(label),
+            )
+        }
+    }
+}
+
+object WFRButtonDefaults {
+    val ContentPadding = PaddingValues(
+        start = ButtonDefaults.ContentPadding.calculateStartPadding(LayoutDirection.Ltr) + 12.dp,
+        top = ButtonDefaults.ContentPadding.calculateTopPadding() + 4.dp,
+        end = ButtonDefaults.ContentPadding.calculateEndPadding(LayoutDirection.Ltr) + 12.dp,
+        bottom = ButtonDefaults.ContentPadding.calculateBottomPadding() + 4.dp
+    )
+}
+
 @Preview
 @Composable
 fun WFRButtonPreview() {
     WalkingForRochesterTheme {
         Surface {
             Box(
-                Modifier.size(200.dp),
+                Modifier
+                    .width(200.dp)
+                    .height(100.dp),
                 contentAlignment = Alignment.Center
             ) {
                 WFRButton(
                     onClick = { /*TODO*/ },
                     label = R.string.sign_in,
-                    loading = true
+                    loading = false
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun WFROutlinedButtonPreview() {
+    WalkingForRochesterTheme {
+        Surface {
+            Box(
+                Modifier
+                    .width(200.dp)
+                    .height(100.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                WFROutlinedButton(
+                    onClick = {},
+                    label = R.string.cancel,
+                    loading = false
                 )
             }
         }

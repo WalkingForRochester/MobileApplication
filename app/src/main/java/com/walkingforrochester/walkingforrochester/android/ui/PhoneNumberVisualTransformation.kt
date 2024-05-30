@@ -1,20 +1,43 @@
 package com.walkingforrochester.walkingforrochester.android.ui
 
+import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.telephony.PhoneNumberUtils
+import android.telephony.TelephonyManager
 import android.text.Selection
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.core.content.getSystemService
+import com.google.i18n.phonenumbers.AsYouTypeFormatter
 import com.google.i18n.phonenumbers.PhoneNumberUtil
+import timber.log.Timber
 import java.util.Locale
 
 class PhoneNumberVisualTransformation(
-    countryCode: String = Locale.getDefault().country
+    context: Context
 ) : VisualTransformation {
+    private val phoneNumberFormatter: AsYouTypeFormatter
+    private val isDebuggable: Boolean
 
-    private val phoneNumberFormatter =
-        PhoneNumberUtil.getInstance().getAsYouTypeFormatter(countryCode)
+    init {
+        val telephonyManager: TelephonyManager? = context.applicationContext.getSystemService()
+        val countryCode = determineCountryCode(telephonyManager)
+        phoneNumberFormatter = PhoneNumberUtil.getInstance().getAsYouTypeFormatter(countryCode)
+
+        isDebuggable = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    }
+
+    private fun determineCountryCode(telephonyManager: TelephonyManager?): String {
+        val simCountryIso = telephonyManager?.simCountryIso?.uppercase()
+        val networkCountryIso = telephonyManager?.networkCountryIso?.uppercase()
+        return when {
+            !simCountryIso.isNullOrBlank() -> simCountryIso
+            !networkCountryIso.isNullOrBlank() -> networkCountryIso
+            else -> Locale.getDefault().country
+        }
+    }
 
     override fun filter(text: AnnotatedString): TransformedText {
         val transformation = reformat(text, Selection.getSelectionEnd(text))
@@ -58,17 +81,36 @@ class PhoneNumberVisualTransformation(
         }
         val originalToTransformed = mutableListOf<Int>()
         val transformedToOriginal = mutableListOf<Int>()
-        var specialCharsCount = 0
+
+        var originalOffset = 0
+        val lastIndex = s.lastIndex
+
+        // Map the position of the character in new string to original
         formatted?.forEachIndexed { index, char ->
-            if (!PhoneNumberUtils.isNonSeparator(char)) {
-                specialCharsCount++
-            } else {
+
+            transformedToOriginal.add(originalOffset.coerceAtMost(lastIndex))
+
+            if (originalOffset <= lastIndex && char == s[originalOffset]) {
                 originalToTransformed.add(index)
+                ++originalOffset
             }
-            transformedToOriginal.add(index - specialCharsCount)
         }
-        originalToTransformed.add(originalToTransformed.maxOrNull()?.plus(1) ?: 0)
-        transformedToOriginal.add(transformedToOriginal.maxOrNull()?.plus(1) ?: 0)
+        if (originalToTransformed.size != s.length) {
+            Timber.w("Original is longer than transformed. Make sure illegal characters are being filtered when updating view model")
+            if (!isDebuggable) {
+                // Safety to prevent crash. Will crash in debug mode
+                val pos = originalToTransformed.size
+                for (i in pos until s.length) {
+                    originalToTransformed.add(formatted?.lastIndex ?: 0)
+                }
+            }
+        }
+
+        val formattedText = formatted
+        originalToTransformed.add(if (formattedText.isNullOrEmpty()) 0 else formattedText.lastIndex.plus(1))
+        transformedToOriginal.add(if (s.isNotEmpty()) s.lastIndex.plus(1) else 0)
+        //Timber.d("original: %s", originalToTransformed.toString())
+        //Timber.d("transform: %s", transformedToOriginal.toString())
 
         return Transformation(formatted, originalToTransformed, transformedToOriginal)
     }

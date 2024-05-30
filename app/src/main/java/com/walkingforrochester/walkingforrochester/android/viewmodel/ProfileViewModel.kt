@@ -209,11 +209,30 @@ class ProfileViewModel @Inject constructor(
     }.launchIn(viewModelScope)
 
     fun onLogout() = viewModelScope.launch {
+        removeAccountFromPreferences()
+        _eventFlow.emit(ProfileScreenEvent.Logout)
+    }
+
+    fun onDeleteAccount() {
+        viewModelScope.launch {
+            val accountId = _uiState.value.accountId
+            try {
+                restApiService.deleteUser(AccountIdRequest(accountId = accountId))
+                // If no errors, treat as a logout...
+                removeAccountFromPreferences()
+                _eventFlow.emit(ProfileScreenEvent.AccountDeleted)
+            } catch(e: Throwable) {
+                Timber.w(e, "Failed to delete account")
+                showUnexpectedErrorToast(context)
+            }
+        }
+    }
+
+    private fun removeAccountFromPreferences() {
         sharedPreferences.edit()
             .remove(context.getString(R.string.wfr_account_id))
             .remove(context.getString(R.string.wfr_dark_mode_enabled))
             .apply()
-        _eventFlow.emit(ProfileScreenEvent.Logout)
     }
 
     private suspend fun validateForm(): Boolean {

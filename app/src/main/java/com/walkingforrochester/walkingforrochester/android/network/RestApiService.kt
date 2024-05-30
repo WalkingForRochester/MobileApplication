@@ -1,7 +1,13 @@
 package com.walkingforrochester.walkingforrochester.android.network
 
 import com.walkingforrochester.walkingforrochester.android.model.Leader
-import com.walkingforrochester.walkingforrochester.android.network.request.*
+import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.LeaderboardRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.LogAWalkRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.RegisterRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
 import com.walkingforrochester.walkingforrochester.android.network.response.CodeResponse
 import okhttp3.MultipartBody
@@ -35,6 +41,9 @@ interface RestApiService {
 
     @POST("updateProfile.php")
     suspend fun updateProfile(@Body updateProfileRequest: UpdateProfileRequest)
+
+    @POST("deleteUser.php")
+    suspend fun deleteUser(@Body accountIdRequest: AccountIdRequest)
 
     @Multipart
     @POST("uploadImage.php")

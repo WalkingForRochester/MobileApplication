@@ -26,7 +26,7 @@
     <string name="invalid_email">Please enter a valid email address</string>
     <string name="invalid_password">Password must be at least 6 character long</string>
     <string name="invalid_field_empty">Field cannot be empty</string>
-    <string name="invalid_phone">Please enter a valid phone number</string>
+    <string name="invalid_phone">Please enter a valid 10 digit phone number</string>
     <string name="invalid_date_of_birth">Age must be over 18</string>
     <string name="invalid_password_match">Passwords must match</string>
     <string name="invalid_code">Invalid code. Try again later</string>
@@ -94,4 +94,8 @@
     <string name="back_button">Back Button</string>
     <string name="open_navigation_drawer">Open Navigation Drawer</string>
     <string name="open_profile_screen">Open Profile Screen</string>
+    <string name="delete_account">Delete account</string>
+    <string name="delete_account_msg">Sorry to see you go. By continuing, your account and all walk history will be deleted from Walking For Rochester.</string>
+    <string name="delete_account_service_msg">Ensure you have all of your community service documentation before proceeding.</string>
+    <string name="delete_account_confirm_text">Type \"YES\" to confirm</string>
 </resources>

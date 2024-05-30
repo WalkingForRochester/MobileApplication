@@ -98,7 +98,7 @@ class ProfileViewModel @Inject constructor(
     fun onEmailChange(newEmail: String) =
         _uiState.update { state ->
             state.copy(
-                email = newEmail.filter { it != '\n' },
+                email = newEmail.trim(),
                 emailValidationMessage = ""
             )
         }
@@ -106,7 +106,7 @@ class ProfileViewModel @Inject constructor(
     fun onPhoneChange(newPhone: String) =
         _uiState.update { state ->
             state.copy(
-                phone = newPhone.filter { it != '\n' },
+                phone = newPhone.filter { it.isDigit() },
                 phoneValidationMessage = ""
             )
         }

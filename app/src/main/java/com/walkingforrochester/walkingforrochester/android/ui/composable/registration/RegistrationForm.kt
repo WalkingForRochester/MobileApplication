@@ -6,7 +6,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -106,9 +105,6 @@ fun RegistrationForm(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
-            keyboardActions = KeyboardActions(onNext = {
-                registrationViewModel.toggleDatePicker()
-            }),
             clearFieldIconEnabled = true
         )
 

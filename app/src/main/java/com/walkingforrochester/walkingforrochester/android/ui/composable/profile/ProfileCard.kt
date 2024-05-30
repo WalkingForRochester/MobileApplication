@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
@@ -40,6 +41,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -383,6 +386,10 @@ fun EditProfileInfo(
             value = uiState.email,
             onValueChange = profileViewModel::onEmailChange,
             labelRes = R.string.email_address,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
             validationError = uiState.emailValidationMessage,
             clearFieldIconEnabled = true
         )
@@ -391,6 +398,10 @@ fun EditProfileInfo(
             onValueChange = profileViewModel::onPhoneChange,
             labelRes = R.string.phone_number,
             visualTransformation = PhoneNumberVisualTransformation(LocalContext.current),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Next
+            ),
             validationError = uiState.phoneValidationMessage,
             clearFieldIconEnabled = true
         )
@@ -398,6 +409,10 @@ fun EditProfileInfo(
             value = uiState.nickname,
             onValueChange = profileViewModel::onNicknameChange,
             labelRes = R.string.nickname,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done
+            ),
             clearFieldIconEnabled = true
         )
         CommunityServiceCheckbox(

@@ -1,15 +1,25 @@
 package com.walkingforrochester.walkingforrochester.android.service
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
+import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
-import com.google.android.gms.location.*
+import androidx.core.app.NotificationManagerCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.MainActivity
 import com.walkingforrochester.walkingforrochester.android.R
@@ -59,11 +69,15 @@ class ForegroundLocationService : Service() {
 
     private fun generateNotification(): Notification {
         val mainNotificationText = getString(R.string.walking_notification)
-        val titleText = getString(R.string.app_name)
-        val notificationChannel = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_HIGH
+        val titleText = getString(R.string.notification_channel_name)
+        val notificationChannel = NotificationChannelCompat.Builder(
+            NOTIFICATION_CHANNEL_ID,
+            NotificationManager.IMPORTANCE_LOW
         )
-        notificationManager.createNotificationChannel(notificationChannel)
+            .setName(titleText)
+            .build()
+
+        NotificationManagerCompat.from(this).createNotificationChannel(notificationChannel)
 
         val bigTextStyle = NotificationCompat.BigTextStyle()
             .bigText(mainNotificationText)
@@ -119,7 +133,7 @@ class ForegroundLocationService : Service() {
             startForeground(
                 NOTIFICATION_ID,
                 generateNotification(),
-                FOREGROUND_SERVICE_TYPE_LOCATION
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             )
         } else {
             startForeground(NOTIFICATION_ID, generateNotification())
@@ -144,17 +158,16 @@ class ForegroundLocationService : Service() {
             removeTask.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Timber.d("Location Callback removed.")
-                    stopSelf()
                 } else {
                     Timber.d("Failed to remove Location Callback.")
                 }
             }
-
-            stopForeground(STOP_FOREGROUND_REMOVE)
-
         } catch (unlikely: SecurityException) {
             Timber.e("Lost location permissions. Couldn't remove updates. $unlikely")
         }
+
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     fun stopFromIntent() {

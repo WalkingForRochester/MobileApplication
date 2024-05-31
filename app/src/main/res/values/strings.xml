@@ -46,6 +46,7 @@
     <string name="choose_new_photo">Choose new photo</string>
     <string name="empty_leaderboard">No activity found for the specified filters</string>
     <string name="logout">Logout</string>
+    <string name="notification_channel_name">Walk in Progress</string>
     <string name="walking_notification">You are Walking For Rochester!</string>
     <string name="stop_walking">Stop Walking</string>
     <string name="dark_mode">Dark mode</string>

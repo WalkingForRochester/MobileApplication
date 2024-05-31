@@ -44,7 +44,7 @@ class AppModule {
     fun provideOkHttpClient(): OkHttpClient {
         val securityInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("WFR-Auth-Token", "f52245c3-e813-4b04-81dd-3a6fef25ffae").build()
+                .addHeader("WFR-Auth-Token", BuildConfig.wfrAuthToken).build()
             chain.proceed(request)
         }
 
@@ -60,7 +60,7 @@ class AppModule {
                         val msg = redactText.replace(it, "\"password\":\"******\"")
                         HttpLoggingInterceptor.Logger.DEFAULT.log(msg)
                     }.apply {
-                        level = HttpLoggingInterceptor.Level.BASIC
+                        level = HttpLoggingInterceptor.Level.BODY
                     }
                 )
             }

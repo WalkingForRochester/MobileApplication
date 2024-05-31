@@ -52,11 +52,6 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-    }
-
-    override fun onStart() {
-        Timber.d("onStart()")
-        super.onStart()
 
         val serviceIntent = Intent(this, ForegroundLocationService::class.java)
         bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)

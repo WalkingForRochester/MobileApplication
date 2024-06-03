@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.walkingforrochester.walkingforrochester.android.R
@@ -272,23 +274,24 @@ fun EditProfilePic(
             )
         } else {
             uiState.localProfilePicUri?.let {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest
-                            .Builder(LocalContext.current)
-                            .data(data = it)
-                            .build()
-                    ),
+                AsyncImage(
+                    model = ImageRequest
+                        .Builder(LocalContext.current)
+                        .data(data = it)
+                        .build()
+                    ,
                     contentDescription = stringResource(R.string.profile_pic),
                     contentScale = ContentScale.Crop,
+                    error = rememberVectorPainter(image = Icons.Filled.AccountCircle),
                     modifier = Modifier
                         .size(192.dp)
                         .clip(CircleShape)
                 )
             }
             if (uiState.localProfilePicUri == null) {
-                Image(
-                    painter = rememberAsyncImagePainter(uiState.profilePic),
+                AsyncImage(
+                    model = uiState.profilePic,
+                    error = rememberVectorPainter(image = Icons.Filled.AccountCircle),
                     contentScale = ContentScale.Crop,
                     contentDescription = stringResource(R.string.profile_pic),
                     modifier = Modifier

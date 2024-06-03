@@ -1,7 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.leaderboard
 
 import android.text.format.DateUtils
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,11 +20,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.walkingforrochester.walkingforrochester.android.model.Leader
 import com.walkingforrochester.walkingforrochester.android.roundDouble
 import com.walkingforrochester.walkingforrochester.android.ui.state.TypeFilter
@@ -71,8 +71,9 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
                     modifier = Modifier.size(64.dp)
                 )
             } else {
-                Image(
-                    painter = rememberAsyncImagePainter(leader.imgUrl),
+                AsyncImage(
+                    model = leader.imgUrl,
+                    error = rememberVectorPainter(image = Icons.Filled.AccountCircle),
                     contentDescription = stringResource(com.walkingforrochester.walkingforrochester.android.R.string.profile_pic),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -96,13 +97,11 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
                 )
                 /*Text(
                     "${leader.accountId}",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        color = when (leader.place) {
-                            1L, 2L, 3L -> Color.Black
-                            else -> MaterialTheme.colorScheme.onSurface
-                        },
-                        fontWeight = FontWeight.Light
-                    )
+                    style = MaterialTheme.typography.bodySmall,
+                    color = when (leader.place) {
+                        1L, 2L, 3L -> Color.Black
+                        else -> MaterialTheme.colorScheme.onSurface
+                    },
                 )*/
             }
             Text(

@@ -382,10 +382,11 @@ fun EditProfileInfo(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .wrapContentHeight()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(vertical = 8.dp)
             .fillMaxWidth()
     ) {
         WFROutlinedTextField(
+            modifier = Modifier.padding(horizontal = 12.dp),
             value = uiState.email,
             onValueChange = profileViewModel::onEmailChange,
             labelRes = R.string.email_address,
@@ -397,6 +398,7 @@ fun EditProfileInfo(
             clearFieldIconEnabled = true
         )
         WFROutlinedTextField(
+            modifier = Modifier.padding(horizontal = 12.dp),
             value = uiState.phone,
             onValueChange = profileViewModel::onPhoneChange,
             labelRes = R.string.phone_number,
@@ -409,6 +411,7 @@ fun EditProfileInfo(
             clearFieldIconEnabled = true
         )
         WFROutlinedTextField(
+            modifier = Modifier.padding(horizontal = 12.dp),
             value = uiState.nickname,
             onValueChange = profileViewModel::onNicknameChange,
             labelRes = R.string.nickname,
@@ -419,7 +422,7 @@ fun EditProfileInfo(
             clearFieldIconEnabled = true
         )
         CommunityServiceCheckbox(
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 4.dp),
             checked = uiState.communityService,
             onCheckedChange = profileViewModel::onCommunityServiceChange,
             labelColor = MaterialTheme.colorScheme.onSurface,

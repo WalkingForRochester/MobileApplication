@@ -171,10 +171,6 @@ class LoginViewModel @Inject constructor(
                 emailAddressValidationMessage = context.getString(R.string.invalid_email)
                 isValid = false
             }
-            if (password.length < 6) {
-                passwordValidationMessage = context.getString(R.string.invalid_password)
-                isValid = false
-            }
         }
 
         _uiState.update { localState }

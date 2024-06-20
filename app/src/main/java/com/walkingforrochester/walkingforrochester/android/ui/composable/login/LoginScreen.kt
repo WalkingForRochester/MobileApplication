@@ -129,6 +129,8 @@ fun LoginScreen(
             onPasswordVisibilityChange = { loginViewModel.onTogglePasswordVisibility() }
         )
         WFRButton(
+            onClick = loginViewModel::onLoginClicked,
+            label = R.string.sign_in,
             modifier = Modifier
                 .constrainAs(loginButton) {
                     top.linkTo(loginForm.bottom, margin = 24.dp)
@@ -136,10 +138,10 @@ fun LoginScreen(
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 },
-            label = R.string.sign_in,
+            testTag = "login:button",
             buttonColor = Color.Black,
             labelColor = Color.White,
-            onClick = loginViewModel::onLoginClicked,
+
             loading = uiState.loading
         )
         Row(

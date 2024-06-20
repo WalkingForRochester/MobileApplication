@@ -13,19 +13,25 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.VisualTransformation
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WFRTextField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     @StringRes labelRes: Int,
+    testTag: String = "",
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -41,7 +47,14 @@ fun WFRTextField(
 ) {
     val focusManager = LocalFocusManager.current
     TextField(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                if (testTag.isNotBlank()) {
+                    testTagsAsResourceId = true
+                    this.testTag = testTag
+                }
+            },
         value = value,
         onValueChange = onValueChange,
         label = { Text(stringResource(labelRes)) },

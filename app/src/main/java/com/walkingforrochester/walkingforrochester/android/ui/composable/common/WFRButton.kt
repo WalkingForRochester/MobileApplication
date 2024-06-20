@@ -18,20 +18,26 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WFRButton(
     onClick: () -> Unit,
     @StringRes label: Int,
     modifier: Modifier = Modifier,
+    testTag: String = "",
     buttonColor: Color = MaterialTheme.colorScheme.inverseSurface,
     labelColor: Color = MaterialTheme.colorScheme.inverseOnSurface,
     enabled: Boolean = true,
@@ -44,7 +50,12 @@ fun WFRButton(
             contentColor = labelColor
         ),
         enabled = enabled,
-        modifier = modifier,
+        modifier = modifier.semantics {
+            if (testTag.isNotBlank()) {
+                testTagsAsResourceId = true
+                this.testTag = testTag
+            }
+        },
         contentPadding = WFRButtonDefaults.ContentPadding
 
     ) {

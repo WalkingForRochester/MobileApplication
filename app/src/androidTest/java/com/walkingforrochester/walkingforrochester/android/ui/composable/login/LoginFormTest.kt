@@ -20,6 +20,7 @@ import org.junit.runner.RunWith
 class LoginFormTest {
     private lateinit var device: UiDevice
 
+    // This tests to make sure UI tests can find the resource ids
     @Test
     fun testLogin() {
         // Initialize UiDevice instance
@@ -72,35 +73,6 @@ class LoginFormTest {
 
         Thread.sleep(5000)
     }
-    /*@get:Rule
-    val composeTestRule = createComposeRule()
-
-    @Test
-    fun testContentDescriptions() {
-
-        var loginScreenState = LoginScreenState()
-        // Start the app
-        composeTestRule.setContent {
-            LoginForm(
-                loginScreenState = loginScreenState,
-                onEmailAddressValueChange = {
-                    loginScreenState = loginScreenState.copy(emailAddress = it)
-                },
-                onPasswordValueChange = { loginScreenState = loginScreenState.copy(password = it) },
-                onPasswordVisibilityChange = {
-                    loginScreenState =
-                        loginScreenState.copy(passwordVisible = !loginScreenState.passwordVisible)
-                }
-            )
-        }
-        val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
-        composeTestRule.onNodeWithTag("Email Address").assertExists()
-        composeTestRule.onNodeWithText(context.getString(R.string.email_address)).performTextInput("Test")
-            assertThat(loginScreenState.emailAddress, `is`("Test"))
-        composeTestRule.onNodeWithText(context.getString(R.string.email_address)).printToLog("LoginFormTest")
-        assertThat(loginScreenState.emailAddress, `is`("Test"))
-        composeTestRule.onNodeWithContentDescription("pass").assertExists()
-    }*/
 
     companion object {
         private const val LAUNCH_TIMEOUT = 5000L

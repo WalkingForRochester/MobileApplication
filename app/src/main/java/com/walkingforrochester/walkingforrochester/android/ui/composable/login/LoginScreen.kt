@@ -138,7 +138,7 @@ fun LoginScreen(
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 },
-            testTag = "login:button",
+            testTag = "login_button",
             buttonColor = Color.Black,
             labelColor = Color.White,
 

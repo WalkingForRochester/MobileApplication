@@ -35,7 +35,7 @@ fun LoginForm(
             value = loginScreenState.emailAddress,
             onValueChange = onEmailAddressValueChange,
             labelRes = R.string.email_address,
-            testTag = "login:email",
+            testTag = "login_email",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -47,7 +47,7 @@ fun LoginForm(
             value = loginScreenState.password,
             onValueChange = onPasswordValueChange,
             labelRes = R.string.password,
-            testTag = "login:password",
+            testTag = "login_password",
             visualTransformation = if (loginScreenState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,

@@ -57,15 +57,15 @@ class LoginFormTest {
             LAUNCH_TIMEOUT
         )
 
-        val emailField = device.findObject(By.res("login:email"))
+        val emailField = device.findObject(By.res("login_email"))
         assertThat(emailField, `is`(notNullValue()))
         emailField.text = "admin@admin.co"
 
-        val passwordField = device.findObject(By.res("login:password"))
+        val passwordField = device.findObject(By.res("login_password"))
         assertThat(passwordField, `is`(notNullValue()))
         passwordField.text = "admin"
 
-        val loginButton = device.findObject(By.res("login:button"))
+        val loginButton = device.findObject(By.res("login_button"))
         assertThat("Login Button", loginButton, `is`(notNullValue()))
         loginButton.click()
 

@@ -59,11 +59,11 @@ class LoginFormTest {
 
         val emailField = device.findObject(By.res("login_email"))
         assertThat(emailField, `is`(notNullValue()))
-        emailField.text = "admin@admin.co"
+        emailField.text = "test@email.com"
 
         val passwordField = device.findObject(By.res("login_password"))
         assertThat(passwordField, `is`(notNullValue()))
-        passwordField.text = "admin"
+        passwordField.text = "test"
 
         val loginButton = device.findObject(By.res("login_button"))
         assertThat("Login Button", loginButton, `is`(notNullValue()))

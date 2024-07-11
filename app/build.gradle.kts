@@ -4,11 +4,12 @@ plugins {
     id("org.jetbrains.kotlin.kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.walkingforrochester.walkingforrochester.android"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.walkingforrochester.walkingforrochester.android"
@@ -47,11 +48,12 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.2"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -120,22 +122,28 @@ dependencies {
     implementation("org.greenrobot:eventbus:3.3.1")
 
     // Dagger/Hilt
-    val hilt_version = "2.45"
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    val hilt_version = "2.51.1"
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("com.google.dagger:hilt-android:$hilt_version")
     kapt("com.google.dagger:hilt-compiler:$hilt_version")
 
     // Retrofit
     val retrofit_version = "2.9.0"
     implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
-    implementation("com.squareup.retrofit2:converter-scalars:$retrofit_version")
+    //implementation("com.squareup.retrofit2:converter-scalars:$retrofit_version")
     implementation("com.squareup.retrofit2:converter-moshi:$retrofit_version")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+
+    // Kotlin
+    val kotlinBom = platform("org.jetbrains.kotlin:kotlin-bom:1.9.24")
+    implementation(kotlinBom)
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    androidTestImplementation(kotlinBom)
 
     // moshi
     val moshi_version = "1.14.0"
     implementation("com.squareup.moshi:moshi:$moshi_version")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
 
     // tests
     testImplementation("junit:junit:4.13.2")
@@ -164,8 +172,4 @@ secrets {
 
 kapt {
     correctErrorTypes = true
-}
-
-hilt {
-    enableAggregatingTask = true
 }

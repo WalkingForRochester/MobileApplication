@@ -1,0 +1,28 @@
+[versions]
+
+# kotlin
+kotlin = "1.9.24"
+kotlinx-coroutines-bom = "1.8.1"
+ksp = "1.9.24-1.0.20"
+
+# hilt
+hilt = "2.51.1"
+
+# Plugins
+androidGradlePlugin = "8.5.0"
+mapsSecretsPlugin = "2.0.1"
+
+[libraries]
+
+[plugins]
+
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+
+maps-secrets-plugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "mapsSecretsPlugin" }

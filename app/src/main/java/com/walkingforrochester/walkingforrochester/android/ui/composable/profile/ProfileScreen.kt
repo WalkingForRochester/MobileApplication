@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -72,10 +71,9 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
         } else {
             Spacer(
-                modifier = Modifier
-                    .heightIn(min = 8.dp)
-                    .weight(1f)
+                modifier = Modifier.height(12.dp)
             )
+            Spacer(modifier = Modifier.weight(1f))
             WFROutlinedButton(
                 onClick = { openAlertDialog = true },
                 label = R.string.delete_account,

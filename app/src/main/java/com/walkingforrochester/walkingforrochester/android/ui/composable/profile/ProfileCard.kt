@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -86,7 +86,7 @@ fun ProfileCard(
                 profileViewModel = profileViewModel
             )
             if (!uiState.editProfile) {
-                Divider(
+                HorizontalDivider(
                     thickness = 1.dp,
                     color = Color.LightGray,
                     modifier = Modifier.padding(horizontal = 16.dp)
@@ -96,7 +96,7 @@ fun ProfileCard(
                     previousStat = "${roundDouble(uiState.distanceToday)} mi",
                     overallStat = "${roundDouble(uiState.distanceOverall)} mi"
                 )
-                Divider(
+                HorizontalDivider(
                     thickness = 1.dp,
                     color = Color.LightGray,
                     modifier = Modifier.padding(horizontal = 16.dp)
@@ -278,8 +278,7 @@ fun EditProfilePic(
                     model = ImageRequest
                         .Builder(LocalContext.current)
                         .data(data = it)
-                        .build()
-                    ,
+                        .build(),
                     contentDescription = stringResource(R.string.profile_pic),
                     contentScale = ContentScale.Crop,
                     error = rememberVectorPainter(image = Icons.Filled.AccountCircle),

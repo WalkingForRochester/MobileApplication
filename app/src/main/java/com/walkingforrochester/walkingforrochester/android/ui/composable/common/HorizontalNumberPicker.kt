@@ -3,8 +3,8 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +46,7 @@ fun HorizontalNumberPicker(
             enabled = currentValue > minValue
         ) {
             Icon(
-                imageVector = Icons.Filled.KeyboardArrowLeft,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 modifier = Modifier.size(buttonSize),
                 contentDescription = "Decrease number"
             )
@@ -63,7 +63,7 @@ fun HorizontalNumberPicker(
             enabled = currentValue < maxValue
         ) {
             Icon(
-                imageVector = Icons.Filled.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 modifier = Modifier.size(buttonSize),
                 contentDescription = "Increase number"
             )

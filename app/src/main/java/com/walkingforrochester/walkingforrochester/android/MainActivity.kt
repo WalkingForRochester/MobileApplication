@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
+        //enableEdgeToEdge()
         setContent {
             CompositionLocalProvider(
                 LocalFacebookCallbackManager provides callbackManager,
@@ -64,13 +65,13 @@ class MainActivity : ComponentActivity() {
         unbindService(foregroundOnlyServiceConnection)
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         Timber.d("onNewIntent()")
         super.onNewIntent(intent)
 
         val stopWalking =
-            intent?.getBooleanExtra(ForegroundLocationService.EXTRA_STOP_WALKING, false)
-        if (stopWalking == true) {
+            intent.getBooleanExtra(ForegroundLocationService.EXTRA_STOP_WALKING, false)
+        if (stopWalking) {
             foregroundLocationService?.stopFromIntent()
         }
     }

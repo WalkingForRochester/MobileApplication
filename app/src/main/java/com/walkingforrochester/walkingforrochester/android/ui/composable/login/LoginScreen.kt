@@ -3,25 +3,27 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.login
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.facebook.login.LoginManager
@@ -77,48 +79,31 @@ fun LoginScreen(
 
     LoadingOverlay(uiState.socialLoading)
 
-    ConstraintLayout(
-        modifier = modifier.fillMaxHeight()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val (spacerTop, socialButtons, orText, loginForm, loginButton, textButtons, spacerBottom) = createRefs()
-        Spacer(modifier = Modifier.constrainAs(spacerTop) {
-            top.linkTo(parent.top, margin = 20.dp)
-            bottom.linkTo(socialButtons.top)
-            height = Dimension.fillToConstraints
-        })
+        //val (spacerTop, socialButtons, orText, loginForm, loginButton, textButtons, spacerBottom) = createRefs()
+        Spacer(modifier = Modifier.weight(1f))
         SocialLoginButtons(
-            modifier = Modifier.constrainAs(socialButtons) {
-                top.linkTo(spacerTop.bottom)
-                bottom.linkTo(orText.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            },
             onContinueWithGoogle = { authResultLauncher.launch(null) },
             onContinueWithFacebook = {
-                LoginManager.getInstance().logInWithReadPermissions(
-                    activity!!, callbackManager, listOf("email", "public_profile")
-                )
-            }
+                activity?.let {
+                    LoginManager.getInstance().logInWithReadPermissions(
+                        it, callbackManager, listOf("email", "public_profile")
+                    )
+                }
+            },
+            modifier = Modifier.padding(top = 20.dp),
         )
         Text(
-            modifier = Modifier
-                .padding(16.dp)
-                .constrainAs(orText) {
-                    top.linkTo(socialButtons.bottom)
-                    bottom.linkTo(loginForm.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
+            modifier = Modifier.padding(16.dp),
             text = stringResource(R.string.or),
             color = Color.White,
         )
         LoginForm(
-            modifier = Modifier.constrainAs(loginForm) {
-                top.linkTo(orText.bottom)
-                bottom.linkTo(loginButton.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            },
             loginScreenState = uiState,
             onEmailAddressValueChange = { newEmailAddress ->
                 loginViewModel.onEmailAddressValueChange(newEmailAddress)
@@ -128,53 +113,43 @@ fun LoginScreen(
             },
             onPasswordVisibilityChange = { loginViewModel.onTogglePasswordVisibility() }
         )
+        Spacer(modifier = Modifier.height(24.dp))
         WFRButton(
             onClick = loginViewModel::onLoginClicked,
             label = R.string.sign_in,
-            modifier = Modifier
-                .constrainAs(loginButton) {
-                    top.linkTo(loginForm.bottom, margin = 24.dp)
-                    bottom.linkTo(textButtons.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
             testTag = "login_button",
             buttonColor = Color.Black,
             labelColor = Color.White,
-
             loading = uiState.loading
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .constrainAs(textButtons) {
-                    top.linkTo(loginButton.bottom, margin = 16.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    bottom.linkTo(spacerBottom.top)
-                },
+                .padding(top = 16.dp, bottom = 20.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TextButton(onClick = { onForgotPassword() },
-                modifier = Modifier.height(48.dp)) {
+            TextButton(
+                onClick = { onForgotPassword() },
+                modifier = Modifier.height(48.dp)
+            ) {
                 Text(
                     text = stringResource(R.string.forgot_password_question),
                     modifier = Modifier.padding(horizontal = 16.dp),
                     color = Color.White
                 )
             }
-            TextButton(onClick = { onRegister() },
-                Modifier.height(48.dp)) {
-                Text(text = stringResource(R.string.new_here_sign_up),
+            TextButton(
+                onClick = { onRegister() },
+                Modifier.height(48.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.new_here_sign_up),
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    color = Color.White)
+                    color = Color.White
+                )
             }
         }
-        Spacer(modifier = Modifier.constrainAs(spacerBottom) {
-            top.linkTo(textButtons.bottom, margin = 20.dp)
-            bottom.linkTo(parent.bottom)
-            height = Dimension.fillToConstraints
-        })
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 

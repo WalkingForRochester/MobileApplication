@@ -83,13 +83,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // core/ui
-    //val compose_version = "1.4.1"
 
 
     //implementation("androidx.compose.material3:material3:1.1.0-beta02")
     implementation("androidx.navigation:navigation-compose:2.5.3")
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     val accompanist_version = "0.30.1"
     implementation("com.google.accompanist:accompanist-webview:$accompanist_version")
     implementation("com.google.accompanist:accompanist-permissions:$accompanist_version")

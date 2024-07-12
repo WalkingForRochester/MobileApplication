@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FabPosition
@@ -157,7 +158,7 @@ fun AppScreen(
         Scaffold(
             topBar = topBar,
             bottomBar = bottomBar,
-            modifier = modifier,
+            modifier = modifier.imePadding(),
             floatingActionButton = floatingActionButton,
             floatingActionButtonPosition = floatingActionButtonPosition,
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }

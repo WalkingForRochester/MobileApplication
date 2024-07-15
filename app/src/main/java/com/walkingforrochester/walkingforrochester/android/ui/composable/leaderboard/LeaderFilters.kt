@@ -14,8 +14,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +27,7 @@ import androidx.compose.ui.zIndex
 import com.walkingforrochester.walkingforrochester.android.ui.state.PeriodFilter
 import com.walkingforrochester.walkingforrochester.android.ui.state.TypeFilter
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
+import kotlin.enums.EnumEntries
 
 @Composable
 fun LeaderFilters(
@@ -34,12 +37,12 @@ fun LeaderFilters(
 ) {
     Column(modifier = modifier) {
         SegmentedControl(
-            items = TypeFilter.values().asList(),
-            onItemSelection = onTypeFilterChange as (Any) -> Unit
+            items = TypeFilter.entries,
+            onItemSelection = onTypeFilterChange
         )
         SegmentedControl(
-            items = PeriodFilter.values().asList(),
-            onItemSelection = onPeriodFilterChange as (Any) -> Unit
+            items = PeriodFilter.entries,
+            onItemSelection = onPeriodFilterChange
         )
     }
 }
@@ -54,15 +57,15 @@ fun PreviewLeaderFilters() {
 }
 
 @Composable
-fun SegmentedControl(
-    items: List<Any>,
+fun <E : Enum<E>> SegmentedControl(
+    items: EnumEntries<E>,
     defaultSelectedItemIndex: Int = 0,
     useFixedWidth: Boolean = false,
     itemWidth: Dp = 120.dp,
     cornerRadius: Int = 100,
-    onItemSelection: (Any) -> Unit
+    onItemSelection: (E) -> Unit
 ) {
-    val selectedIndex = remember { mutableStateOf(defaultSelectedItemIndex) }
+    var selectedIndex by remember { mutableIntStateOf(defaultSelectedItemIndex) }
 
     Row(
         modifier = Modifier
@@ -75,12 +78,12 @@ fun SegmentedControl(
                             Modifier
                                 .width(itemWidth)
                                 .offset(0.dp, 0.dp)
-                                .zIndex(if (selectedIndex.value == index) 1f else 0f)
+                                .zIndex(if (selectedIndex == index) 1f else 0f)
                         } else {
                             Modifier
                                 .wrapContentSize()
                                 .offset(0.dp, 0.dp)
-                                .zIndex(if (selectedIndex.value == index) 1f else 0f)
+                                .zIndex(if (selectedIndex == index) 1f else 0f)
                         }
                     }
 
@@ -89,15 +92,15 @@ fun SegmentedControl(
                             Modifier
                                 .width(itemWidth)
                                 .offset((-1 * index).dp, 0.dp)
-                                .zIndex(if (selectedIndex.value == index) 1f else 0f)
+                                .zIndex(if (selectedIndex == index) 1f else 0f)
                         else Modifier
                             .wrapContentSize()
                             .offset((-1 * index).dp, 0.dp)
-                            .zIndex(if (selectedIndex.value == index) 1f else 0f)
+                            .zIndex(if (selectedIndex == index) 1f else 0f)
                     }
                 },
                 onClick = {
-                    selectedIndex.value = index
+                    selectedIndex = index
                     onItemSelection(item)
                 },
                 shape = when (index) {
@@ -130,13 +133,13 @@ fun SegmentedControl(
                     )
                 },
                 border = BorderStroke(
-                    1.dp, if (selectedIndex.value == index) {
+                    1.dp, if (selectedIndex == index) {
                         MaterialTheme.colorScheme.surfaceVariant
                     } else {
                         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f)
                     }
                 ),
-                colors = if (selectedIndex.value == index) {
+                colors = if (selectedIndex == index) {
                     /**
                      * selected colors
                      */

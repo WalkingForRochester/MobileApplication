@@ -18,7 +18,7 @@ class WalkingForRochesterApp : Application() {
         MapsInitializer.initialize(applicationContext, MapsInitializer.Renderer.LATEST) {
             when (it) {
                 MapsInitializer.Renderer.LATEST -> Timber.d("The latest version of the renderer is used.")
-                MapsInitializer.Renderer.LEGACY -> Timber.d("The legacy version of the renderer is used.")
+                else -> Timber.d("The legacy version of the renderer is used.")
             }
         }
     }

@@ -61,9 +61,15 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
+
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -83,21 +89,21 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+    androidTestImplementation(libs.androidx.navigation.testing)
 
+    implementation(libs.accompanist.permissions)
+    implementation(libs.accompanist.webview)
 
-    //implementation("androidx.compose.material3:material3:1.1.0-beta02")
-    implementation("androidx.navigation:navigation-compose:2.5.3")
-    val accompanist_version = "0.30.1"
-    implementation("com.google.accompanist:accompanist-webview:$accompanist_version")
-    implementation("com.google.accompanist:accompanist-permissions:$accompanist_version")
     implementation("com.google.maps.android:maps-compose:2.10.0")
-    implementation("androidx.core:core-splashscreen:1.0.0")
+
     implementation("io.coil-kt:coil-compose:2.2.2")
 
     // logging
     implementation("com.jakewharton.timber:timber:5.0.1")
     // for google maps services
-    implementation("org.slf4j:slf4j-simple:1.7.25")
+    //implementation("org.slf4j:slf4j-simple:1.7.25")
 
     // coroutines
     val coroutines_version = "1.6.4"
@@ -105,19 +111,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutines_version")
 
-    // lifecycle
-    //val lifecycle_version = "2.6.1"
-    //implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version")
-   // implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version")
-    //implementation("androidx.lifecycle:lifecycle-service:$lifecycle_version")
-    //implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
-    //implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
 
-    // camerax
-    val camerax_version = "1.2.2"
-    implementation("androidx.camera:camera-lifecycle:$camerax_version")
-    implementation("androidx.camera:camera-camera2:$camerax_version")
-    implementation("androidx.camera:camera-view:$camerax_version")
+
 
     // google
     implementation("com.google.android.gms:play-services-auth:20.5.0")

@@ -6,7 +6,6 @@ import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +48,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.roundDouble
@@ -171,8 +169,8 @@ fun ProfileDataAndActions(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         ProfilePic(
+            profilePic = uiState.profilePic,
             modifier = Modifier.padding(16.dp),
-            profilePic = uiState.profilePic
         )
         Column {
             ProfileActions(
@@ -230,7 +228,8 @@ fun EditProfile(
 
 @Composable
 fun ProfilePic(
-    modifier: Modifier = Modifier, profilePic: String
+    profilePic: String,
+    modifier: Modifier = Modifier,
 ) {
     if (profilePic.isEmpty()) {
         Icon(
@@ -239,8 +238,8 @@ fun ProfilePic(
             modifier = modifier.size(128.dp)
         )
     } else {
-        Image(
-            painter = rememberAsyncImagePainter(profilePic),
+        AsyncImage(
+            model = profilePic,
             contentDescription = stringResource(R.string.profile_pic),
             contentScale = ContentScale.Crop,
             modifier = modifier

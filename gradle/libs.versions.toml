@@ -20,9 +20,9 @@ junit = "4.13.2"
 hilt = "2.51.1"
 
 # kotlin
-kotlin = "1.9.24"
+kotlin = "2.0.0"
 kotlinx-coroutines-bom = "1.8.1"
-ksp = "1.9.24-1.0.20"
+ksp = "2.0.0-1.0.23"
 
 # square
 leakcanary = "2.14"
@@ -133,6 +133,7 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

@@ -93,78 +93,85 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     androidTestImplementation(libs.androidx.navigation.testing)
 
+    // core testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.test.uiautomator)
+
     implementation(libs.accompanist.permissions)
     implementation(libs.accompanist.webview)
 
-    implementation("com.google.maps.android:maps-compose:2.10.0")
-
-    implementation("io.coil-kt:coil-compose:2.2.2")
-
-    // logging
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    // for google maps services
-    //implementation("org.slf4j:slf4j-simple:1.7.25")
-
-    // coroutines
-    val coroutines_version = "1.6.4"
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutines_version")
-
-
-
-
-    // google
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
-    implementation("com.google.android.gms:play-services-maps:18.1.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-    // DO NOT UPDATE TO VERSION 2.2.0 - https://github.com/googlemaps/google-maps-services-java/issues/906
-    // Used for places api vs official sdk
-    implementation("com.google.maps:google-maps-services:2.1.2")
-    implementation("com.googlecode.libphonenumber:libphonenumber:8.11.1")
-    implementation("com.google.maps.android:android-maps-utils:3.4.0")
-
-    // facebook
-    implementation("com.facebook.android:facebook-login:16.0.0")
-
-    // event bus
-    implementation("org.greenrobot:eventbus:3.3.1")
-
-    // Dagger/Hilt
-    val hilt_version = "2.51.1"
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    implementation("com.google.dagger:hilt-android:$hilt_version")
-    kapt("com.google.dagger:hilt-compiler:$hilt_version")
-
-    // Retrofit
-    val retrofit_version = "2.9.0"
-    implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
-    //implementation("com.squareup.retrofit2:converter-scalars:$retrofit_version")
-    implementation("com.squareup.retrofit2:converter-moshi:$retrofit_version")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
-
     // Kotlin
-    val kotlinBom = platform("org.jetbrains.kotlin:kotlin-bom:1.9.24")
+    val kotlinBom = platform(libs.kotlin.bom)
     implementation(kotlinBom)
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation(libs.kotlin.stdlib)
     androidTestImplementation(kotlinBom)
 
+    // Coroutines
+    val coroutinesBom = platform(libs.kotlinx.coroutines.bom)
+    implementation(coroutinesBom)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
+
+    androidTestImplementation(coroutinesBom)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+
+    // okhttp
+    val okHttpBom = platform(libs.okhttp.bom)
+    implementation(okHttpBom)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+    androidTestImplementation(okHttpBom)
+
+    // retrofit
+    val retrofitBom = platform(libs.retrofit.bom)
+    implementation(retrofitBom)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.moshi)
+
+    // okio
+    implementation(libs.okio)
+
     // moshi
-    val moshi_version = "1.14.0"
-    implementation("com.squareup.moshi:moshi:$moshi_version")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
+    implementation(libs.moshi)
+    implementation(libs.moshi.adapters)
+    ksp(libs.moshi.kotlin.codegen)
 
-    // tests
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0-alpha03")
+    // Dagger/Hilt
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.dagger.hilt.android)
+    kapt(libs.dagger.hilt.compilier)
 
-    androidTestImplementation("com.google.dagger:hilt-android-testing:$hilt_version")
-    kaptAndroidTest("com.google.dagger:hilt-compiler:$hilt_version")
+    androidTestImplementation(libs.dagger.hilt.android.testing)
+    kaptAndroidTest(libs.dagger.hilt.compilier)
 
-    testImplementation("com.google.dagger:hilt-android-testing:$hilt_version")
-    kaptTest("com.google.dagger:hilt-compiler:$hilt_version")
+    testImplementation(libs.dagger.hilt.android.testing)
+    kaptTest(libs.dagger.hilt.compilier)
+
+    // google service
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+    implementation(libs.google.android.maps.compose)
+    implementation(libs.google.android.maps.utils)
+    implementation(libs.google.libphonenumber)
+
+    val coilBom = platform(libs.coil.bom)
+    implementation(coilBom)
+    implementation(libs.coil.compose)
+
+    // logging
+    implementation(libs.timber)
+
+    // event bus
+    implementation(libs.eventbus)
+
+    // facebook
+    implementation(libs.facebook.login)
+
+    debugImplementation(libs.leakcanary.android)
 }
 
 secrets {

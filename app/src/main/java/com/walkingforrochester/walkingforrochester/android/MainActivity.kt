@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        // TODO this should be onStart/Stop, but due to service bug, must be create/destroy
         val serviceIntent = Intent(this, ForegroundLocationService::class.java)
         bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)
     }

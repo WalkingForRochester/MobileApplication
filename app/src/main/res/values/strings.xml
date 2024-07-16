@@ -59,6 +59,7 @@
     <string name="wfr_dont_ask_location_permissions">walking_for_rochester_dont_ask_location_permissions</string>
     <string name="wfr_asked_location_permission_once">walking_for_rochester_asked_location_permission_once</string>
     <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
     <string name="safety_guidelines_dialog">I agree to abide by the guidelines and consent to the waiver.</string>
     <string name="guidelines_url">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/guidelines.pdf</string>
     <string name="waiver_url">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/waiver.pdf</string>
@@ -80,8 +81,6 @@
     <string name="wfr_asked_camera_permission_once">walking_for_rochester_asked_camera_permission_once</string>
     <string name="wfr_dont_ask_camera_permissions">walking_for_rochester_dont_ask_camera_permissions</string>
     <string name="camera_permission_rationale">In order to submit your Walk we need you to take a picture of the litter you collected</string>
-    <string name="i_decline">I Decline</string>
-    <string name="i_agree">I Agree</string>
     <string name="submission_complete_message">Thank you for submitting your walk!</string>
     <string name="understood">Understood</string>
     <string name="mock_location_dialog">We\'ve detected you\'re spoofing your location and ended your walk.</string>

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
@@ -50,15 +51,22 @@ android {
         compose = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
+
+composeCompiler {
+    enableStrongSkippingMode = true
+
+    // Uncomment to generate reports
+    // reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    // Uncomment to provide stability overrides
+    // stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.txt")
+}
+
 
 dependencies {
     implementation(libs.androidx.activity.compose)

@@ -68,13 +68,13 @@ fun ProfileCard(
 ) {
     Card(
         modifier = modifier.animateContentSize(),
-        elevation = CardDefaults.elevatedCardElevation()
+        elevation = CardDefaults.cardElevation()
     ) {
         if (uiState.profileDataLoading) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 CircularProgressIndicator(
                     modifier = Modifier
-                        .padding(64.dp)
+                        .padding(top = 144.dp, bottom = 144.dp)
                         .align(Alignment.Center)
                 )
             }
@@ -164,8 +164,7 @@ fun ProfileDataAndActions(
     onShare: () -> Intent
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         ProfilePic(

@@ -25,11 +25,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
@@ -51,6 +52,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
@@ -112,35 +114,45 @@ private fun SurveyButtons(
     logAWalkViewModel: LogAWalkViewModel,
     surveyDialogState: SurveyDialogState
 ) {
+    val contentPadding = PaddingValues(
+        top = ButtonDefaults.ContentPadding.calculateTopPadding(),
+        start = 16.dp,
+        bottom = ButtonDefaults.ContentPadding.calculateBottomPadding(),
+        end = 16.dp
+    )
     OutlinedButton(
         onClick = logAWalkViewModel::onDismissSurveyDialog,
         modifier = Modifier.height(56.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
+        contentPadding = contentPadding
     ) {
-        Text(stringResource(id = R.string.continue_walking), textAlign = TextAlign.Center)
+        Text(
+            text = stringResource(id = R.string.continue_walking),
+            style = LocalTextStyle.current.copy(lineBreak = LineBreak.Simple),
+            textAlign = TextAlign.Center
+        )
     }
-    ElevatedButton(
+    Button(
         onClick = logAWalkViewModel::onDiscardWalking,
-        colors = ButtonDefaults.elevatedButtonColors(
+        colors = ButtonDefaults.buttonColors(
             containerColor = MaterialRed,
             contentColor = Color.White
         ),
         modifier = Modifier.height(56.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
+        contentPadding = contentPadding
     ) {
-        Text(stringResource(id = R.string.discard), textAlign = TextAlign.Center)
+        Text(stringResource(id = R.string.discard))
     }
-    ElevatedButton(
+    Button(
         onClick = logAWalkViewModel::onSubmitWalking,
-        colors = ButtonDefaults.elevatedButtonColors(
-            containerColor = Color.Black,
-            contentColor = Color.White
-        ),
         modifier = Modifier.height(56.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        enabled = surveyDialogState.picUri != null
+        enabled = surveyDialogState.picUri != null,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.inverseSurface,
+            contentColor = MaterialTheme.colorScheme.inverseOnSurface
+        ),
+        contentPadding = contentPadding
     ) {
-        Text(stringResource(id = R.string.submit), textAlign = TextAlign.Center)
+        Text(stringResource(id = R.string.submit))
     }
 }
 

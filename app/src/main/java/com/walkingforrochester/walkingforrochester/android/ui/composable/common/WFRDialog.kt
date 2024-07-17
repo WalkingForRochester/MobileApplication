@@ -1,10 +1,24 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -24,7 +38,7 @@ fun WFRDialog(
     modifier: Modifier = Modifier,
     contentTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     buttonsArrangement: Arrangement.Horizontal = Arrangement.End,
-    dialogPadding: PaddingValues = PaddingValues(all = 16.dp),
+    dialogPadding: PaddingValues = PaddingValues(all = 24.dp),
     dialogProperties: DialogProperties = DialogProperties(),
     onDismissRequest: () -> Unit,
     icon: @Composable (() -> Unit)? = null,

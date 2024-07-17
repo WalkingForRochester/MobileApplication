@@ -8,16 +8,38 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -32,7 +54,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -40,7 +61,12 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.*
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CameraCapture
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.FullScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.HorizontalNumberPicker
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestPermissions
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRDialog
 import com.walkingforrochester.walkingforrochester.android.ui.state.SurveyDialogState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.MaterialRed
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
@@ -225,45 +251,49 @@ private fun TakeAPic(
                         .fillMaxSize()
                         .alpha(if (showPreview) 1f else 0f)
                 ) {
-                    TextButton(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(horizontal = 40.dp, vertical = 90.dp)
-                            .zIndex(Float.MAX_VALUE),
-                        onClick = logAWalkViewModel::onConfirmPhoto,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Check,
-                            tint = Color.White,
-                            modifier = Modifier.size(48.dp),
-                            contentDescription = "Confirm Image"
-                        )
-                    }
-                    TextButton(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(horizontal = 40.dp, vertical = 90.dp)
-                            .zIndex(Float.MAX_VALUE),
-                        onClick = {
-                            logAWalkViewModel.onDiscardPhoto()
-                            showPreview = false
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            tint = Color.White,
-                            modifier = Modifier.size(48.dp),
-                            contentDescription = "Discard Image"
-                        )
-                    }
                     Image(
                         painter = painter,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
                         contentDescription = null
                     )
+                    FilledIconButton(
+                        onClick = {
+                            logAWalkViewModel.onDiscardPhoto()
+                            showPreview = false
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(horizontal = 40.dp, vertical = 90.dp)
+                            .size(56.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = Color(red = 0, green = 0, blue = 0, alpha = 0x2f),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Discard Image",
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
+                    FilledIconButton(
+                        onClick = logAWalkViewModel::onConfirmPhoto,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(horizontal = 40.dp, vertical = 90.dp)
+                            .size(56.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = Color(red = 0, green = 0, blue = 0, alpha = 0x2f),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = "Confirm Image",
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
                 }
             }
         }

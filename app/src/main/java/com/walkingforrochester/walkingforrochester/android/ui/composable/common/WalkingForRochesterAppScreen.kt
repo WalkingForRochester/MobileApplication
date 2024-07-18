@@ -83,7 +83,7 @@ fun WFRNavigationDrawer(
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination
-    val currentScreen = Destination.values()
+    val currentScreen = Destination.entries
         .find { it.route == currentDestination?.route || it.routeWithArgs == currentDestination?.route }
         ?: if (isLoggedIn) Destination.LogAWalk else Destination.Login
     val drawerState = rememberDrawerState(DrawerValue.Closed)

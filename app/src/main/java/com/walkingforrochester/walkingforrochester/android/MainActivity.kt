@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
@@ -43,6 +44,8 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
+        onBackPressedDispatcher.addCallback(this, myBackPressCallback)
+
         enableEdgeToEdge()
         setContent {
             CompositionLocalProvider(
@@ -58,23 +61,43 @@ class MainActivity : ComponentActivity() {
         // TODO this should be onStart/Stop, but due to service bug, must be create/destroy
         val serviceIntent = Intent(this, ForegroundLocationService::class.java)
         bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)
+
+        processIntent()
     }
 
     override fun onDestroy() {
         Timber.d("onDestroy()")
-        super.onDestroy()
-        foregroundLocationService?.unsubscribeToLocationUpdates()
+        if (isFinishing) {
+            Timber.d("activity finishing")
+            foregroundLocationService?.unsubscribeToLocationUpdates()
+        }
+
+        foregroundLocationService = null
         unbindService(foregroundOnlyServiceConnection)
+        super.onDestroy()
     }
 
     override fun onNewIntent(intent: Intent) {
         Timber.d("onNewIntent()")
         super.onNewIntent(intent)
+        this.intent = intent
 
+        processIntent()
+    }
+
+    private fun processIntent() {
         val stopWalking =
             intent.getBooleanExtra(ForegroundLocationService.EXTRA_STOP_WALKING, false)
         if (stopWalking) {
             foregroundLocationService?.stopFromIntent()
+        }
+    }
+
+    private val myBackPressCallback = object : OnBackPressedCallback(
+        enabled = true
+    ) {
+        override fun handleOnBackPressed() {
+            moveTaskToBack(false)
         }
     }
 }

@@ -16,8 +16,8 @@ android {
         applicationId = "com.walkingforrochester.walkingforrochester.android"
         minSdk = 26
         targetSdk = 34
-        versionCode = 18
-        versionName = "2.0.3"
+        versionCode = 19
+        versionName = "2.0.4"
 
         // For now only supporting English, so stripping out other languages
         // Will strip pseudoLocales en-rXA or ar-rXB as well if testing.

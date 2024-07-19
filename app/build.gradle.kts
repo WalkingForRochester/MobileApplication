@@ -101,6 +101,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     androidTestImplementation(libs.androidx.navigation.testing)
 
+    implementation(libs.androidx.material)
+
     // core testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.junit)

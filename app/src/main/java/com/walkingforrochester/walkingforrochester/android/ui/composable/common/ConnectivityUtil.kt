@@ -5,7 +5,11 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,39 +32,39 @@ import kotlinx.coroutines.flow.callbackFlow
  * Network utility to get current state of internet connection
  */
 
-sealed class ConnectionState {
-    object Available : ConnectionState()
-    object Unavailable : ConnectionState()
+enum class ConnectionState {
+    Available,
+    Unavailable
 }
 
 val Context.currentConnectivityState: ConnectionState
     get() {
         val connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return getCurrentConnectivityState(connectivityManager)
+        return determineCurrentConnectivityState(connectivityManager)
     }
 
-private fun getCurrentConnectivityState(
+private fun determineCurrentConnectivityState(
     connectivityManager: ConnectivityManager
-): ConnectionState = with(connectivityManager) {
-    val connected =
-        getNetworkCapabilities(activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-            ?: false
+): ConnectionState {
+    val activeNetwork = connectivityManager.activeNetwork
+    val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+    val hasInternet = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
+    val validated = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ?: false
 
-    if (connected) ConnectionState.Available else ConnectionState.Unavailable
+    return if (hasInternet && validated) ConnectionState.Available else ConnectionState.Unavailable
 }
 
 fun Context.observeConnectivityAsFlow() = callbackFlow {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     val callback = networkCallback {
-        trySend(getCurrentConnectivityState(connectivityManager))
+        trySend(determineCurrentConnectivityState(connectivityManager))
     }
 
     val networkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         .build()
 
     connectivityManager.registerNetworkCallback(networkRequest, callback)

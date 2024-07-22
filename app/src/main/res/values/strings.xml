@@ -19,7 +19,7 @@
     <string name="nickname">Display Name</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="sign_up">Sign Up</string>
+
     <string name="date_of_birth">Date Of Birth</string>
     <string name="toggle_password_visibility">Toggle password visibility</string>
     <string name="dob_date_picker">Date Of Birth Date Picker</string>
@@ -61,13 +61,28 @@
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
     <string name="safety_guidelines_dialog">I agree to abide by the guidelines and consent to the waiver.</string>
-    <string name="guidelines_url">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/guidelines.pdf</string>
-    <string name="waiver_url">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/waiver.pdf</string>
+
+    <string name="guidelines_url" translatable="false">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/guidelines.pdf</string>
+    <string name="waiver_url" translatable="false">https://walkingforrochester.org/waiver-form/</string>
+    <string name="our_story_url" translatable="false">https://walkingforrochester.org/our-story/</string>
+
+    <!-- Destinations -->
+    <string name="login">Login</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="log_a_walk">Log a Walk</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="news_feed">News Feed</string>
+    <string name="profile">Profile</string>
     <string name="safety_guidelines">Safety Guidelines</string>
     <string name="waiver">Waiver</string>
+    <string name="our_story">Our Story</string>
+    <string name="contact_us">Contact Us</string>
+
+
     <string name="walk_dialog_title">Safety Guidelines and Waiver</string>
     <string name="did_you_pick_up_litter">Did you pick up litter?</string>
-    <string name="continue_walking">"Continue\nWalking"</string>
+    <string name="continue_walking">Continue\nWalking</string>
     <string name="discard">Discard</string>
     <string name="submit">Submit</string>
     <string name="how_many_bags_collected">How many bags of litter did you collect?</string>

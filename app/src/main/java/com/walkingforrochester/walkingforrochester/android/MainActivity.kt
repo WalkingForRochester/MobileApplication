@@ -10,12 +10,26 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.facebook.CallbackManager
 import com.walkingforrochester.walkingforrochester.android.service.ForegroundLocationService
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ConnectionState
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.NoConnectionOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WalkingForRochesterAppScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.connectivityState
+import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
+import com.walkingforrochester.walkingforrochester.android.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -37,7 +51,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    var foregroundLocationService: ForegroundLocationService? = null
+    private var foregroundLocationService: ForegroundLocationService? = null
+    private lateinit var customTabsManager: CustomTabsManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.d("onCreate()")
@@ -48,16 +63,45 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            CompositionLocalProvider(
-                LocalFacebookCallbackManager provides callbackManager,
-            ) {
-                WalkingForRochesterAppScreen(
-                    onStartWalking = { foregroundLocationService?.subscribeToLocationUpdates() },
-                    onStopWalking = { foregroundLocationService?.unsubscribeToLocationUpdates() },
-                )
+            val mainViewModel: MainViewModel = hiltViewModel()
+            val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
+            val darkMode = uiState.darkMode
+
+            WalkingForRochesterTheme(darkTheme = darkMode) {
+                Surface {
+                    val connection by connectivityState()
+                    if (connection == ConnectionState.Unavailable) {
+                        NoConnectionOverlay()
+                    }
+
+                    CompositionLocalProvider(
+                        LocalFacebookCallbackManager provides callbackManager,
+                    ) {
+                        val context = LocalContext.current
+                        val toolbarColor = MaterialTheme.colorScheme.surface.toArgb()
+                        val dividerColor = DividerDefaults.color.toArgb()
+
+                        CompositionLocalProvider(
+                            value = LocalUriHandler provides customTabsManager.createUriHandler(
+                                context = context,
+                                isDarkMode = darkMode,
+                                toolbarColor = toolbarColor,
+                                navigationBarDividerColor = dividerColor
+                            )
+                        ) {
+                            WalkingForRochesterAppScreen(
+                                onStartWalking = { foregroundLocationService?.subscribeToLocationUpdates() },
+                                onStopWalking = { foregroundLocationService?.unsubscribeToLocationUpdates() },
+                                onToggleDarkMode = { mainViewModel.onToggleDarkMode(it) },
+                                uiState = uiState
+                            )
+                        }
+                    }
+                }
             }
         }
 
+        customTabsManager = CustomTabsManager(application, lifecycle)
         // TODO this should be onStart/Stop, but due to service bug, must be create/destroy
         val serviceIntent = Intent(this, ForegroundLocationService::class.java)
         bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)

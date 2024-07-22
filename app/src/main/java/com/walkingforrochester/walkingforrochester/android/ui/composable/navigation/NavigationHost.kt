@@ -5,8 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.walkingforrochester.walkingforrochester.android.ui.composable.aboutus.AboutUsScreen
-import com.walkingforrochester.walkingforrochester.android.ui.composable.calendar.GuidelinesScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.faq.FAQScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.forgotpassword.ForgotPasswordScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.leaderboard.LeaderboardScreen
@@ -25,37 +23,37 @@ fun NavigationHost(
     onStartWalking: () -> Unit,
     onStopWalking: () -> Unit
 ) {
-    val startDestination = if (loggedIn) Destination.LogAWalk.route else Destination.Login.route
+    val startDestination = if (loggedIn) LogAWalk.route else LoginDestination.route
     NavHost(
         navController = navController, startDestination = startDestination, modifier = modifier
     ) {
-        composable(route = Destination.Login.route) {
-            LoginScreen(onForgotPassword = { navController.navigate(Destination.ForgotPassword.route) },
+        composable(route = LoginDestination.route) {
+            LoginScreen(onForgotPassword = { navController.navigate(ForgotPassword.route) },
                 onRegister = {
-                    navController.navigate(Destination.Registration.route)
+                    navController.navigate(Registration.route)
                 },
                 onRegisterPrefill = { email, firstName, lastName, facebookId ->
                     navController.navigate(
-                        Destination.Registration.route +
+                        Registration.route +
                                 "?email=$email" +
                                 "&fname=$firstName" +
                                 "&lname=$lastName" +
                                 "&fbid=$facebookId"
                     ) {
-                        popUpTo(Destination.Login.route)
+                        popUpTo(LoginDestination.route)
                     }
                 },
-                onLoginComplete = { navController.navigateSingleTopTo(Destination.LogAWalk.route) })
+                onLoginComplete = { navController.navigateSingleTopTo(LogAWalk.route) })
         }
-        composable(route = Destination.ForgotPassword.route) {
+        composable(route = ForgotPassword.route) {
 
             ForgotPasswordScreen(onPasswordResetComplete = {
-                navController.navigate(Destination.Login.route)
+                navController.navigate(LoginDestination.route)
             })
         }
         composable(
-            route = Destination.Registration.routeWithArgs,
-            arguments = Destination.Registration.arguments,
+            route = Registration.routeWithArgs,
+            arguments = Registration.arguments,
         ) { navBackStackEntry ->
             val email = navBackStackEntry.arguments?.getString("email")
             val firstName = navBackStackEntry.arguments?.getString("fname")
@@ -69,47 +67,41 @@ fun NavigationHost(
                     lastName = lastName ?: "",
                     facebookId = facebookId
                 ),
-                onRegistrationComplete = { navController.navigateSingleTopTo(Destination.LogAWalk.route) })
+                onRegistrationComplete = { navController.navigateSingleTopTo(LogAWalk.route) })
         }
         composable(
-            route = Destination.Registration.route,
+            route = Registration.route,
         ) {
             RegistrationScreen(onRegistrationComplete = {
                 navController.navigateSingleTopTo(
-                    Destination.LogAWalk.route
+                    LogAWalk.route
                 )
             })
         }
-        composable(route = Destination.LogAWalk.route) {
+        composable(route = LogAWalk.route) {
             LogAWalkScreen(onStartWalking = onStartWalking, onStopWalking = onStopWalking)
         }
-        composable(route = Destination.Leaderboard.route) {
+        composable(route = Leaderboard.route) {
             LeaderboardScreen()
         }
-        composable(route = Destination.NewsFeed.route) {
+        composable(route = NewsFeed.route) {
             NewsFeedScreen()
         }
-        composable(route = Destination.Profile.route) {
+        composable(route = ProfileDestination.route) {
             ProfileScreen(onLogoutComplete = {
-                navController.navigate(Destination.Login.route) {
+                navController.navigate(LoginDestination.route) {
                     popUpTo(0)
                     launchSingleTop
                 }
             })
         }
-        composable(route = Destination.Calendar.route) {
-            GuidelinesScreen()
-        }
-        composable(route = Destination.FAQ.route) {
+        composable(route = ContactUs.route) {
             FAQScreen()
-        }
-        composable(route = Destination.AboutUs.route) {
-            AboutUsScreen()
         }
     }
 }
 
 fun NavHostController.navigateSingleTopTo(route: String) = this.navigate(route) {
-    popUpTo(Destination.LogAWalk.route)
+    popUpTo(LogAWalk.route)
     launchSingleTop = true
 }

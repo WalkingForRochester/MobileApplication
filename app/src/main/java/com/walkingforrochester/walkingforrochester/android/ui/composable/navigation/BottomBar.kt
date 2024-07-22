@@ -1,12 +1,14 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
@@ -23,11 +25,11 @@ fun BottomBar(
                 NavigationBarItem(
                     icon = {
                         Icon(
-                            painter = painterResource(id = it.icon!!),
-                            contentDescription = it.title
+                            imageVector = it.icon ?: Icons.Filled.Info,
+                            contentDescription = null
                         )
                     },
-                    label = { Text(it.title) },
+                    label = { Text(text = stringResource(id = it.title)) },
                     selected = currentScreen == it,
                     onClick = { onScreenSelected(it) }
                 )

@@ -23,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -318,11 +319,11 @@ private fun TakeAPic(
                 contentPadding = PaddingValues(12.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_add_a_photo),
-                    modifier = Modifier.size(48.dp),
+                    imageVector = Icons.Default.AddAPhoto,
                     contentDescription = stringResource(
                         R.string.take_picture_of_litter_description
-                    )
+                    ),
+                    modifier = Modifier.size(48.dp),
                 )
             }
         } else {

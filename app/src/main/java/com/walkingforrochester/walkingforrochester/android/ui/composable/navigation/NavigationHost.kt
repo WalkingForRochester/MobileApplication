@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.walkingforrochester.walkingforrochester.android.ui.composable.faq.FAQScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.contact.ContactUsScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.forgotpassword.ForgotPasswordScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.leaderboard.LeaderboardScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk.LogAWalkScreen
@@ -96,7 +96,7 @@ fun NavigationHost(
             })
         }
         composable(route = ContactUs.route) {
-            FAQScreen()
+            ContactUsScreen()
         }
     }
 }

@@ -81,6 +81,9 @@
 
 
     <string name="walk_dialog_title">Safety Guidelines and Waiver</string>
+    <string name="view_safety_guidelines">View Safety Guidelines</string>
+    <string name="view_waiver">View Waiver</string>
+
     <string name="did_you_pick_up_litter">Did you pick up litter?</string>
     <string name="continue_walking">Continue\nWalking</string>
     <string name="discard">Discard</string>

@@ -22,7 +22,6 @@ fun TopBar(
     onNavigationButtonClick: () -> Unit,
     onBackButtonClick: () -> Unit,
     onProfileButtonClick: () -> Unit,
-    titleComposable: @Composable () -> Unit,
     isLoggedIn: Boolean
 ) {
     if (currentScreen.showTopBar) {
@@ -38,11 +37,7 @@ fun TopBar(
                 }
             },
             title = {
-                if (currentScreen.showTitleComposable) {
-                    titleComposable()
-                } else {
-                    Text(currentScreen.title)
-                }
+                Text(text = stringResource(id = currentScreen.title))
             },
             actions = {
                 if (currentScreen.showProfileButton && isLoggedIn) {

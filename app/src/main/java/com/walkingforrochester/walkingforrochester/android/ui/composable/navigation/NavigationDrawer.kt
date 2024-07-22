@@ -6,11 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,8 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
@@ -39,12 +39,12 @@ fun NavigationDrawer(
     currentScreen: Destination,
     onScreenSelected: (Destination) -> Unit,
     onToggleDarkMode: (Boolean) -> Unit,
-    onBackPressed: () -> Unit,
+    onCloseDrawer: () -> Unit,
     content: @Composable () -> Unit
 ) {
     if (drawerState.isOpen) {
         BackHandler {
-            onBackPressed()
+            onCloseDrawer()
         }
     }
     val gesturesEnabled = currentScreen.enableDrawerGestures || drawerState.isOpen
@@ -57,7 +57,7 @@ fun NavigationDrawer(
                 darkMode = uiState.darkMode,
                 onScreenSelected = onScreenSelected,
                 onToggleDarkMode = onToggleDarkMode,
-                onCloseDrawer = onBackPressed
+                onCloseDrawer = onCloseDrawer
             )
         },
         modifier = modifier,
@@ -78,14 +78,13 @@ fun DrawerContent(
     onCloseDrawer: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
-    val guidelinesUrl = stringResource(R.string.guidelines_url)
-    val waiverUrl = stringResource(id = R.string.waiver_url)
+    val context = LocalContext.current
 
     ModalDrawerSheet(modifier = modifier) {
         Text(
             text = "Walking For Rochester",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(16.dp)
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
         )
         Spacer(Modifier.height(12.dp))
         Column(
@@ -94,56 +93,36 @@ fun DrawerContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column {
-                NavigationDrawerItem(
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = stringResource(id = R.string.safety_guidelines)
-                        )
-                    },
-                    label = { Text(stringResource(id = R.string.safety_guidelines)) },
-                    selected = false,
-                    onClick = {
-                        uriHandler.openUri(guidelinesUrl)
-                        onCloseDrawer()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.Warning,
-                            contentDescription = stringResource(id = R.string.waiver)
-                        )
-                    },
-                    label = { Text(stringResource(id = R.string.waiver)) },
-                    selected = false,
-                    onClick = {
-                        uriHandler.openUri(waiverUrl)
-                        onCloseDrawer()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
 
                 menuItems.forEach {
                     NavigationDrawerItem(
                         icon = {
                             Icon(
-                                painter = painterResource(id = it.icon!!),
-                                contentDescription = it.title
+                                imageVector = it.icon ?: Icons.Filled.Info,
+                                contentDescription = null
                             )
                         },
-                        label = { Text(it.title) },
+                        label = { Text(text = stringResource(id = it.title)) },
                         selected = currentScreen == it,
-                        onClick = { onScreenSelected(it) },
+                        onClick = {
+                            if (it.uriTarget == 0) {
+                                onScreenSelected(it)
+                            } else {
+                                val uri = context.getString(it.uriTarget)
+                                uriHandler.openUri(uri = uri)
+                            }
+                            onCloseDrawer()
+                        },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
             }
 
             Row(
-                modifier = Modifier.padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp, start = 28.dp, end = 28.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = stringResource(R.string.dark_mode))

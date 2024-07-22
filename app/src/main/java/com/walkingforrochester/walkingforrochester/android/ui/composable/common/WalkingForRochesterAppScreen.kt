@@ -12,7 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -24,52 +23,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.BottomBar
-import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.Destination
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.Destinations
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.LogAWalk
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.LoginDestination
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.NavigationDrawer
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.NavigationHost
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.ProfileDestination
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.TopBar
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.bottomBarDestinations
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.drawerDestinations
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.navigateSingleTopTo
 import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
-import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
-import com.walkingforrochester.walkingforrochester.android.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun WalkingForRochesterAppScreen(
     onStartWalking: () -> Unit,
     onStopWalking: () -> Unit,
-    mainViewModel: MainViewModel = hiltViewModel()
+    onToggleDarkMode: (Boolean) -> Unit = {},
+    uiState: MainUiState = MainUiState()
 ) {
-    val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
+
     val wfrAccountId by longPreferenceState(
         key = stringResource(R.string.wfr_account_id),
         defaultValue = 0L
     )
 
-    WalkingForRochesterTheme(darkTheme = uiState.darkMode) {
-        val connection by connectivityState()
-        val notConnected = connection === ConnectionState.Unavailable
-        if (notConnected) {
-            NoConnectionOverlay()
-        }
-        Surface {
-            WFRNavigationDrawer(
-                uiState = uiState,
-                onToggleDarkMode = mainViewModel::onToggleDarkMode,
-                onStartWalking = onStartWalking,
-                onStopWalking = onStopWalking,
-                isLoggedIn = wfrAccountId != 0L
-            )
-        }
-    }
+    WFRNavigationDrawer(
+        uiState = uiState,
+        onToggleDarkMode = onToggleDarkMode,
+        onStartWalking = onStartWalking,
+        onStopWalking = onStopWalking,
+        isLoggedIn = wfrAccountId != 0L
+    )
 }
 
 @Composable
@@ -83,11 +73,12 @@ fun WFRNavigationDrawer(
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination
-    val currentScreen = Destination.entries
+    val currentScreen = Destinations
         .find { it.route == currentDestination?.route || it.routeWithArgs == currentDestination?.route }
-        ?: if (isLoggedIn) Destination.LogAWalk else Destination.Login
+        ?: if (isLoggedIn) LogAWalk else LoginDestination
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
     NavigationDrawer(
         drawerState = drawerState,
         uiState = uiState,
@@ -95,30 +86,20 @@ fun WFRNavigationDrawer(
         currentScreen = currentScreen,
         onScreenSelected = { screen ->
             navController.navigateSingleTopTo(screen.route)
-            scope.launch { drawerState.close() }
         },
-        onBackPressed = {
+        onCloseDrawer = {
             scope.launch { drawerState.close() }
         },
         onToggleDarkMode = onToggleDarkMode
     ) {
-        AppScreen(backgroundImage = if (Destination.Login == currentScreen) R.drawable.rainbowbg else null,
+        AppScreen(backgroundImage = if (LoginDestination == currentScreen) R.drawable.rainbowbg else null,
             topBar = {
-                TopBar(currentScreen = currentScreen,
+                TopBar(
+                    currentScreen = currentScreen,
                     onBackButtonClick = { navController.popBackStack() },
                     onNavigationButtonClick = { scope.launch { drawerState.open() } },
-                    onProfileButtonClick = { navController.navigateSingleTopTo(Destination.Profile.route) },
-                    titleComposable = {
-                        /*if (Destination.LogAWalk == currentScreen) {
-                            ProvideTextStyle(value = MaterialTheme.typography.bodyLarge) {
-                                AddressSearchField(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 8.dp)
-                                )
-                            }
-                        }*/
-                    }, isLoggedIn = isLoggedIn
+                    onProfileButtonClick = { navController.navigateSingleTopTo(ProfileDestination.route) },
+                    isLoggedIn = isLoggedIn
                 )
             },
             bottomBar = {
@@ -133,7 +114,7 @@ fun WFRNavigationDrawer(
                 modifier = Modifier.padding(innerPadding),
                 loggedIn = isLoggedIn,
                 onStartWalking = onStartWalking,
-                onStopWalking = onStopWalking
+                onStopWalking = onStopWalking,
             )
         }
     }

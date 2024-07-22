@@ -59,7 +59,7 @@ fun GuidelinesDialog(
                         uriHandler.openUri(guidelinesUrl)
                         logAWalkViewModel.onGuidelinesLinkClick()
                     },
-                    text = "View Safety Guidelines in browser",
+                    text = stringResource(id = R.string.view_safety_guidelines),
                     color = MaterialTheme.colorScheme.primary,
                     textDecoration = TextDecoration.Underline
                 )
@@ -68,7 +68,7 @@ fun GuidelinesDialog(
                         uriHandler.openUri(waiverUrl)
                         logAWalkViewModel.onGuidelinesLinkClick()
                     },
-                    text = "View Waiver in browser",
+                    text = stringResource(id = R.string.view_waiver),
                     color = MaterialTheme.colorScheme.primary,
                     textDecoration = TextDecoration.Underline
                 )
@@ -90,7 +90,7 @@ fun PreviewGuidelinesDialog() {
                         text = stringResource(R.string.safety_guidelines_dialog)
                     )
                     Text(
-                        text = "View Safety Guidelines in browser",
+                        text = stringResource(id = R.string.view_safety_guidelines),
                         color = MaterialTheme.colorScheme.primary,
                         textDecoration = TextDecoration.Underline
                     )

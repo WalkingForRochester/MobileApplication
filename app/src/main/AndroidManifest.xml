@@ -18,6 +18,12 @@
         android:name="com.google.android.gms.permission.AD_ID"
         tools:node="remove" />
 
+    <queries>
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+    </queries>
+
     <application
         android:name=".WalkingForRochesterApp"
         android:allowBackup="true"

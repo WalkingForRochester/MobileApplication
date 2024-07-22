@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
 import timber.log.Timber
 
 class CustomTabsManager(
@@ -97,7 +98,7 @@ class CustomTabsManager(
         @ColorInt toolbarColor: Int,
         @ColorInt navigationBarColor: Int = toolbarColor,
         @ColorInt navigationBarDividerColor: Int = Color.TRANSPARENT
-    ): Boolean {
+    ) {
 
         Timber.d("Viewing: %s", uriString)
 
@@ -131,7 +132,7 @@ class CustomTabsManager(
 
             try {
                 customTabsIntent.launchUrl(context, uri)
-                return true
+                return
             } catch (e: Exception) {
                 Timber.w(e, "Failed to start custom tabs intent. Falling back to browser")
             }
@@ -145,13 +146,7 @@ class CustomTabsManager(
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
 
-        return try {
-            context.startActivity(intent)
-            true
-        } catch (x: Throwable) {
-            Timber.w("Failed to start browser: %s", x.message)
-            false
-        }
+        context.safeStartActivity(intent)
     }
 
     fun createUriHandler(

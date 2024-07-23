@@ -28,6 +28,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -84,26 +84,34 @@ fun ProfileCard(
                 profileViewModel = profileViewModel
             )
             if (!uiState.editProfile) {
+                val dividerColor = LocalContentColor.current.copy(alpha = .2f)
                 HorizontalDivider(
-                    thickness = 1.dp,
-                    color = Color.LightGray,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = dividerColor
                 )
                 ProfileStats(
-                    label = "Distances",
+                    label = stringResource(id = R.string.distances),
                     previousStat = "${roundDouble(uiState.distanceToday)} mi",
                     overallStat = "${roundDouble(uiState.distanceOverall)} mi"
                 )
                 HorizontalDivider(
-                    thickness = 1.dp,
-                    color = Color.LightGray,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = dividerColor
                 )
                 ProfileStats(
-                    label = "Durations",
+                    label = stringResource(id = R.string.durations),
                     previousStat = DateUtils.formatElapsedTime(uiState.durationToday / 1000),
                     overallStat = DateUtils.formatElapsedTime(uiState.durationOverall / 1000),
                     modifier = Modifier.padding(bottom = 16.dp)
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = dividerColor
+                )
+                Text(
+                    text = stringResource(id = R.string.profile_disclaimer),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }

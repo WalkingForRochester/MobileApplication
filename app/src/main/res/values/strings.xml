@@ -87,7 +87,13 @@
     <string name="contact_us_text">For any questions or concerns, please contact our office.</string>
     <string name="phone_label">Phone: </string>
     <string name="email_label">Email: </string>
+    <string name="email_subject">App question</string>
     <string name="app_version">App Version: %1$s</string>
+
+    <string name="distances">Distances</string>
+    <string name="durations">Durations</string>
+    <string name="profile_disclaimer">This may not be a 100% accurate depiction of your litter progress. For verification, please contact our office directly.</string>
+
     <string name="did_you_pick_up_litter">Did you pick up litter?</string>
     <string name="continue_walking">Continue\nWalking</string>
     <string name="discard">Discard</string>

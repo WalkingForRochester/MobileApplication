@@ -88,7 +88,7 @@ fun ContactUsScreen(modifier: Modifier = Modifier) {
 
 fun callOffice(context: Context) {
     val intent = Intent(Intent.ACTION_DIAL).apply {
-        data = Uri.parse("tel:15853586888")
+        data = Uri.parse("tel:+15853586888")
         flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 

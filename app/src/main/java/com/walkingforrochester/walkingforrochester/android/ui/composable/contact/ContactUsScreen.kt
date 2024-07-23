@@ -97,16 +97,18 @@ fun callOffice(context: Context) {
 
 fun emailUs(context: Context) {
     val intent = Intent(Intent.ACTION_SENDTO).apply {
-        data = buildUri()
+        data = buildUri(context)
         flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 
     context.safeStartActivity(intent)
 }
 
-private fun buildUri(): Uri {
+private fun buildUri(context: Context): Uri {
     val uriString = MailTo.MAILTO_SCHEME +
-        Uri.encode("info@walkingforrochester.org")
+        Uri.encode("info@walkingforrochester.org") +
+        "?subject=" +
+        Uri.encode(context.getString(R.string.email_subject))
 
     return Uri.parse(uriString)
 }

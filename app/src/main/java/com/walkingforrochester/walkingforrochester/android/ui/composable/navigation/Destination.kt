@@ -107,6 +107,7 @@ val ContactUs = Destination(
     title = R.string.contact_us,
     icon = Icons.AutoMirrored.Default.Help,
     showBackButton = true,
+    showProfileButton = false,
     showBottomBar = false
 )
 

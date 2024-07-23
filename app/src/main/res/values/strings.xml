@@ -84,6 +84,10 @@
     <string name="view_safety_guidelines">View Safety Guidelines</string>
     <string name="view_waiver">View Waiver</string>
 
+    <string name="contact_us_text">For any questions or concerns, please contact our office.</string>
+    <string name="phone_label">Phone: </string>
+    <string name="email_label">Email: </string>
+    <string name="app_version">App Version: %1$s</string>
     <string name="did_you_pick_up_litter">Did you pick up litter?</string>
     <string name="continue_walking">Continue\nWalking</string>
     <string name="discard">Discard</string>

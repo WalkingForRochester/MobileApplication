@@ -10,12 +10,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.AutofillType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.password
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -24,9 +29,11 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.PhoneNumberVisualTransformation
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRTextField
+import com.walkingforrochester.walkingforrochester.android.ui.modifier.autofill
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import com.walkingforrochester.walkingforrochester.android.viewmodel.RegistrationViewModel
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RegistrationForm(
     modifier: Modifier = Modifier,
@@ -44,24 +51,36 @@ fun RegistrationForm(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .autofill(
+                    autofillTypes = listOf(AutofillType.PersonFirstName),
+                    onFill = registrationViewModel::onFirstNameChange
+                ),
             value = uiState.firstName,
             onValueChange = registrationViewModel::onFirstNameChange,
             labelRes = R.string.first_name,
             keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
                 keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
+                imeAction = ImeAction.Next,
             ),
             validationError = uiState.firstNameValidationMessage,
             validationErrorColor = Color.Red,
             clearFieldIconEnabled = true
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .autofill(
+                    autofillTypes = listOf(AutofillType.PersonLastName),
+                    onFill = registrationViewModel::onLastNameChange
+                ),
             value = uiState.lastName,
             onValueChange = registrationViewModel::onLastNameChange,
             labelRes = R.string.last_name,
             keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
@@ -70,7 +89,12 @@ fun RegistrationForm(
             clearFieldIconEnabled = true
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .autofill(
+                    autofillTypes = listOf(AutofillType.EmailAddress),
+                    onFill = registrationViewModel::onEmailChange
+                ),
             value = uiState.email,
             onValueChange = registrationViewModel::onEmailChange,
             labelRes = R.string.email_address,
@@ -83,7 +107,12 @@ fun RegistrationForm(
             clearFieldIconEnabled = true
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .autofill(
+                    autofillTypes = listOf(AutofillType.PhoneNumber),
+                    onFill = registrationViewModel::onPhoneChange
+                ),
             value = uiState.phone,
             onValueChange = registrationViewModel::onPhoneChange,
             labelRes = R.string.phone_number,
@@ -102,6 +131,7 @@ fun RegistrationForm(
             onValueChange = registrationViewModel::onNicknameChange,
             labelRes = R.string.nickname,
             keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
@@ -109,7 +139,13 @@ fun RegistrationForm(
         )
 
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .autofill(
+                    autofillTypes = listOf(AutofillType.NewPassword),
+                    onFill = registrationViewModel::onPasswordChange
+                )
+                .semantics { password() },
             value = uiState.password,
             onValueChange = registrationViewModel::onPasswordChange,
             labelRes = R.string.password,
@@ -130,7 +166,13 @@ fun RegistrationForm(
             validationErrorColor = Color.Red,
         )
         WFRTextField(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .autofill(
+                    autofillTypes = listOf(AutofillType.NewPassword),
+                    onFill = registrationViewModel::onPasswordConfirmationChange
+                )
+                .semantics { password() },
             value = uiState.confirmPassword,
             onValueChange = registrationViewModel::onPasswordConfirmationChange,
             labelRes = R.string.confirm_password,

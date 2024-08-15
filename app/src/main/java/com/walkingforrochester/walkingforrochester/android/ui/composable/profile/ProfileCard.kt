@@ -131,10 +131,11 @@ fun EditableProfile(
                 profileViewModel = profileViewModel
             )
         } else {
+            val context = LocalContext.current
             ProfileDataAndActions(
                 uiState = uiState,
                 onEdit = profileViewModel::onEdit,
-                onShare = profileViewModel::onShare
+                onShare =  { profileViewModel.onShare(context) }
             )
         }
     }

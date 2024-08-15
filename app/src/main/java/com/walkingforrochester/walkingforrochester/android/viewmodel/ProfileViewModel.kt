@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.text.format.DateUtils
 import android.util.Patterns
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
@@ -171,13 +172,13 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { previousState.copy(editProfile = false) }
     }
 
-    fun onShare(): Intent {
+    fun onShare(context: Context): Intent {
         with(_uiState.value) {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
                 type = "image/png"
                 putExtra(
-                    Intent.EXTRA_STREAM, getLogo()
+                    Intent.EXTRA_STREAM, getLogo(context)
                 )
                 putExtra(
                     Intent.EXTRA_TEXT,
@@ -267,8 +268,9 @@ class ProfileViewModel @Inject constructor(
         return isValid
     }
 
-    private fun getLogo(): Uri? {
-        val bitmap = (context.getDrawable(R.drawable.wfr_logo) as BitmapDrawable).bitmap
+    private fun getLogo(context: Context): Uri? {
+        val drawable = AppCompatResources.getDrawable(context, R.drawable.wfr_logo) as? BitmapDrawable
+        val bitmap = drawable?.bitmap ?: return null
         var bmpUri: Uri? = null
         try {
             val file = File(

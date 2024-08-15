@@ -1,12 +1,13 @@
 [versions]
 
 androidx-activity = "1.9.1"
-androidx-annotation = "1.8.1"
+androidx-annotation = "1.8.2"
 androidx-browser = "1.8.0"
 androidx-camera = "1.3.4"
 androidx-core = "1.13.1"
 androidx-core-splashscreen = "1.0.1"
 androidx-compose-bom = "2024.06.00"
+androidx-credentials = "1.2.2"
 androidx-hilt-navigation-compose = "1.2.0"
 androidx-lifecycle = "2.8.4"
 androidx-material = "1.12.0"
@@ -50,8 +51,9 @@ facebook = "17.0.0"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "8.5.1"
+androidGradlePlugin = "8.5.2"
 mapsSecretsPlugin = "2.0.1"
+googleid = "1.1.1"
 
 [libraries]
 
@@ -79,6 +81,11 @@ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-mani
 
 
 androidx-browser = { module = "androidx.browser:browser", version.ref = "androidx-browser" }
+
+#noinspection CredentialDependency
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
+
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidx-hilt-navigation-compose" }
 androidx-material = { module = "com.google.android.material:material", version.ref = "androidx-material" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
@@ -131,6 +138,7 @@ eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 
 [plugins]
 

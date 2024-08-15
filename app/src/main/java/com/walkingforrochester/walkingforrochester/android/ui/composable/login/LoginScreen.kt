@@ -1,7 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.login
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +16,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,12 +30,12 @@ import com.facebook.login.LoginManager
 import com.walkingforrochester.walkingforrochester.android.LocalFacebookCallbackManager
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.FacebookLoginCallback
-import com.walkingforrochester.walkingforrochester.android.network.GoogleApiContract
-import com.walkingforrochester.walkingforrochester.android.network.googleLoginCallback
+import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LoginViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -71,11 +71,7 @@ fun LoginScreen(
     val context = LocalContext.current
     val activity = LocalActivityResultRegistryOwner.current
 
-    val authResultLauncher =
-        rememberLauncherForActivityResult(contract = GoogleApiContract()) { task ->
-            googleLoginCallback(context, task, loginViewModel::continueWithGoogle)
-        }
-
+    val coroutineScope = rememberCoroutineScope()
 
     LoadingOverlay(uiState.socialLoading)
 
@@ -85,10 +81,16 @@ fun LoginScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        //val (spacerTop, socialButtons, orText, loginForm, loginButton, textButtons, spacerBottom) = createRefs()
         Spacer(modifier = Modifier.weight(1f))
         SocialLoginButtons(
-            onContinueWithGoogle = { authResultLauncher.launch(null) },
+            onContinueWithGoogle = {
+                coroutineScope.launch {
+                    GoogleCredentialUtil.performSignIn(
+                        context,
+                        loginViewModel::continueWithGoogle
+                    )
+                }
+            },
             onContinueWithFacebook = {
                 activity?.let {
                     LoginManager.getInstance().logInWithReadPermissions(

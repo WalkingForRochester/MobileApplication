@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
@@ -69,15 +69,21 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(loading = false) }
     }.launchIn(viewModelScope)
 
-    fun continueWithGoogle(gsa: GoogleSignInAccount) = viewModelScope.launch {
-        socialSignIn(gsa.email ?: "", gsa.givenName ?: "", gsa.familyName ?: "")
+    fun continueWithGoogle(
+        googleCredential: GoogleIdTokenCredential
+    ) = viewModelScope.launch {
+        socialSignIn(
+            email = googleCredential.id,
+            firstName = googleCredential.givenName ?: "",
+            lastName = googleCredential.familyName ?: "",
+        )
     }
 
     fun continueWithFacebook(obj: JSONObject) = viewModelScope.launch {
         socialSignIn(
-            email = obj.optString("email",""),
-            firstName = obj.optString("first_name","Firstname"),
-            lastName = obj.optString("last_name","Lastname"),
+            email = obj.optString("email", ""),
+            firstName = obj.optString("first_name", "Firstname"),
+            lastName = obj.optString("last_name", "Lastname"),
             facebookId = obj.getString("id")
         )
     }
@@ -96,19 +102,22 @@ class LoginViewModel @Inject constructor(
             if (result.accountId != null) {
                 completeLogin(accountId = result.accountId)
 
-                facebookId?.let {
-                    with(restApiService.userProfile(AccountIdRequest(accountId = result.accountId))) {
-                        restApiService.updateProfile(
-                            UpdateProfileRequest(
-                                accountId = result.accountId,
-                                email = email,
-                                phone = phoneNumber ?: "",
-                                nickname = nickname ?: "",
-                                communityService = communityService ?: false,
-                                imgUrl = imgUrl ?: "",
-                                facebookId = facebookId
+                if (facebookId != null) {
+                    // Update facebook id, if needed
+                    restApiService.userProfile(AccountIdRequest(accountId = result.accountId)).let {
+                        if (it.facebookId != facebookId) {
+                            restApiService.updateProfile(
+                                UpdateProfileRequest(
+                                    accountId = result.accountId,
+                                    email = email,
+                                    phone = it.phoneNumber ?: "",
+                                    nickname = it.nickname ?: "",
+                                    communityService = it.communityService ?: false,
+                                    imgUrl = it.imgUrl ?: "",
+                                    facebookId = facebookId
+                                )
                             )
-                        )
+                        }
                     }
                 }
             } else {

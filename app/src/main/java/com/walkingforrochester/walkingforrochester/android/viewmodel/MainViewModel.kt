@@ -10,11 +10,10 @@ import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -25,28 +24,34 @@ class MainViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MainUiState())
-    val uiState = _uiState.asStateFlow()
+    private val _uiState: MutableStateFlow<MainUiState>
+    val uiState: StateFlow<MainUiState>
 
     init {
-        _uiState.update {
-            it.copy(
-                darkMode = sharedPreferences.getBoolean(
-                    context.getString(R.string.wfr_dark_mode_enabled),
-                    false
-                )
-            )
-        }
+        val state = MainUiState(
+            darkMode = sharedPreferences.getBoolean(
+                context.getString(R.string.wfr_dark_mode_enabled),
+                false
+            ),
+            loggedIn = sharedPreferences.getLong(
+                context.getString(R.string.wfr_account_id),
+                0L
+            ) != 0L
+        )
+
+        _uiState = MutableStateFlow(state)
+        uiState = _uiState.asStateFlow()
     }
 
-    fun onToggleDarkMode(darkMode: Boolean) = flow<Nothing> {
+    fun onToggleDarkMode(darkMode: Boolean) = viewModelScope.launch {
         _uiState.update { it.copy(darkMode = darkMode) }
 
-        sharedPreferences.edit()
-            .putBoolean(context.getString(R.string.wfr_dark_mode_enabled), darkMode).apply()
-    }.catch {
-        Timber.e(it, "Unable to toggle dark mode")
-        showUnexpectedErrorToast(context)
-    }.launchIn(viewModelScope)
-
+        try {
+            sharedPreferences.edit()
+                .putBoolean(context.getString(R.string.wfr_dark_mode_enabled), darkMode).apply()
+        } catch (t: Throwable) {
+            Timber.e(t, "Unable to toggle dark mode")
+            showUnexpectedErrorToast(context)
+        }
+    }
 }

@@ -16,7 +16,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 
@@ -49,8 +49,10 @@ private fun determineCurrentConnectivityState(
 ): ConnectionState {
     val activeNetwork = connectivityManager.activeNetwork
     val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-    val hasInternet = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
-    val validated = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ?: false
+    val hasInternet =
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
+    val validated =
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ?: false
 
     return if (hasInternet && validated) ConnectionState.Available else ConnectionState.Unavailable
 }
@@ -100,11 +102,10 @@ fun networkCallback(callback: () -> Unit): ConnectivityManager.NetworkCallback {
 fun connectivityState(): State<ConnectionState> {
     val context = LocalContext.current
 
-    // Creates a State<ConnectionState> with current connectivity state as initial value
-    return produceState(initialValue = context.currentConnectivityState, key1 = context) {
-        // In a coroutine, can make suspend calls
-        context.observeConnectivityAsFlow().collect { value = it }
-    }
+    // only monitor connectivity between start/stop lifecycle
+    return context.observeConnectivityAsFlow().collectAsStateWithLifecycle(
+        initialValue = context.currentConnectivityState
+    )
 }
 
 @Composable

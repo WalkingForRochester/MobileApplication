@@ -1,17 +1,18 @@
 package com.walkingforrochester.walkingforrochester.android.ui.state
 
 data class LoginScreenState(
-    var emailAddress: String = "",
-    var emailAddressValidationMessage: String = "",
-    var password: String = "",
-    var passwordValidationMessage: String = "",
-    var passwordVisible: Boolean = false,
-    var authenticationErrorMessage: String = "",
+    val emailAddress: String = "",
+    val emailAddressValidationMessage: String = "",
+    val password: String = "",
+    val passwordVisible: Boolean = false,
+    val authenticationErrorMessage: String = "",
     val loading: Boolean = false,
     val socialLoading: Boolean = false,
-    var registrationScreenState: RegistrationScreenState = RegistrationScreenState()
+    val firstName: String = "",
+    val lastName: String = "",
+    val facebookId: String = "",
 )
 
 enum class LoginScreenEvent {
-    LoginComplete, NeedsRegistration
+    LoginComplete, LoginCompleteManual, NeedsRegistration
 }

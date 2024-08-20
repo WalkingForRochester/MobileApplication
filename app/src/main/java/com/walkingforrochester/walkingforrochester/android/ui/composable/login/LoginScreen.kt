@@ -16,7 +16,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,10 +34,12 @@ import com.walkingforrochester.walkingforrochester.android.LocalFacebookCallback
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.FacebookLoginCallback
 import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
+import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LoginViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -43,9 +48,10 @@ fun LoginScreen(
     loginViewModel: LoginViewModel = hiltViewModel(),
     onForgotPassword: () -> Unit,
     onRegister: () -> Unit,
-    onRegisterPrefill: (String?, String?, String?, String?) -> Unit,
+    onRegisterPrefill: (String, String, String, String) -> Unit,
     onLoginComplete: () -> Unit
 ) {
+    val context = LocalContext.current
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
     val callbackManager = LocalFacebookCallbackManager.current
 
@@ -60,18 +66,38 @@ fun LoginScreen(
                     onLoginComplete()
                 }
 
-                LoginScreenEvent.NeedsRegistration -> with(uiState.registrationScreenState) {
+                LoginScreenEvent.LoginCompleteManual -> {
                     LoginManager.getInstance().unregisterCallback(callbackManager)
-                    onRegisterPrefill(email, firstName, lastName, facebookId ?: "")
+                    PasswordCredentialUtil.savePasswordCredential(
+                        context = context,
+                        email = uiState.emailAddress,
+                        password = uiState.password
+                    )
+                    onLoginComplete()
+                }
+
+                LoginScreenEvent.NeedsRegistration -> with(uiState) {
+                    LoginManager.getInstance().unregisterCallback(callbackManager)
+                    onRegisterPrefill(emailAddress, firstName, lastName, facebookId)
                 }
             }
         }
     }
 
-    val context = LocalContext.current
     val activity = LocalActivityResultRegistryOwner.current
 
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = context) {
+        coroutineScope.launch {
+            // small delay before showing password manager
+            delay(250L)
+            PasswordCredentialUtil.performPasswordSignIn(
+                context = context,
+                performLogin = loginViewModel::onLogin
+            )
+        }
+    }
 
     LoadingOverlay(uiState.socialLoading)
 
@@ -81,6 +107,10 @@ fun LoginScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // track autofill status to avoid prompting to save password if came from autofill
+        var autofillEmail by remember { mutableStateOf(false) }
+        var autofillPassword by remember { mutableStateOf(false) }
+
         Spacer(modifier = Modifier.weight(1f))
         SocialLoginButtons(
             onContinueWithGoogle = {
@@ -107,17 +137,19 @@ fun LoginScreen(
         )
         LoginForm(
             loginScreenState = uiState,
-            onEmailAddressValueChange = { newEmailAddress ->
+            onEmailAddressValueChange = { newEmailAddress, autofillPerformed ->
                 loginViewModel.onEmailAddressValueChange(newEmailAddress)
+                autofillEmail = autofillPerformed
             },
-            onPasswordValueChange = { newPassword ->
+            onPasswordValueChange = { newPassword, autofillPerformed ->
                 loginViewModel.onPasswordValueChange(newPassword)
+                autofillPassword = autofillPerformed
             },
             onPasswordVisibilityChange = { loginViewModel.onTogglePasswordVisibility() }
         )
         Spacer(modifier = Modifier.height(24.dp))
         WFRButton(
-            onClick = loginViewModel::onLoginClicked,
+            onClick = { loginViewModel.onLoginClicked(autofillData = autofillEmail && autofillPassword) },
             label = R.string.sign_in,
             testTag = "login_button",
             buttonColor = Color.Black,

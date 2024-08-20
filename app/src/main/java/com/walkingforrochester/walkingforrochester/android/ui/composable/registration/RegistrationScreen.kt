@@ -13,10 +13,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
@@ -29,18 +31,29 @@ fun RegistrationScreen(
     registrationViewModel: RegistrationViewModel = hiltViewModel(),
     onRegistrationComplete: () -> Unit
 ) {
+    val context = LocalContext.current
+    val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         initState?.let {
             registrationViewModel.prefill(it)
         }
+    }
+
+    LaunchedEffect(key1 = registrationViewModel) {
         registrationViewModel.eventFlow.collect { event ->
             when (event) {
-                RegistrationScreenEvent.RegistrationComplete -> onRegistrationComplete()
+                RegistrationScreenEvent.RegistrationComplete -> {
+                    PasswordCredentialUtil.savePasswordCredential(
+                        context = context,
+                        email = uiState.email,
+                        password = uiState.password
+                    )
+                    onRegistrationComplete()
+                }
             }
         }
     }
-
-    val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier

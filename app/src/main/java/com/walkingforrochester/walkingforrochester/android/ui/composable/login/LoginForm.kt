@@ -29,8 +29,8 @@ import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenS
 fun LoginForm(
     modifier: Modifier = Modifier,
     loginScreenState: LoginScreenState,
-    onEmailAddressValueChange: (String) -> Unit,
-    onPasswordValueChange: (String) -> Unit,
+    onEmailAddressValueChange: (String, Boolean) -> Unit,
+    onPasswordValueChange: (String, Boolean) -> Unit,
     onPasswordVisibilityChange: () -> Unit
 ) {
     Column(
@@ -40,10 +40,10 @@ fun LoginForm(
         WFRTextField(
             modifier = Modifier.autofill(
                 autofillTypes = listOf(AutofillType.EmailAddress),
-                onFill = onEmailAddressValueChange
+                onFill = { email -> onEmailAddressValueChange(email, true) }
             ),
             value = loginScreenState.emailAddress,
-            onValueChange = onEmailAddressValueChange,
+            onValueChange = { email -> onEmailAddressValueChange(email, false) },
             labelRes = R.string.email_address,
             testTag = "login_email",
             keyboardOptions = KeyboardOptions(
@@ -57,11 +57,11 @@ fun LoginForm(
             modifier = Modifier
                 .autofill(
                     autofillTypes = listOf(AutofillType.Password),
-                    onFill = onPasswordValueChange
+                    onFill = { password -> onPasswordValueChange(password, true) }
                 )
                 .semantics { password() },
             value = loginScreenState.password,
-            onValueChange = onPasswordValueChange,
+            onValueChange = { password -> onPasswordValueChange(password, false) },
             labelRes = R.string.password,
             testTag = "login_password",
             visualTransformation = if (loginScreenState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -69,7 +69,7 @@ fun LoginForm(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
-            validationError = loginScreenState.authenticationErrorMessage.ifEmpty { loginScreenState.passwordValidationMessage },
+            validationError = loginScreenState.authenticationErrorMessage,
             trailingIcon = {
                 IconButton(onClick = onPasswordVisibilityChange) {
                     Icon(

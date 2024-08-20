@@ -22,13 +22,11 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.BottomBar
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.Destinations
-import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.LogAWalk
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.LoginDestination
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.NavigationDrawer
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.NavigationHost
@@ -47,18 +45,11 @@ fun WalkingForRochesterAppScreen(
     onToggleDarkMode: (Boolean) -> Unit = {},
     uiState: MainUiState = MainUiState()
 ) {
-
-    val wfrAccountId by longPreferenceState(
-        key = stringResource(R.string.wfr_account_id),
-        defaultValue = 0L
-    )
-
     WFRNavigationDrawer(
         uiState = uiState,
         onToggleDarkMode = onToggleDarkMode,
         onStartWalking = onStartWalking,
         onStopWalking = onStopWalking,
-        isLoggedIn = wfrAccountId != 0L
     )
 }
 
@@ -67,15 +58,14 @@ fun WFRNavigationDrawer(
     uiState: MainUiState,
     onToggleDarkMode: (Boolean) -> Unit,
     onStartWalking: () -> Unit,
-    onStopWalking: () -> Unit,
-    isLoggedIn: Boolean
+    onStopWalking: () -> Unit
 ) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination
     val currentScreen = Destinations
         .find { it.route == currentDestination?.route || it.routeWithArgs == currentDestination?.route }
-        ?: if (isLoggedIn) LogAWalk else LoginDestination
+        ?: LoginDestination
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -99,7 +89,6 @@ fun WFRNavigationDrawer(
                     onBackButtonClick = { navController.popBackStack() },
                     onNavigationButtonClick = { scope.launch { drawerState.open() } },
                     onProfileButtonClick = { navController.navigateSingleTopTo(ProfileDestination.route) },
-                    isLoggedIn = isLoggedIn
                 )
             },
             bottomBar = {
@@ -112,7 +101,7 @@ fun WFRNavigationDrawer(
             NavigationHost(
                 navController = navController,
                 modifier = Modifier.padding(innerPadding),
-                loggedIn = isLoggedIn,
+                loggedIn = uiState.loggedIn,
                 onStartWalking = onStartWalking,
                 onStopWalking = onStopWalking,
             )

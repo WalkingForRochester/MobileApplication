@@ -21,8 +21,7 @@ fun TopBar(
     currentScreen: Destination,
     onNavigationButtonClick: () -> Unit,
     onBackButtonClick: () -> Unit,
-    onProfileButtonClick: () -> Unit,
-    isLoggedIn: Boolean
+    onProfileButtonClick: () -> Unit
 ) {
     if (currentScreen.showTopBar) {
         CenterAlignedTopAppBar(
@@ -40,7 +39,7 @@ fun TopBar(
                 Text(text = stringResource(id = currentScreen.title))
             },
             actions = {
-                if (currentScreen.showProfileButton && isLoggedIn) {
+                if (currentScreen.showProfileButton) {
                     IconButton(onClick = onProfileButtonClick) {
                         Icon(
                             Icons.Filled.AccountCircle,

@@ -18,13 +18,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -91,39 +88,39 @@ class RegistrationViewModel @Inject constructor(
     fun onCommunityServiceChange(newCommunityService: Boolean) =
         _uiState.update { it.copy(communityService = newCommunityService) }
 
-    fun onSignUp() = flow<Nothing> {
+    fun onSignUp() = viewModelScope.launch {
         _uiState.update { it.copy(loading = true) }
-        if (validateForm()) {
-            with(_uiState.value) {
-                val result = restApiService.registerAccount(
-                    RegisterRequest(
-                        firstName = firstName,
-                        lastName = lastName,
-                        email = email,
-                        phone = phone,
-                        nickname = nickname,
-                        dateOfBirth = dateOfBirth,
-                        password = password,
-                        communityService = communityService,
-                        facebookId = facebookId
+        try {
+            if (validateForm()) {
+                with(_uiState.value) {
+                    val result = restApiService.registerAccount(
+                        RegisterRequest(
+                            firstName = firstName,
+                            lastName = lastName,
+                            email = email,
+                            phone = phone,
+                            nickname = nickname,
+                            dateOfBirth = LocalDate.now(),
+                            password = password,
+                            communityService = communityService,
+                            facebookId = facebookId
+                        )
                     )
-                )
 
-                if (result.accountId != null) {
-                    completeRegistration(result.accountId)
-                } else {
-                    throw RuntimeException(result.error)
+                    if (result.accountId != null) {
+                        completeRegistration(result.accountId)
+                    } else {
+                        throw RuntimeException(result.error)
+                    }
                 }
             }
+        } catch (t: Throwable) {
+            Timber.e(t, "Sign up request failed")
+            showUnexpectedErrorToast(context)
+        } finally {
+            _uiState.update { it.copy(loading = false) }
         }
-    }.catch {
-        Timber.e(it, "Sign up request failed")
-        showUnexpectedErrorToast(context)
-    }.onCompletion {
-        _uiState.update { it.copy(loading = false) }
-    }.launchIn(viewModelScope)
-
-    fun toggleDatePicker() = _uiState.update { it.copy(showDatePicker = !it.showDatePicker) }
+    }
 
     fun onPasswordVisibilityChange() =
         _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
@@ -133,18 +130,14 @@ class RegistrationViewModel @Inject constructor(
 
     private suspend fun validateForm(): Boolean {
         var isValid = true
-        _uiState.update {
-            it.copy(
-                emailValidationMessage = "",
-                firstNameValidationMessage = "",
-                lastNameValidationMessage = "",
-                phoneValidationMessage = "",
-                dateOfBirthValidationMessage = "",
-                passwordValidationMessage = "",
-                confirmPasswordValidationMessage = ""
-            )
-        }
-        val localState = _uiState.value.copy()
+        var emailValidationMessage = ""
+        var firstNameValidationMessage = ""
+        var lastNameValidationMessage = ""
+        var phoneValidationMessage = ""
+        var passwordValidationMessage = ""
+        var confirmPasswordValidationMessage = ""
+
+        val localState = _uiState.value
 
         with(localState) {
             if (firstName.isEmpty()) {
@@ -177,7 +170,16 @@ class RegistrationViewModel @Inject constructor(
             }
         }
 
-        _uiState.update { localState }
+        _uiState.update {
+            it.copy(
+                emailValidationMessage = emailValidationMessage,
+                firstNameValidationMessage = firstNameValidationMessage,
+                lastNameValidationMessage = lastNameValidationMessage,
+                phoneValidationMessage = phoneValidationMessage,
+                passwordValidationMessage = passwordValidationMessage,
+                confirmPasswordValidationMessage = confirmPasswordValidationMessage
+            )
+        }
         return isValid
     }
 

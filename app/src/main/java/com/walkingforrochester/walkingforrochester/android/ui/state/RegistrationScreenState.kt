@@ -1,28 +1,23 @@
 package com.walkingforrochester.walkingforrochester.android.ui.state
 
-import java.time.LocalDate
-
-data class RegistrationScreenState constructor(
-    var email: String = "",
-    var emailValidationMessage: String = "",
-    var firstName: String = "",
-    var firstNameValidationMessage: String = "",
-    var lastName: String = "",
-    var lastNameValidationMessage: String = "",
-    var phone: String = "",
-    var phoneValidationMessage: String = "",
-    var nickname: String = "",
-    var dateOfBirth: LocalDate = LocalDate.now(),
-    var dateOfBirthValidationMessage: String = "",
-    var password: String = "",
-    var passwordValidationMessage: String = "",
-    var confirmPassword: String = "",
-    var confirmPasswordValidationMessage: String = "",
-    var passwordVisible: Boolean = false,
-    var confirmPasswordVisible: Boolean = false,
-    var showDatePicker: Boolean = false,
-    var loading: Boolean = false,
-    var communityService: Boolean = false,
+data class RegistrationScreenState(
+    val email: String = "",
+    val emailValidationMessage: String = "",
+    val firstName: String = "",
+    val firstNameValidationMessage: String = "",
+    val lastName: String = "",
+    val lastNameValidationMessage: String = "",
+    val phone: String = "",
+    val phoneValidationMessage: String = "",
+    val nickname: String = "",
+    val password: String = "",
+    val passwordValidationMessage: String = "",
+    val confirmPassword: String = "",
+    val confirmPasswordValidationMessage: String = "",
+    val passwordVisible: Boolean = false,
+    val confirmPasswordVisible: Boolean = false,
+    val loading: Boolean = false,
+    val communityService: Boolean = false,
     val facebookId: String? = null
 )
 

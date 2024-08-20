@@ -15,6 +15,7 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toArgb
@@ -32,6 +33,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
 val LocalFacebookCallbackManager =
@@ -54,20 +56,30 @@ class MainActivity : ComponentActivity() {
 
     private var foregroundLocationService: ForegroundLocationService? = null
     private lateinit var customTabsManager: CustomTabsManager
+    private var keepSplashScreenOn = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.d("onCreate()")
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
         super.onCreate(savedInstanceState)
 
+        splashScreen.setKeepOnScreenCondition { keepSplashScreenOn }
+
         onBackPressedDispatcher.addCallback(this, myBackPressCallback)
 
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
+
+            LaunchedEffect(mainViewModel) {
+                // Wait until state is available to before removing splash screen
+                mainViewModel.uiState.first()
+                keepSplashScreenOn = false
+            }
+
             val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
             val darkMode = uiState.darkMode
 

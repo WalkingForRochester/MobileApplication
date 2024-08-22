@@ -41,6 +41,7 @@ play-services-maps = "19.0.0"
 google-android-maps-compose = "6.1.0"
 google-android-maps-utils = "3.5.2"
 google-libphonenumber = "8.13.41"
+google-googleid = "1.1.1"
 
 # dagger/hilt
 dagger-hilt = "2.51.1"
@@ -53,7 +54,6 @@ timber = "5.0.1"
 # Plugins
 androidGradlePlugin = "8.5.2"
 mapsSecretsPlugin = "2.0.1"
-googleid = "1.1.1"
 
 [libraries]
 
@@ -131,6 +131,7 @@ play-services-maps = { module = "com.google.android.gms:play-services-maps", ver
 google-android-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "google-android-maps-compose" }
 google-android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "google-android-maps-utils" }
 google-libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "google-libphonenumber" }
+google-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "google-googleid" }
 
 coil-bom = { module = "io.coil-kt:coil-bom", version.ref = "coil-bom" }
 coil-compose = { module = "io.coil-kt:coil-compose" }
@@ -138,7 +139,6 @@ eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook" }
-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 
 [plugins]
 

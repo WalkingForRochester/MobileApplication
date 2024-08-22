@@ -83,7 +83,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.googleid)
+    implementation(libs.google.googleid)
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)

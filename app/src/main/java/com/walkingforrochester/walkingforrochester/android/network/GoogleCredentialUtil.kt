@@ -11,6 +11,7 @@ import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import timber.log.Timber
 import java.security.SecureRandom
 
@@ -33,7 +34,7 @@ object GoogleCredentialUtil {
 
         nonce = generateNonce()
 
-        val googleIdOption = GetSignInWithGoogleOption.Builder("458901770892-os2jgpa48lt3ibmc7ud1pq56saj99e9i.apps.googleusercontent.com")//BuildConfig.googleServerClientId)
+        val googleIdOption = GetSignInWithGoogleOption.Builder(BuildConfig.googleServerClientId)
             .setNonce(nonce)
             .build()
 

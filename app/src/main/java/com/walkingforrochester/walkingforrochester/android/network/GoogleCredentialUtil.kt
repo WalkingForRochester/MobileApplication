@@ -7,6 +7,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -54,12 +55,19 @@ object GoogleCredentialUtil {
                 context = context,
             )
             handleGoogleSignInResponse(result, processCredential)
-
-            // Don't remember credential going forward so next login is normal
-            val request = ClearCredentialStateRequest()
-            credentialManager.clearCredentialState(request)
         } catch (e: GetCredentialException) {
             Timber.e("Failed to get credential: %s", e.message)
+        }
+    }
+
+    suspend fun performSignOut(context: Context) {
+        val credentialManager = CredentialManager.create(context)
+
+        try {
+            val request = ClearCredentialStateRequest()
+            credentialManager.clearCredentialState(request)
+        } catch (e: ClearCredentialException) {
+            Timber.e("Failed to clear credential: %s", e.message)
         }
     }
 

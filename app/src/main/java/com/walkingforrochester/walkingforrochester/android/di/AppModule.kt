@@ -60,7 +60,7 @@ class AppModule {
                         val msg = redactText.replace(it, "\"password\":\"******\"")
                         HttpLoggingInterceptor.Logger.DEFAULT.log(msg)
                     }.apply {
-                        level = HttpLoggingInterceptor.Level.BODY
+                        level = HttpLoggingInterceptor.Level.BASIC
                     }
                 )
             }

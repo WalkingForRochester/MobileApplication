@@ -77,7 +77,11 @@ fun ContactUsScreen(modifier: Modifier = Modifier) {
         }
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            text = stringResource(id = R.string.app_version, BuildConfig.VERSION_NAME),
+            text = stringResource(
+                id = R.string.app_version,
+                BuildConfig.VERSION_NAME,
+                BuildConfig.VERSION_CODE
+            ),
             modifier = Modifier
                 .fillMaxWidth(),
             textAlign = TextAlign.Center

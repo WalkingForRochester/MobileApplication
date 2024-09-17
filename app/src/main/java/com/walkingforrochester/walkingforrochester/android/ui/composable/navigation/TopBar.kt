@@ -1,5 +1,9 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -12,19 +16,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    modifier: Modifier = Modifier,
     currentScreen: Destination,
-    onNavigationButtonClick: () -> Unit,
-    onBackButtonClick: () -> Unit,
-    onProfileButtonClick: () -> Unit
+    modifier: Modifier = Modifier,
+    onNavigationButtonClick: () -> Unit = {},
+    onBackButtonClick: () -> Unit = {},
+    onProfileButtonClick: () -> Unit = {}
 ) {
     if (currentScreen.showTopBar) {
         CenterAlignedTopAppBar(
+            title = {
+                Text(text = stringResource(id = currentScreen.title))
+            },
+            modifier = modifier,
             navigationIcon = {
                 IconButton(onClick = { if (currentScreen.showBackButton) onBackButtonClick() else onNavigationButtonClick() }) {
                     Icon(
@@ -34,9 +44,6 @@ fun TopBar(
                         )
                     )
                 }
-            },
-            title = {
-                Text(text = stringResource(id = currentScreen.title))
             },
             actions = {
                 if (currentScreen.showProfileButton) {
@@ -48,17 +55,37 @@ fun TopBar(
                     }
                 }
             },
-            modifier = modifier,
+            windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
         )
     }
 }
 
-//@Preview
-//@Composable
-//fun PreviewTopBar() {
-//    WalkingForRochesterTheme {
-//        TopBar(
-//            title = { Text("Title") }
-//        )
-//    }
-//}
+@Preview
+@Composable
+fun PreviewTopBarBackButton() {
+    WalkingForRochesterTheme {
+        TopBar(
+            currentScreen = Destination(
+                route = "test",
+                title = R.string.back_button,
+                showBackButton = true,
+                showProfileButton = false,
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PreviewTopBarMenu() {
+    WalkingForRochesterTheme {
+        TopBar(
+            currentScreen = Destination(
+                route = "test",
+                title = R.string.open_navigation_drawer,
+                showBackButton = false,
+                showProfileButton = true
+            )
+        )
+    }
+}

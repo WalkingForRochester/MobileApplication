@@ -3,9 +3,14 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
@@ -82,7 +87,8 @@ fun WFRNavigationDrawer(
         },
         onToggleDarkMode = onToggleDarkMode
     ) {
-        AppScreen(backgroundImage = if (LoginDestination == currentScreen) R.drawable.rainbowbg else null,
+        AppScreen(
+            backgroundImage = if (LoginDestination == currentScreen) R.drawable.rainbowbg else null,
             topBar = {
                 TopBar(
                     currentScreen = currentScreen,
@@ -97,13 +103,13 @@ fun WFRNavigationDrawer(
                     onScreenSelected = { screen ->
                         navController.navigateSingleTopTo(screen.route)
                     })
-            }) { innerPadding ->
+            }) { contentPadding ->
             NavigationHost(
                 navController = navController,
-                modifier = Modifier.padding(innerPadding),
                 loggedIn = uiState.loggedIn,
                 onStartWalking = onStartWalking,
                 onStopWalking = onStopWalking,
+                contentPadding = contentPadding
             )
         }
     }
@@ -126,12 +132,17 @@ fun AppScreen(
 
     CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
         Scaffold(
+            modifier = modifier.imePadding(),
             topBar = topBar,
             bottomBar = bottomBar,
-            modifier = modifier.imePadding(),
             floatingActionButton = floatingActionButton,
             floatingActionButtonPosition = floatingActionButtonPosition,
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            contentWindowInsets = WindowInsets.statusBars.union(
+                WindowInsets.displayCutout.only(
+                    WindowInsetsSides.Horizontal
+                )
+            )
         ) { paddingValues ->
             if (backgroundImage != null) {
                 Image(

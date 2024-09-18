@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FabPosition
@@ -138,7 +138,7 @@ fun AppScreen(
             floatingActionButton = floatingActionButton,
             floatingActionButtonPosition = floatingActionButtonPosition,
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            contentWindowInsets = WindowInsets.statusBars.union(
+            contentWindowInsets = WindowInsets.systemBars.union(
                 WindowInsets.displayCutout.only(
                     WindowInsetsSides.Horizontal
                 )

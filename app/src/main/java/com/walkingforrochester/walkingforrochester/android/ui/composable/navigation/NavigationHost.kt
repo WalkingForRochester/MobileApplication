@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -20,30 +21,37 @@ fun NavigationHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     loggedIn: Boolean = false,
-    onStartWalking: () -> Unit,
-    onStopWalking: () -> Unit
+    onStartWalking: () -> Unit = {},
+    onStopWalking: () -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val startDestination = if (loggedIn) LogAWalk.route else LoginDestination.route
     NavHost(
         navController = navController, startDestination = startDestination, modifier = modifier
     ) {
         composable(route = LoginDestination.route) {
-            LoginScreen(onForgotPassword = { navController.navigate(ForgotPassword.route) },
+            LoginScreen(
+                onForgotPassword = { navController.navigate(ForgotPassword.route) },
                 onRegister = {
                     navController.navigate(Registration.route)
                 },
                 onRegisterPrefill = { email, firstName, lastName, facebookId ->
                     navController.navigate(
                         Registration.route +
-                                "?email=$email" +
-                                "&fname=$firstName" +
-                                "&lname=$lastName" +
-                                "&fbid=$facebookId"
+                            "?email=$email" +
+                            "&fname=$firstName" +
+                            "&lname=$lastName" +
+                            "&fbid=$facebookId"
                     ) {
                         popUpTo(LoginDestination.route)
                     }
                 },
-                onLoginComplete = { navController.navigateSingleTopTo(LogAWalk.route) })
+                onLoginComplete = {
+                    //navController.popBackStack()
+                    navController.navigateSingleTopTo(LogAWalk.route)
+                },
+                contentPadding = contentPadding
+            )
         }
         composable(route = ForgotPassword.route) {
 
@@ -67,16 +75,21 @@ fun NavigationHost(
                     lastName = lastName ?: "",
                     facebookId = facebookId
                 ),
-                onRegistrationComplete = { navController.navigateSingleTopTo(LogAWalk.route) })
+                onRegistrationComplete = { navController.navigateSingleTopTo(LogAWalk.route) },
+                contentPadding = contentPadding
+            )
         }
         composable(
             route = Registration.route,
         ) {
-            RegistrationScreen(onRegistrationComplete = {
-                navController.navigateSingleTopTo(
-                    LogAWalk.route
-                )
-            })
+            RegistrationScreen(
+                onRegistrationComplete = {
+                    navController.navigateSingleTopTo(
+                        LogAWalk.route
+                    )
+                },
+                contentPadding = contentPadding
+            )
         }
         composable(route = LogAWalk.route) {
             LogAWalkScreen(onStartWalking = onStartWalking, onStopWalking = onStopWalking)

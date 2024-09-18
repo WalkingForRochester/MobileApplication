@@ -47,7 +47,7 @@ fun NavigationHost(
                     }
                 },
                 onLoginComplete = {
-                    //navController.popBackStack()
+                    navController.popBackStack()
                     navController.navigateSingleTopTo(LogAWalk.route)
                 },
                 contentPadding = contentPadding

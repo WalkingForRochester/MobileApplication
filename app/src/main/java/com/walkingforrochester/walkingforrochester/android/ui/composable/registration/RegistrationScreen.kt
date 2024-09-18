@@ -2,10 +2,12 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.regist
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -16,7 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
@@ -28,28 +33,31 @@ import com.walkingforrochester.walkingforrochester.android.viewmodel.Registratio
 fun RegistrationScreen(
     modifier: Modifier = Modifier,
     initState: RegistrationScreenState? = null,
-    registrationViewModel: RegistrationViewModel = hiltViewModel(),
-    onRegistrationComplete: () -> Unit
+    onRegistrationComplete: () -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues(),
+    registrationViewModel: RegistrationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(initState, registrationViewModel) {
         initState?.let {
             registrationViewModel.prefill(it)
         }
     }
-
-    LaunchedEffect(key1 = registrationViewModel) {
-        registrationViewModel.eventFlow.collect { event ->
-            when (event) {
-                RegistrationScreenEvent.RegistrationComplete -> {
-                    PasswordCredentialUtil.savePasswordCredential(
-                        context = context,
-                        email = uiState.email,
-                        password = uiState.password
-                    )
-                    onRegistrationComplete()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner, registrationViewModel) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            registrationViewModel.eventFlow.collect { event ->
+                when (event) {
+                    RegistrationScreenEvent.RegistrationComplete -> {
+                        PasswordCredentialUtil.savePasswordCredential(
+                            context = context,
+                            email = uiState.email,
+                            password = uiState.password
+                        )
+                        onRegistrationComplete()
+                    }
                 }
             }
         }
@@ -59,6 +67,7 @@ fun RegistrationScreen(
         modifier = modifier
             .fillMaxHeight()
             .verticalScroll(rememberScrollState())
+            .padding(contentPadding)
             .imePadding(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally

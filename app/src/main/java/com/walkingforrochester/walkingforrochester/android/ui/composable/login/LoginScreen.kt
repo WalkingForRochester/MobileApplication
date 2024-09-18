@@ -3,6 +3,7 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.login
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +30,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.facebook.login.LoginManager
 import com.walkingforrochester.walkingforrochester.android.LocalFacebookCallbackManager
 import com.walkingforrochester.walkingforrochester.android.R
@@ -45,40 +50,56 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    loginViewModel: LoginViewModel = hiltViewModel(),
-    onForgotPassword: () -> Unit,
-    onRegister: () -> Unit,
-    onRegisterPrefill: (String, String, String, String) -> Unit,
-    onLoginComplete: () -> Unit
+    onForgotPassword: () -> Unit = {},
+    onRegister: () -> Unit = {},
+    onRegisterPrefill: (
+        email: String,
+        firstName: String,
+        lastName: String,
+        facebookId: String
+    ) -> Unit = { _, _, _, _ -> },
+    onLoginComplete: () -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues(),
+    loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
     val callbackManager = LocalFacebookCallbackManager.current
 
-    LaunchedEffect(Unit) {
+    DisposableEffect(key1 = callbackManager) {
         LoginManager.getInstance().registerCallback(
-            callbackManager, FacebookLoginCallback(loginViewModel::continueWithFacebook)
+            callbackManager,
+            FacebookLoginCallback { result -> loginViewModel.continueWithFacebook(result) }
         )
-        loginViewModel.eventFlow.collect { event ->
-            when (event) {
-                LoginScreenEvent.LoginComplete -> {
-                    LoginManager.getInstance().unregisterCallback(callbackManager)
-                    onLoginComplete()
-                }
+        onDispose {
+            LoginManager.getInstance().unregisterCallback(callbackManager)
+        }
+    }
 
-                LoginScreenEvent.LoginCompleteManual -> {
-                    LoginManager.getInstance().unregisterCallback(callbackManager)
-                    PasswordCredentialUtil.savePasswordCredential(
-                        context = context,
-                        email = uiState.emailAddress,
-                        password = uiState.password
-                    )
-                    onLoginComplete()
-                }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            loginViewModel.eventFlow.collect { event ->
+                when (event) {
+                    LoginScreenEvent.LoginComplete -> {
+                        LoginManager.getInstance().unregisterCallback(callbackManager)
+                        onLoginComplete()
+                    }
 
-                LoginScreenEvent.NeedsRegistration -> with(uiState) {
-                    LoginManager.getInstance().unregisterCallback(callbackManager)
-                    onRegisterPrefill(emailAddress, firstName, lastName, facebookId)
+                    LoginScreenEvent.LoginCompleteManual -> {
+                        LoginManager.getInstance().unregisterCallback(callbackManager)
+                        PasswordCredentialUtil.savePasswordCredential(
+                            context = context,
+                            email = uiState.emailAddress,
+                            password = uiState.password
+                        )
+                        onLoginComplete()
+                    }
+
+                    LoginScreenEvent.NeedsRegistration -> with(uiState) {
+                        LoginManager.getInstance().unregisterCallback(callbackManager)
+                        onRegisterPrefill(emailAddress, firstName, lastName, facebookId)
+                    }
                 }
             }
         }
@@ -88,13 +109,18 @@ fun LoginScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = context) {
-        coroutineScope.launch {
+    LaunchedEffect(context, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
             // small delay before showing password manager
             delay(250L)
             PasswordCredentialUtil.performPasswordSignIn(
                 context = context,
-                performLogin = loginViewModel::onLogin
+                performLogin = { newEmail, newPassword ->
+                    loginViewModel.onLogin(
+                        newEmail,
+                        newPassword
+                    )
+                }
             )
         }
     }
@@ -104,7 +130,8 @@ fun LoginScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(contentPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // track autofill status to avoid prompting to save password if came from autofill

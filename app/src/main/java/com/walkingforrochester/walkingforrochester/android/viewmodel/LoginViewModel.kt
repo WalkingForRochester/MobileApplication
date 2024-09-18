@@ -94,7 +94,7 @@ class LoginViewModel @Inject constructor(
         firstName: String,
         lastName: String,
         facebookId: String = ""
-    ) = viewModelScope.launch {
+    ) {
         _uiState.update { it.copy(socialLoading = true) }
         try {
             val result: AccountResponse =

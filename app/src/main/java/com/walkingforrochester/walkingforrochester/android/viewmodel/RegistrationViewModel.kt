@@ -122,12 +122,6 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    fun onPasswordVisibilityChange() =
-        _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
-
-    fun onConfirmPasswordVisibilityChange() =
-        _uiState.update { it.copy(confirmPasswordVisible = !it.confirmPasswordVisible) }
-
     private suspend fun validateForm(): Boolean {
         var isValid = true
         var emailValidationMessage = ""

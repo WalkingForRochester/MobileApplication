@@ -14,8 +14,6 @@ data class RegistrationScreenState(
     val passwordValidationMessage: String = "",
     val confirmPassword: String = "",
     val confirmPasswordValidationMessage: String = "",
-    val passwordVisible: Boolean = false,
-    val confirmPasswordVisible: Boolean = false,
     val loading: Boolean = false,
     val communityService: Boolean = false,
     val facebookId: String? = null

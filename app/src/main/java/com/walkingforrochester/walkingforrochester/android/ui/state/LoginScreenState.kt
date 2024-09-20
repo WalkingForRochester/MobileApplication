@@ -4,7 +4,6 @@ data class LoginScreenState(
     val emailAddress: String = "",
     val emailAddressValidationMessage: String = "",
     val password: String = "",
-    val passwordVisible: Boolean = false,
     val authenticationErrorMessage: String = "",
     val loading: Boolean = false,
     val socialLoading: Boolean = false,

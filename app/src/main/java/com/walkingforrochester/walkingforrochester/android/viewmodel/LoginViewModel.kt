@@ -168,10 +168,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun onTogglePasswordVisibility() {
-        _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
-    }
-
     private fun validateCredentials(): Boolean {
         var isValid = true
         var emailAddressValidationMessage = ""

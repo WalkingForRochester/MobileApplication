@@ -7,27 +7,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.AutofillType
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.password
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.PhoneNumberVisualTransformation
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRPasswordField
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRTextField
 import com.walkingforrochester.walkingforrochester.android.ui.modifier.autofill
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
@@ -66,7 +58,6 @@ fun RegistrationForm(
                 imeAction = ImeAction.Next,
             ),
             validationError = uiState.firstNameValidationMessage,
-            validationErrorColor = Color.Red,
             clearFieldIconEnabled = true
         )
         WFRTextField(
@@ -85,7 +76,6 @@ fun RegistrationForm(
                 imeAction = ImeAction.Next
             ),
             validationError = uiState.lastNameValidationMessage,
-            validationErrorColor = Color.Red,
             clearFieldIconEnabled = true
         )
         WFRTextField(
@@ -103,8 +93,6 @@ fun RegistrationForm(
                 imeAction = ImeAction.Next
             ),
             validationError = uiState.emailValidationMessage,
-            validationErrorColor = Color.Red,
-            clearFieldIconEnabled = true
         )
         WFRTextField(
             modifier = Modifier
@@ -122,8 +110,6 @@ fun RegistrationForm(
             ),
             visualTransformation = PhoneNumberVisualTransformation(LocalContext.current),
             validationError = uiState.phoneValidationMessage,
-            validationErrorColor = Color.Red,
-            clearFieldIconEnabled = true
         )
         WFRTextField(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -135,62 +121,39 @@ fun RegistrationForm(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
-            clearFieldIconEnabled = true
         )
 
-        WFRTextField(
+        WFRPasswordField(
+            value = uiState.password,
+            onValueChange = registrationViewModel::onPasswordChange,
+            labelRes = R.string.password,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .autofill(
                     autofillTypes = listOf(AutofillType.NewPassword),
                     onFill = registrationViewModel::onPasswordChange
-                )
-                .semantics { password() },
-            value = uiState.password,
-            onValueChange = registrationViewModel::onPasswordChange,
-            labelRes = R.string.password,
+                ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Next
             ),
-            visualTransformation = if (uiState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = { registrationViewModel.onPasswordVisibilityChange() }) {
-                    Icon(
-                        painter = painterResource(id = if (uiState.passwordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
-                        contentDescription = stringResource(R.string.toggle_password_visibility)
-                    )
-                }
-            },
-            validationError = uiState.passwordValidationMessage,
-            validationErrorColor = Color.Red,
+            validationError = uiState.passwordValidationMessage
         )
-        WFRTextField(
+        WFRPasswordField(
+            value = uiState.confirmPassword,
+            onValueChange = registrationViewModel::onPasswordConfirmationChange,
+            labelRes = R.string.confirm_password,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .autofill(
                     autofillTypes = listOf(AutofillType.NewPassword),
                     onFill = registrationViewModel::onPasswordConfirmationChange
-                )
-                .semantics { password() },
-            value = uiState.confirmPassword,
-            onValueChange = registrationViewModel::onPasswordConfirmationChange,
-            labelRes = R.string.confirm_password,
+                ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
-            visualTransformation = if (uiState.confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = { registrationViewModel.onConfirmPasswordVisibilityChange() }) {
-                    Icon(
-                        painter = painterResource(id = if (uiState.confirmPasswordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
-                        contentDescription = stringResource(R.string.toggle_password_visibility)
-                    )
-                }
-            },
-            validationError = uiState.confirmPasswordValidationMessage,
-            validationErrorColor = Color.Red,
+            validationError = uiState.confirmPasswordValidationMessage
         )
         CommunityServiceCheckbox(
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 8.dp),

@@ -400,8 +400,7 @@ fun EditProfileInfo(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            validationError = uiState.emailValidationMessage,
-            clearFieldIconEnabled = true
+            validationError = uiState.emailValidationMessage
         )
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
@@ -413,8 +412,7 @@ fun EditProfileInfo(
                 keyboardType = KeyboardType.Phone,
                 imeAction = ImeAction.Next
             ),
-            validationError = uiState.phoneValidationMessage,
-            clearFieldIconEnabled = true
+            validationError = uiState.phoneValidationMessage
         )
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
@@ -424,8 +422,7 @@ fun EditProfileInfo(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Done
-            ),
-            clearFieldIconEnabled = true
+            )
         )
         CommunityServiceCheckbox(
             modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 4.dp),

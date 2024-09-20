@@ -171,8 +171,7 @@ fun LoginScreen(
             onPasswordValueChange = { newPassword, autofillPerformed ->
                 loginViewModel.onPasswordValueChange(newPassword)
                 autofillPassword = autofillPerformed
-            },
-            onPasswordVisibilityChange = { loginViewModel.onTogglePasswordVisibility() }
+            }
         )
         Spacer(modifier = Modifier.height(24.dp))
         WFRButton(

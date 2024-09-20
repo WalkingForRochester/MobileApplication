@@ -22,6 +22,8 @@
 
     <string name="date_of_birth">Date Of Birth</string>
     <string name="toggle_password_visibility">Toggle password visibility</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
     <string name="dob_date_picker">Date Of Birth Date Picker</string>
     <string name="invalid_email">Please enter a valid email address</string>
     <string name="invalid_password">Password must be at least 6 character long</string>
@@ -31,11 +33,13 @@
     <string name="invalid_password_match">Passwords must match</string>
     <string name="invalid_code">Invalid code. Try again later</string>
     <string name="password_reset_done">New password is set. Proceed to Sign In</string>
-    <string name="code">Code</string>
-    <string name="send_code">Send Code</string>
-    <string name="verify_code">Verify Code</string>
-    <string name="reset_password">Reset Password</string>
-    <string name="forgot_password_info">If email address is registered in the system, you will receive a message with a code</string>
+    <string name="enter_code_desc">Enter code</string>
+    <string name="request_code">Request code</string>
+    <string name="verify_code">Verify code</string>
+    <string name="change_password">Change password</string>
+    <string name="forgot_password_info">Provide your email address. If it is registered in the system, you will receive a message with a code.</string>
+    <string name="forgot_password_check_email">Check your email for your confirmation code.</string>
+    <string name="forgot_password_change">Please provide a new password for your account.</string>
     <string name="profile_pic">Profile Pic</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="share_profile">Share Profile</string>

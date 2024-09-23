@@ -9,8 +9,8 @@
     <string name="forgot_password_question">Forgot Password?</string>
     <string name="new_here_sign_up">New here? Sign up</string>
     <string name="unexpected_error">Unexpected error. Please contact app administrator</string>
-    <string name="wfr_preferences">walking_for_rochester_preferences</string>
-    <string name="wfr_account_id">walking_for_rochester_account_id</string>
+    <string name="wfr_preferences" translatable="false">walking_for_rochester_preferences</string>
+    <string name="wfr_account_id" translatable="false">walking_for_rochester_account_id</string>
     <string name="auth_error">Authentication error</string>
     <string name="email_address">Email Address</string>
     <string name="first_name">First Name</string>
@@ -26,7 +26,7 @@
     <string name="hide_password">Hide password</string>
     <string name="dob_date_picker">Date Of Birth Date Picker</string>
     <string name="invalid_email">Please enter a valid email address</string>
-    <string name="invalid_password">Password must be at least 6 character long</string>
+    <string name="invalid_password">Password must be at least 8 characters long</string>
     <string name="invalid_field_empty">Field cannot be empty</string>
     <string name="invalid_phone">Please enter a valid 10 digit phone number</string>
     <string name="invalid_date_of_birth">Age must be over 18</string>
@@ -54,7 +54,7 @@
     <string name="walking_notification">You are Walking For Rochester!</string>
     <string name="stop_walking">Stop Walking</string>
     <string name="dark_mode">Dark mode</string>
-    <string name="wfr_dark_mode_enabled">walking_for_rochester_dark_mode_enabled</string>
+    <string name="wfr_dark_mode_enabled" translatable="false">walking_for_rochester_dark_mode_enabled</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="please_open_settings_to_grant_permissions">Please open application settings to grant permissions</string>
     <string name="open_app_settings">Open application settings</string>

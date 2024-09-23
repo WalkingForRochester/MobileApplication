@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.registration
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -12,6 +13,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.AutofillType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -57,8 +59,7 @@ fun RegistrationForm(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next,
             ),
-            validationError = uiState.firstNameValidationMessage,
-            clearFieldIconEnabled = true
+            validationError = errorMessage(uiState.firstNameValidationMessageId),
         )
         WFRTextField(
             modifier = Modifier
@@ -75,8 +76,7 @@ fun RegistrationForm(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
-            validationError = uiState.lastNameValidationMessage,
-            clearFieldIconEnabled = true
+            validationError = errorMessage(uiState.lastNameValidationMessageId),
         )
         WFRTextField(
             modifier = Modifier
@@ -92,7 +92,7 @@ fun RegistrationForm(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            validationError = uiState.emailValidationMessage,
+            validationError = errorMessage(uiState.emailValidationMessageId),
         )
         WFRTextField(
             modifier = Modifier
@@ -109,7 +109,7 @@ fun RegistrationForm(
                 imeAction = ImeAction.Next
             ),
             visualTransformation = PhoneNumberVisualTransformation(LocalContext.current),
-            validationError = uiState.phoneValidationMessage,
+            validationError = errorMessage(uiState.phoneValidationMessageId),
         )
         WFRTextField(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -137,7 +137,7 @@ fun RegistrationForm(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Next
             ),
-            validationError = uiState.passwordValidationMessage
+            validationError = errorMessage(uiState.passwordValidationMessageId)
         )
         WFRPasswordField(
             value = uiState.confirmPassword,
@@ -153,12 +153,20 @@ fun RegistrationForm(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
-            validationError = uiState.confirmPasswordValidationMessage
+            validationError = errorMessage(uiState.confirmPasswordValidationMessageId)
         )
         CommunityServiceCheckbox(
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 8.dp),
             checked = uiState.communityService,
             onCheckedChange = registrationViewModel::onCommunityServiceChange
         )
+    }
+}
+
+@Composable
+private fun errorMessage(@StringRes msgId: Int): String {
+    return when {
+        msgId != 0 -> stringResource(id = msgId)
+        else -> ""
     }
 }

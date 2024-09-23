@@ -1,24 +1,26 @@
 package com.walkingforrochester.walkingforrochester.android.ui.state
 
+import androidx.annotation.StringRes
+
 data class RegistrationScreenState(
     val email: String = "",
-    val emailValidationMessage: String = "",
+    @StringRes val emailValidationMessageId: Int = 0,
     val firstName: String = "",
-    val firstNameValidationMessage: String = "",
+    @StringRes val firstNameValidationMessageId: Int = 0,
     val lastName: String = "",
-    val lastNameValidationMessage: String = "",
+    @StringRes val lastNameValidationMessageId: Int = 0,
     val phone: String = "",
-    val phoneValidationMessage: String = "",
+    @StringRes val phoneValidationMessageId: Int = 0,
     val nickname: String = "",
     val password: String = "",
-    val passwordValidationMessage: String = "",
+    @StringRes val passwordValidationMessageId: Int = 0,
     val confirmPassword: String = "",
-    val confirmPasswordValidationMessage: String = "",
+    @StringRes val confirmPasswordValidationMessageId: Int = 0,
     val loading: Boolean = false,
     val communityService: Boolean = false,
     val facebookId: String? = null
 )
 
 enum class RegistrationScreenEvent {
-    RegistrationComplete
+    RegistrationComplete, UnexpectedError
 }

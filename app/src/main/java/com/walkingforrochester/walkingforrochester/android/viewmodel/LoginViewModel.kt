@@ -13,7 +13,6 @@ import com.walkingforrochester.walkingforrochester.android.network.request.Email
 import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
-import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -66,15 +65,13 @@ class LoginViewModel @Inject constructor(
                     if (result.accountId != null) {
                         completeLogin(result.accountId, manualLogin)
                     } else {
-                        setAuthenticationError(
-                            result.error ?: context.getString(R.string.auth_error)
-                        )
+                        setAuthenticationError(result.error)
                     }
                 }
             }
         } catch (t: Throwable) {
             Timber.e(t, "Login request failed")
-            showUnexpectedErrorToast(context)
+            _eventFlow.emit(LoginScreenEvent.UnexpectedError)
         } finally {
             _uiState.update { it.copy(loading = false) }
         }
@@ -134,7 +131,7 @@ class LoginViewModel @Inject constructor(
             }
         } catch (t: Throwable) {
             Timber.e(t, "Social sign in failed")
-            showUnexpectedErrorToast(context)
+            _eventFlow.emit(LoginScreenEvent.UnexpectedError)
         } finally {
             _uiState.update { it.copy(socialLoading = false) }
         }
@@ -153,8 +150,9 @@ class LoginViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 emailAddress = newEmailAddress.trim(),
-                emailAddressValidationMessage = "",
-                authenticationErrorMessage = ""
+                emailAddressValidationMessageId = 0,
+                authenticationErrorMessage = "",
+                authenticationErrorMessageId = 0,
             )
         }
     }
@@ -163,34 +161,48 @@ class LoginViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 password = newPassword,
-                authenticationErrorMessage = ""
+                authenticationErrorMessage = "",
+                authenticationErrorMessageId = 0
             )
         }
     }
 
     private fun validateCredentials(): Boolean {
         var isValid = true
-        var emailAddressValidationMessage = ""
+        var emailAddressValidationMessageId = 0
+        var authenticationErrorMessageId = 0
 
         val localState = _uiState.value
 
         with(localState) {
             if (!Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()) {
-                emailAddressValidationMessage = context.getString(R.string.invalid_email)
+                emailAddressValidationMessageId = R.string.invalid_email
+                isValid = false
+            }
+
+            if (password.isBlank()) {
+                authenticationErrorMessageId = R.string.auth_error
                 isValid = false
             }
         }
 
         _uiState.update {
             it.copy(
-                emailAddressValidationMessage = emailAddressValidationMessage,
+                emailAddressValidationMessageId = emailAddressValidationMessageId,
+                authenticationErrorMessageId = authenticationErrorMessageId,
+                authenticationErrorMessage = ""
             )
         }
         return isValid
     }
 
-    private fun setAuthenticationError(errorMessage: String) {
-        _uiState.update { it.copy(authenticationErrorMessage = errorMessage) }
+    private fun setAuthenticationError(errorMessage: String?) {
+        _uiState.update {
+            it.copy(
+                authenticationErrorMessage = errorMessage ?: "",
+                authenticationErrorMessageId = if (errorMessage.isNullOrBlank()) R.string.auth_error else 0
+            )
+        }
     }
 
     private suspend fun completeLogin(accountId: Long, manualLogin: Boolean = false) {

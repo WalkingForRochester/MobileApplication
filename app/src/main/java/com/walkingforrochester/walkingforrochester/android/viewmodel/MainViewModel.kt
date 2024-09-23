@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
 import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -50,8 +49,7 @@ class MainViewModel @Inject constructor(
             sharedPreferences.edit()
                 .putBoolean(context.getString(R.string.wfr_dark_mode_enabled), darkMode).apply()
         } catch (t: Throwable) {
-            Timber.e(t, "Unable to toggle dark mode")
-            showUnexpectedErrorToast(context)
+            Timber.w(t, "Unable to toggle dark mode")
         }
     }
 }

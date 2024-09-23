@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
@@ -45,7 +46,10 @@ fun RegistrationScreen(
             registrationViewModel.prefill(it)
         }
     }
+
     val lifecycleOwner = LocalLifecycleOwner.current
+    val snackbarHostState = LocalSnackbarHostState.current
+
     LaunchedEffect(lifecycleOwner, registrationViewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             registrationViewModel.eventFlow.collect { event ->
@@ -57,6 +61,10 @@ fun RegistrationScreen(
                             password = uiState.password
                         )
                         onRegistrationComplete()
+                    }
+
+                    RegistrationScreenEvent.UnexpectedError -> {
+                        snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
                     }
                 }
             }

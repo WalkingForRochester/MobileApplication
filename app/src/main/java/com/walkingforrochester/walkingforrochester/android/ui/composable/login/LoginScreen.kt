@@ -41,6 +41,7 @@ import com.walkingforrochester.walkingforrochester.android.network.FacebookLogin
 import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LoginViewModel
@@ -77,6 +78,8 @@ fun LoginScreen(
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
+    val snackbarHostState = LocalSnackbarHostState.current
+
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             loginViewModel.eventFlow.collect { event ->
@@ -99,6 +102,10 @@ fun LoginScreen(
                     LoginScreenEvent.NeedsRegistration -> with(uiState) {
                         LoginManager.getInstance().unregisterCallback(callbackManager)
                         onRegisterPrefill(emailAddress, firstName, lastName, facebookId)
+                    }
+
+                    LoginScreenEvent.UnexpectedError -> {
+                        snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
                     }
                 }
             }

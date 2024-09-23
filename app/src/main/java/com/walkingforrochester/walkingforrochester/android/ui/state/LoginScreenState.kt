@@ -1,10 +1,13 @@
 package com.walkingforrochester.walkingforrochester.android.ui.state
 
+import androidx.annotation.StringRes
+
 data class LoginScreenState(
     val emailAddress: String = "",
-    val emailAddressValidationMessage: String = "",
+    @StringRes val emailAddressValidationMessageId: Int = 0,
     val password: String = "",
     val authenticationErrorMessage: String = "",
+    val authenticationErrorMessageId: Int = 0,
     val loading: Boolean = false,
     val socialLoading: Boolean = false,
     val firstName: String = "",
@@ -13,5 +16,5 @@ data class LoginScreenState(
 )
 
 enum class LoginScreenEvent {
-    LoginComplete, LoginCompleteManual, NeedsRegistration
+    LoginComplete, LoginCompleteManual, NeedsRegistration, UnexpectedError
 }

@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.login
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -42,7 +44,7 @@ fun LoginForm(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            validationError = loginScreenState.emailAddressValidationMessage,
+            validationError = errorMessage(loginScreenState.emailAddressValidationMessageId),
         )
         WFRPasswordField(
             value = loginScreenState.password,
@@ -58,7 +60,19 @@ fun LoginForm(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
-            validationError = loginScreenState.authenticationErrorMessage,
+            validationError = errorMessage(
+                msgId = loginScreenState.authenticationErrorMessageId,
+                msg = loginScreenState.authenticationErrorMessage
+            )
         )
+    }
+}
+
+@Composable
+private fun errorMessage(@StringRes msgId: Int, msg: String = ""): String {
+    return when {
+        msg.isNotBlank() -> msg
+        msgId != 0 -> stringResource(id = msgId)
+        else -> ""
     }
 }

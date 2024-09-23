@@ -9,7 +9,6 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.RegisterRequest
-import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,13 +39,13 @@ class RegistrationViewModel @Inject constructor(
     fun prefill(initState: RegistrationScreenState) = _uiState.update { initState }
 
     fun onEmailChange(newEmail: String) =
-        _uiState.update { it.copy(email = newEmail, emailValidationMessage = "") }
+        _uiState.update { it.copy(email = newEmail, emailValidationMessageId = 0) }
 
     fun onFirstNameChange(newFirstName: String) =
         _uiState.update { state ->
             state.copy(
                 firstName = newFirstName.filter { it != '\n' },
-                firstNameValidationMessage = ""
+                firstNameValidationMessageId = 0
             )
         }
 
@@ -54,7 +53,7 @@ class RegistrationViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 lastName = newLastName.filter { it != '\n' },
-                lastNameValidationMessage = ""
+                lastNameValidationMessageId = 0
             )
         }
 
@@ -62,7 +61,7 @@ class RegistrationViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 phone = newPhone.filter { it.isDigit() },
-                phoneValidationMessage = ""
+                phoneValidationMessageId = 0
             )
         }
 
@@ -73,7 +72,7 @@ class RegistrationViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 password = newPassword.filter { it != '\n' },
-                passwordValidationMessage = ""
+                passwordValidationMessageId = 0
             )
         }
 
@@ -81,7 +80,7 @@ class RegistrationViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 confirmPassword = newConfirmPassword.filter { it != '\n' },
-                confirmPasswordValidationMessage = ""
+                confirmPasswordValidationMessageId = 0
             )
         }
 
@@ -116,7 +115,7 @@ class RegistrationViewModel @Inject constructor(
             }
         } catch (t: Throwable) {
             Timber.e(t, "Sign up request failed")
-            showUnexpectedErrorToast(context)
+            _eventFlow.emit(RegistrationScreenEvent.UnexpectedError)
         } finally {
             _uiState.update { it.copy(loading = false) }
         }
@@ -124,54 +123,53 @@ class RegistrationViewModel @Inject constructor(
 
     private suspend fun validateForm(): Boolean {
         var isValid = true
-        var emailValidationMessage = ""
-        var firstNameValidationMessage = ""
-        var lastNameValidationMessage = ""
-        var phoneValidationMessage = ""
-        var passwordValidationMessage = ""
-        var confirmPasswordValidationMessage = ""
+        var emailValidationMessageId = 0
+        var firstNameValidationMessageId = 0
+        var lastNameValidationMessageId = 0
+        var phoneValidationMessageId = 0
+        var passwordValidationMessageId = 0
+        var confirmPasswordValidationMessageId = 0
 
         val localState = _uiState.value
 
         with(localState) {
             if (firstName.isEmpty()) {
-                firstNameValidationMessage = context.getString(R.string.invalid_field_empty)
+                firstNameValidationMessageId = R.string.invalid_field_empty
                 isValid = false
             }
             if (lastName.isEmpty()) {
-                lastNameValidationMessage = context.getString(R.string.invalid_field_empty)
+                lastNameValidationMessageId = R.string.invalid_field_empty
                 isValid = false
             }
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                emailValidationMessage = context.getString(R.string.invalid_email)
+                emailValidationMessageId = R.string.invalid_email
                 isValid = false
             } else if (restApiService.accountByEmail(EmailAddressRequest(email = email)).accountId != null) {
-                emailValidationMessage = context.getString(R.string.email_already_registered)
+                emailValidationMessageId = R.string.email_already_registered
                 isValid = false
             }
             if (phone.length != 10) {
-                phoneValidationMessage = context.getString(R.string.invalid_phone)
+                phoneValidationMessageId = R.string.invalid_phone
                 isValid = false
             }
-            if (password.length < 6) {
-                passwordValidationMessage = context.getString(R.string.invalid_password)
+            if (password.length < 8) {
+                passwordValidationMessageId = R.string.invalid_password
                 isValid = false
             }
             if (password != confirmPassword) {
-                confirmPasswordValidationMessage =
-                    context.getString(R.string.invalid_password_match)
+                confirmPasswordValidationMessageId = R.string.invalid_password_match
                 isValid = false
             }
         }
 
         _uiState.update {
             it.copy(
-                emailValidationMessage = emailValidationMessage,
-                firstNameValidationMessage = firstNameValidationMessage,
-                lastNameValidationMessage = lastNameValidationMessage,
-                phoneValidationMessage = phoneValidationMessage,
-                passwordValidationMessage = passwordValidationMessage,
-                confirmPasswordValidationMessage = confirmPasswordValidationMessage
+                emailValidationMessageId = emailValidationMessageId,
+                firstNameValidationMessageId = firstNameValidationMessageId,
+                lastNameValidationMessageId = lastNameValidationMessageId,
+                phoneValidationMessageId = phoneValidationMessageId,
+                passwordValidationMessageId = passwordValidationMessageId,
+                confirmPasswordValidationMessageId = confirmPasswordValidationMessageId
             )
         }
         return isValid

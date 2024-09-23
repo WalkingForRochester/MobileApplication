@@ -31,7 +31,7 @@
     <string name="invalid_phone">Please enter a valid 10 digit phone number</string>
     <string name="invalid_date_of_birth">Age must be over 18</string>
     <string name="invalid_password_match">Passwords must match</string>
-    <string name="invalid_code">Invalid code. Try again later</string>
+    <string name="invalid_code">The provided code does not match</string>
     <string name="password_reset_done">New password is set. Proceed to Sign In</string>
     <string name="enter_code_desc">Enter code</string>
     <string name="request_code">Request code</string>

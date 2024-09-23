@@ -1,21 +1,21 @@
 package com.walkingforrochester.walkingforrochester.android.ui.state
 
+import androidx.annotation.StringRes
+
 data class ForgotPasswordScreenState(
-    var email: String = "",
-    var emailValidationMessage: String = "",
-    var internalCode: String = "",
-    var code: String = "",
-    var codeValidationMessage: String = "",
-    var codeVerified: Boolean = false,
-    var password: String = "",
-    var passwordValidationMessage: String = "",
-    var passwordVisible: Boolean = false,
-    var confirmPassword: String = "",
-    var confirmPasswordValidationMessage: String = "",
-    var confirmPasswordVisible: Boolean = false,
-    var loading: Boolean = false
+    val email: String = "",
+    @StringRes val emailValidationMessageId: Int = 0,
+    val internalCode: String = "",
+    val code: String = "",
+    @StringRes val codeValidationMessageId: Int = 0,
+    val codeVerified: Boolean = false,
+    val password: String = "",
+    @StringRes val passwordValidationMessageId: Int = 0,
+    val confirmPassword: String = "",
+    @StringRes val confirmPasswordValidationMessageId: Int = 0,
+    val loading: Boolean = false
 )
 
 enum class ForgotPasswordScreenEvent {
-    PasswordReset
+    PasswordReset, UnexpectedError
 }

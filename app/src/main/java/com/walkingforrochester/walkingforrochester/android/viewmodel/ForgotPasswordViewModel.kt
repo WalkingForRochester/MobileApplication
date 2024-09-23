@@ -1,35 +1,27 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
-import android.content.Context
 import android.util.Patterns
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
-import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
 import com.walkingforrochester.walkingforrochester.android.ui.state.ForgotPasswordScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ForgotPasswordScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class ForgotPasswordViewModel @Inject constructor(
     private val restApiService: RestApiService,
-    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ForgotPasswordScreenState())
@@ -38,130 +30,128 @@ class ForgotPasswordViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<ForgotPasswordScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun onEmailChange(newEmail: String) =
+    fun onEmailChange(newEmail: String) {
         _uiState.update { state ->
             state.copy(
                 email = newEmail.filter { it != '\n' },
-                emailValidationMessage = ""
+                emailValidationMessageId = 0
             )
         }
+    }
 
-    private fun setInternalCode(internalCode: String) =
-        _uiState.update { state -> state.copy(internalCode = internalCode) }
-
-    fun onCodeChange(newCode: String) =
+    fun onCodeChange(newCode: String) {
         _uiState.update { state ->
             state.copy(
                 code = newCode.filter { it.isDigit() },
-                codeValidationMessage = ""
+                codeValidationMessageId = 0
             )
         }
+    }
 
-    fun onPasswordChange(newPassword: String) =
+    fun onPasswordChange(newPassword: String) {
         _uiState.update { state ->
             state.copy(
                 password = newPassword.filter { it != '\n' },
-                passwordValidationMessage = ""
+                passwordValidationMessageId = 0
             )
         }
-
-    fun onConfirmPasswordChange(newConfirmPassword: String) = _uiState.update { state ->
-        state.copy(
-            confirmPassword = newConfirmPassword.filter { it != '\n' },
-            confirmPasswordValidationMessage = ""
-        )
     }
 
-    fun onPasswordVisibilityChange() =
-        _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
+    fun onConfirmPasswordChange(newConfirmPassword: String) {
+        _uiState.update { state ->
+            state.copy(
+                confirmPassword = newConfirmPassword.filter { it != '\n' },
+                confirmPasswordValidationMessageId = 0
+            )
+        }
+    }
 
-    fun onConfirmPasswordVisibilityChange() =
-        _uiState.update { it.copy(confirmPasswordVisible = !it.confirmPasswordVisible) }
-
-    fun sendCode() = flow<Nothing> {
-        _uiState.update { it.copy(loading = true) }
+    fun requestCode() = viewModelScope.launch {
         if (validateEmail()) {
-            with(_uiState.value) {
-                val result = restApiService.forgotPassword(EmailAddressRequest(email = email))
-
-                setInternalCode(result.code)
+            _uiState.update { it.copy(loading = true) }
+            try {
+                with(_uiState.value) {
+                    val result = restApiService.forgotPassword(EmailAddressRequest(email = email))
+                    _uiState.update { state -> state.copy(internalCode = result.code) }
+                }
+            } catch (t: Throwable) {
+                Timber.e(t, "Unable to send password reset code")
+                _eventFlow.emit(ForgotPasswordScreenEvent.UnexpectedError)
+            } finally {
+                _uiState.update { it.copy(loading = false) }
             }
         }
-    }.catch {
-        Timber.e(it, "Unable to send password reset code")
-        showUnexpectedErrorToast(context)
-    }.onCompletion {
-        _uiState.update { it.copy(loading = false) }
-    }.launchIn(viewModelScope)
+    }
 
-    fun verifyCode() = flow<Nothing> {
+    fun verifyCode() = viewModelScope.launch {
         with(_uiState.value) {
             if (code.isNotEmpty() && code == internalCode) {
                 _uiState.update { it.copy(codeVerified = true) }
             } else {
-                _uiState.update { it.copy(codeValidationMessage = context.getString(R.string.invalid_code)) }
+                _uiState.update { it.copy(codeValidationMessageId = R.string.invalid_code) }
             }
         }
-    }.launchIn(viewModelScope)
+    }
 
-    fun resetPassword() = flow<Nothing> {
-        _uiState.update { it.copy(loading = true) }
+    fun resetPassword() = viewModelScope.launch {
         if (validatePassword()) {
-            with(_uiState.value) {
-                restApiService.resetPassword(LoginRequest(email, password))
+            _uiState.update { it.copy(loading = true) }
 
-                _eventFlow.emit(ForgotPasswordScreenEvent.PasswordReset)
-                Toast.makeText(context, R.string.password_reset_done, Toast.LENGTH_LONG).show()
+            try {
+                with(_uiState.value) {
+                    restApiService.resetPassword(LoginRequest(email, password))
+                    _eventFlow.emit(ForgotPasswordScreenEvent.PasswordReset)
+                }
+            } catch (t: Throwable) {
+                Timber.e(t, "Unable to reset password")
+                _eventFlow.emit(ForgotPasswordScreenEvent.UnexpectedError)
+            } finally {
+                _uiState.update { it.copy(loading = false) }
             }
         }
-    }.catch {
-        Timber.e(it, "Unable to reset password")
-        showUnexpectedErrorToast(context)
-    }.onCompletion {
-        _uiState.update { it.copy(loading = false) }
-    }.launchIn(viewModelScope)
+    }
 
     private fun validateEmail(): Boolean {
         var isValid = true
-        _uiState.update {
-            it.copy(
-                emailValidationMessage = ""
-            )
+        var emailValidationMessageId = 0
+
+        val state = _uiState.value
+        if (!Patterns.EMAIL_ADDRESS.matcher(state.email).matches()) {
+            emailValidationMessageId = R.string.invalid_email
+            isValid = false
         }
 
-        with(_uiState.value) {
-            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                _uiState.update { it.copy(emailValidationMessage = context.getString(R.string.invalid_email)) }
-                isValid = false
-            }
+        _uiState.update {
+            it.copy(
+                emailValidationMessageId = emailValidationMessageId
+            )
         }
 
         return isValid
     }
 
     private fun validatePassword(): Boolean {
+        var passwordValidationMessageId = 0
+        var confirmPasswordValidationMessageId = 0
         var isValid = true
+
+        val state = _uiState.value
+
+        if (state.password.length < 6) {
+            passwordValidationMessageId = R.string.invalid_password
+            isValid = false
+        }
+        if (state.password != state.confirmPassword) {
+            confirmPasswordValidationMessageId = R.string.invalid_password_match
+            isValid = false
+        }
+
         _uiState.update {
             it.copy(
-                passwordValidationMessage = "",
-                confirmPasswordValidationMessage = ""
+                passwordValidationMessageId = passwordValidationMessageId,
+                confirmPasswordValidationMessageId = confirmPasswordValidationMessageId
             )
         }
-        val localState = _uiState.value.copy()
-
-        with(localState) {
-            if (password.length < 6) {
-                passwordValidationMessage = context.getString(R.string.invalid_password)
-                isValid = false
-            }
-            if (password != confirmPassword) {
-                confirmPasswordValidationMessage =
-                    context.getString(R.string.invalid_password_match)
-                isValid = false
-            }
-        }
-
-        _uiState.update { localState }
         return isValid
     }
 }

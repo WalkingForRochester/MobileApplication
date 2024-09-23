@@ -55,9 +55,12 @@ fun NavigationHost(
         }
         composable(route = ForgotPassword.route) {
 
-            ForgotPasswordScreen(onPasswordResetComplete = {
-                navController.navigate(LoginDestination.route)
-            })
+            ForgotPasswordScreen(
+                onPasswordResetComplete = {
+                    navController.navigate(LoginDestination.route)
+                },
+                contentPadding = contentPadding
+            )
         }
         composable(
             route = Registration.routeWithArgs,

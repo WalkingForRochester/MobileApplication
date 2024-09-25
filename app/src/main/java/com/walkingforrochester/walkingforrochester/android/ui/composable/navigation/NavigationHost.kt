@@ -98,7 +98,7 @@ fun NavigationHost(
             LogAWalkScreen(onStartWalking = onStartWalking, onStopWalking = onStopWalking)
         }
         composable(route = Leaderboard.route) {
-            LeaderboardScreen()
+            LeaderboardScreen(contentPadding = contentPadding)
         }
         composable(route = NewsFeed.route) {
             NewsFeedScreen()

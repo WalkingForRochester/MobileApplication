@@ -37,7 +37,9 @@ import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRo
 @Composable
 fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) {
     Card(
-        modifier = modifier.wrapContentHeight(),
+        modifier = modifier
+            .padding(horizontal = 8.dp)
+            .wrapContentHeight(),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         colors = CardDefaults.cardColors(
             containerColor = when (leader.place) {

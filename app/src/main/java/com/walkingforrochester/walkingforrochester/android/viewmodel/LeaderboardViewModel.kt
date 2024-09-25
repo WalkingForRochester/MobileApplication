@@ -1,22 +1,23 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.LeaderboardRequest
-import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
-import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderboardScreenState
+import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderData
+import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderboardFiltersState
+import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderboardScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.PeriodFilter
 import com.walkingforrochester.walkingforrochester.android.ui.state.TypeFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import timber.log.Timber
 import javax.inject.Inject
@@ -24,48 +25,53 @@ import javax.inject.Inject
 @HiltViewModel
 class LeaderboardViewModel @Inject constructor(
     private val restApiService: RestApiService,
-    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LeaderboardScreenState())
-    val uiState = _uiState.asStateFlow()
+    private val _leaderboardFilters = MutableStateFlow(LeaderboardFiltersState())
+    val leaderboardFilters = _leaderboardFilters.asStateFlow()
 
-    fun fetchLeaders() = flow<Nothing> {
-        _uiState.update { it.copy(loading = true) }
-        with(_uiState.value.filtersState) {
+    private val _eventFlow = MutableSharedFlow<LeaderboardScreenEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
+    val currentLeaders: StateFlow<LeaderData> = _leaderboardFilters.transform { filter ->
+        emit(LeaderData(loading = true))
+        emit(fetchLeaders(filter))
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = LeaderData()
+    )
+
+    private suspend fun fetchLeaders(filterState: LeaderboardFiltersState): LeaderData {
+        return try {
+            val type = filterState.type
             val result = restApiService.leaderboard(
                 LeaderboardRequest(
-                    orderBy = type.orderBy,
-                    startDate = period.startDate(),
-                    endDate = period.endDate()
+                    orderBy = type.name.lowercase(),
+                    startDate = filterState.period.startDate(),
+                    endDate = filterState.period.endDate()
                 )
             )
-
-            _uiState.update {
-                it.copy(leaders = result.filter { leader ->
+            LeaderData(
+                leaders = result.filter { leader ->
                     TypeFilter.Collection == type && (leader.collection ?: 0) > 0
-                            || TypeFilter.Distance == type && (leader.distance ?: 0.0) > 0.0
-                            || TypeFilter.Duration == type && (leader.duration ?: 0) > 0
-                })
-            }
+                        || TypeFilter.Distance == type && (leader.distance ?: 0.0) > 0.0
+                        || TypeFilter.Duration == type && (leader.duration ?: 0) > 0
+                }
+            )
+        } catch (t: Throwable) {
+            Timber.e(t, "Couldn't load leaderboard from server")
+            _eventFlow.emit(LeaderboardScreenEvent.UnexpectedError)
+            LeaderData()
         }
-    }.catch {
-        Timber.e(it, "Couldn't load leaderboard from server")
-        showUnexpectedErrorToast(context)
-    }.onCompletion {
-        _uiState.update { it.copy(loading = false) }
-    }.launchIn(viewModelScope)
-
-    fun onTypeFilterChange(type: TypeFilter) = _uiState.update {
-        it.copy(
-            filtersState = it.filtersState.copy(type = type)
-        )
     }
 
-    fun onPeriodFilterChange(period: PeriodFilter) = _uiState.update {
-        it.copy(
-            filtersState = it.filtersState.copy(period = period)
-        )
+    fun onTypeFilterChange(type: TypeFilter) = _leaderboardFilters.update {
+        it.copy(type = type)
+    }
+
+    fun onPeriodFilterChange(period: PeriodFilter) = _leaderboardFilters.update {
+        it.copy(period = period)
     }
 
 }

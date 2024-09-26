@@ -36,6 +36,12 @@ data class SurveyDialogState(
     val picUri: Uri? = null
 )
 
-enum class LogAWalkEvent() {
-    StartWalking, StopWalking, Submitted, MockLocationDetected, MovingTooFast
+enum class LogAWalkEvent {
+    StartWalking,
+    StopWalking,
+    Submitted,
+    MockLocationDetected,
+    MovingTooFast,
+    CameraRationalError,
+    UnexpectedError
 }

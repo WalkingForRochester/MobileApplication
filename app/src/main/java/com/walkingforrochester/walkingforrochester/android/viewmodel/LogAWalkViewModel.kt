@@ -163,7 +163,7 @@ class LogAWalkViewModel @Inject constructor(
     private fun showGuidelinesDialog() =
         _uiState.update { it.copy(guidelinesDialogState = GuidelinesDialogState(showDialog = true)) }
 
-    fun onDismissGuidelinesDialog() =
+    fun onDismissGuidelines() =
         _uiState.update { it.copy(guidelinesDialogState = GuidelinesDialogState()) }
 
     fun onGuidelinesLinkClick() =

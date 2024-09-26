@@ -30,7 +30,6 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestLocationPermissionsScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRDialog
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.showLongCloseableSnackbar
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
@@ -61,10 +60,16 @@ fun LogAWalkScreen(
                     showNotification(context = context, text = "You're moving too fast")
                 }
 
-                LogAWalkEvent.Submitted -> snackbarHostState.showLongCloseableSnackbar(
-                    message = context.getString(
-                        R.string.submission_complete_message
-                    )
+                LogAWalkEvent.Submitted -> snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.submission_complete_message)
+                )
+
+                LogAWalkEvent.CameraRationalError -> snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.camera_permission_rationale)
+                )
+
+                LogAWalkEvent.UnexpectedError -> snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.unexpected_error)
                 )
             }
         }

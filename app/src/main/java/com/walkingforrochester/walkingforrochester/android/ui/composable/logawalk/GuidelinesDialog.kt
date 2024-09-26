@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,12 +21,13 @@ import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRDialog
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
-import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
 
 @Composable
 fun GuidelinesDialog(
     modifier: Modifier = Modifier,
-    logAWalkViewModel: LogAWalkViewModel
+    onLinkClick: () -> Unit = {},
+    onAcceptGuideLines: () -> Unit = {},
+    onDismissGuidelines: () -> Unit = {},
 ) {
     val uriHandler = LocalUriHandler.current
     val guidelinesUrl = stringResource(R.string.guidelines_url)
@@ -34,17 +35,17 @@ fun GuidelinesDialog(
 
     WFRDialog(
         modifier = modifier,
-        onDismissRequest = logAWalkViewModel::onDismissGuidelinesDialog,
+        onDismissRequest = onDismissGuidelines,
         icon = { Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
         title = { Text(text = stringResource(R.string.walk_dialog_title)) },
         buttons = {
             TextButton(
-                onClick = logAWalkViewModel::onDismissGuidelinesDialog,
+                onClick = onDismissGuidelines,
             ) {
                 Text(text = stringResource(R.string.decline))
             }
             TextButton(
-                onClick = logAWalkViewModel::onAcceptGuidelines,
+                onClick = onAcceptGuideLines,
             ) {
                 Text(text = stringResource(R.string.accept))
             }
@@ -57,7 +58,7 @@ fun GuidelinesDialog(
                 Text(
                     modifier = Modifier.clickable {
                         uriHandler.openUri(guidelinesUrl)
-                        logAWalkViewModel.onGuidelinesLinkClick()
+                        onLinkClick()
                     },
                     text = stringResource(id = R.string.view_safety_guidelines),
                     color = MaterialTheme.colorScheme.primary,
@@ -66,7 +67,7 @@ fun GuidelinesDialog(
                 Text(
                     modifier = Modifier.clickable {
                         uriHandler.openUri(waiverUrl)
-                        logAWalkViewModel.onGuidelinesLinkClick()
+                        onLinkClick()
                     },
                     text = stringResource(id = R.string.view_waiver),
                     color = MaterialTheme.colorScheme.primary,
@@ -81,29 +82,8 @@ fun GuidelinesDialog(
 @Composable
 fun PreviewGuidelinesDialog() {
     WalkingForRochesterTheme {
-        AlertDialog(onDismissRequest = { /*TODO*/ },
-            icon = { Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
-            title = { Text(text = stringResource(R.string.safety_guidelines)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = stringResource(R.string.safety_guidelines_dialog)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.view_safety_guidelines),
-                        color = MaterialTheme.colorScheme.primary,
-                        textDecoration = TextDecoration.Underline
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {},
-                    enabled = true
-                ) {
-                    Text(stringResource(R.string.accept))
-                }
-            }
-        )
+        Surface {
+            GuidelinesDialog()
+        }
     }
 }

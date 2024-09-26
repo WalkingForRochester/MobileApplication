@@ -3,11 +3,14 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.logawa
 import android.Manifest
 import android.os.Build
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,7 +26,11 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.showNotification
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.*
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestLocationPermissionsScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRDialog
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.showLongCloseableSnackbar
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
@@ -32,8 +39,9 @@ import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkVie
 @Composable
 fun LogAWalkScreen(
     modifier: Modifier = Modifier,
-    onStartWalking: () -> Unit,
-    onStopWalking: () -> Unit,
+    onStartWalking: () -> Unit = {},
+    onStopWalking: () -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues(),
     logAWalkViewModel: LogAWalkViewModel = hiltViewModel()
 ) {
     val snackbarHostState = LocalSnackbarHostState.current
@@ -91,31 +99,37 @@ fun LogAWalkScreen(
                 selectedAddressLocation = uiState.selectedAddressLocation,
                 path = uiState.path,
                 startingPoint = uiState.startingPoint,
-                finishingPoint = uiState.finishingPoint
+                finishingPoint = uiState.finishingPoint,
+                contentPadding = contentPadding
             )
             StartStopWalkButton(
                 walking = uiState.walking,
                 onClick = logAWalkViewModel::onToggleWalk,
                 modifier = Modifier
+                    .padding(contentPadding)
                     .padding(16.dp)
                     .align(alignment = Alignment.BottomCenter)
             )
             if (uiState.guidelinesDialogState.showDialog) {
-                GuidelinesDialog(logAWalkViewModel = logAWalkViewModel)
+                GuidelinesDialog(
+                    onLinkClick = { logAWalkViewModel.onGuidelinesLinkClick() },
+                    onAcceptGuideLines = { logAWalkViewModel.onAcceptGuidelines() },
+                    onDismissGuidelines = { logAWalkViewModel.onDismissGuidelines() }
+                )
             }
             if (uiState.surveyDialogState.showDialog) {
                 WalkSurveyDialog(
                     logAWalkViewModel = logAWalkViewModel,
-                    surveyDialogState = uiState.surveyDialogState
+                    surveyDialogState = uiState.surveyDialogState,
                 )
             }
             if (uiState.mockLocation) {
                 WFRDialog(
-                    onDismissRequest = logAWalkViewModel::onDismissMockLocationDialog,
+                    onDismissRequest = { logAWalkViewModel.onDismissMockLocationDialog() },
                     icon = { Icon(imageVector = Icons.Filled.Warning, contentDescription = null) },
                     title = { Text(stringResource(R.string.mock_location_detected)) },
                     buttons = {
-                        TextButton(onClick = logAWalkViewModel::onDismissMockLocationDialog) {
+                        TextButton(onClick = { logAWalkViewModel.onDismissMockLocationDialog() }) {
                             Text(stringResource(R.string.understood))
                         }
                     }) {
@@ -124,11 +138,11 @@ fun LogAWalkScreen(
             }
             if (uiState.movingTooFast) {
                 WFRDialog(
-                    onDismissRequest = logAWalkViewModel::onDismissMovingTooFastDialog,
+                    onDismissRequest = { logAWalkViewModel.onDismissMovingTooFastDialog() },
                     icon = { Icon(imageVector = Icons.Filled.Warning, contentDescription = null) },
                     title = { Text(stringResource(R.string.moving_too_fast)) },
                     buttons = {
-                        TextButton(onClick = logAWalkViewModel::onDismissMovingTooFastDialog) {
+                        TextButton(onClick = { logAWalkViewModel.onDismissMovingTooFastDialog() }) {
                             Text(stringResource(R.string.understood))
                         }
                     }) {

@@ -7,6 +7,7 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,7 +45,8 @@ fun LogAWalkMap(
     selectedAddressLocation: LatLng? = null,
     path: List<LatLng> = listOf(),
     startingPoint: LatLng? = null,
-    finishingPoint: LatLng? = null
+    finishingPoint: LatLng? = null,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val context = LocalContext.current
     val cameraPosition = rememberCameraPositionState()
@@ -92,7 +94,8 @@ fun LogAWalkMap(
             properties = MapProperties(isMyLocationEnabled = true),
             onMyLocationButtonClick = {
                 toggleCameraFollow(true)
-            }
+            },
+            contentPadding = contentPadding
         ) {
             startingPoint?.let {
                 Marker(

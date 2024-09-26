@@ -116,7 +116,7 @@ fun NavigationHost(
             })
         }
         composable(route = ContactUs.route) {
-            ContactUsScreen()
+            ContactUsScreen(contentPadding = contentPadding)
         }
     }
 }

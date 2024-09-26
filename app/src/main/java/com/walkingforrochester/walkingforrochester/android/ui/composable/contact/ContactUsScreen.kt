@@ -6,6 +6,7 @@ import android.net.MailTo
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,10 +29,15 @@ import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @Composable
-fun ContactUsScreen(modifier: Modifier = Modifier) {
+fun ContactUsScreen(
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues()
+) {
 
     Column(
-        modifier = modifier.padding(horizontal = 20.dp),
+        modifier = modifier
+            .padding(contentPadding)
+            .padding(horizontal = 20.dp),
     ) {
         val context = LocalContext.current
         Spacer(modifier = Modifier.height(24.dp))

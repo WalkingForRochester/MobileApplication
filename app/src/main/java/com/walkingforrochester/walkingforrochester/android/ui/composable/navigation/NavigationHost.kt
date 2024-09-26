@@ -105,7 +105,7 @@ fun NavigationHost(
             LeaderboardScreen(contentPadding = contentPadding)
         }
         composable(route = NewsFeed.route) {
-            NewsFeedScreen()
+            NewsFeedScreen(contentPadding = contentPadding)
         }
         composable(route = ProfileDestination.route) {
             ProfileScreen(onLogoutComplete = {

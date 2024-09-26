@@ -5,7 +5,6 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,7 +25,7 @@ fun WFRWebView(modifier: Modifier = Modifier, url: String) {
         label = "webviewAnimation"
     )
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier) {
         WebView(
             modifier = Modifier.alpha(visibility),
             state = state,

@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.SharedPreferences
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.squareup.moshi.FromJson
@@ -78,14 +77,6 @@ fun getPreference(context: Context, key: String, defaultValue: Any): Any? =
 
 fun removePreference(context: Context, key: String) = with(getSharedPreferences(context).edit()) {
     remove(key).apply()
-}
-
-fun showUnexpectedErrorToast(context: Context) {
-    Toast.makeText(
-        context,
-        R.string.unexpected_error,
-        Toast.LENGTH_LONG
-    ).show()
 }
 
 fun roundDouble(d: Double?): Double = ((d ?: 0.0) * 100.0).roundToInt() / 100.0

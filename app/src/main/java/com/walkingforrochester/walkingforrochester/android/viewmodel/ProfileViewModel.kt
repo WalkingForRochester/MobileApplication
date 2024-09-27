@@ -19,7 +19,6 @@ import com.walkingforrochester.walkingforrochester.android.network.request.Accou
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.roundDouble
-import com.walkingforrochester.walkingforrochester.android.showUnexpectedErrorToast
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,10 +27,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -62,45 +57,47 @@ class ProfileViewModel @Inject constructor(
     private var previousState = ProfileScreenState()
 
     init {
-        flow<Nothing> {
+        viewModelScope.launch {
             _uiState.update { it.copy(profileDataLoading = true) }
-            val accountId =
-                sharedPreferences.getLong(context.getString(R.string.wfr_account_id), 0)
+            try {
+                val accountId =
+                    sharedPreferences.getLong(context.getString(R.string.wfr_account_id), 0)
 
-            val result = restApiService.userProfile(AccountIdRequest(accountId))
+                val result = restApiService.userProfile(AccountIdRequest(accountId))
 
-            if (result.error == null) {
-                _uiState.update {
-                    it.copy(
-                        accountId = accountId,
-                        email = result.email ?: "",
-                        phone = result.phoneNumber ?: "",
-                        nickname = result.nickname ?: "",
-                        communityService = result.communityService ?: false,
-                        profilePic = result.imgUrl ?: "",
-                        distanceToday = result.distance ?: 0.0,
-                        distanceOverall = result.totalDistance ?: 0.0,
-                        durationToday = result.duration ?: 0L,
-                        durationOverall = result.totalDuration ?: 0L,
-                        facebookId = result.facebookId
-                    )
+                if (result.error == null) {
+                    _uiState.update {
+                        it.copy(
+                            accountId = accountId,
+                            email = result.email ?: "",
+                            phone = result.phoneNumber ?: "",
+                            nickname = result.nickname ?: "",
+                            communityService = result.communityService ?: false,
+                            profilePic = result.imgUrl ?: "",
+                            distanceToday = result.distance ?: 0.0,
+                            distanceOverall = result.totalDistance ?: 0.0,
+                            durationToday = result.duration ?: 0L,
+                            durationOverall = result.totalDuration ?: 0L,
+                            facebookId = result.facebookId,
+                            profileDataLoading = false
+                        )
+                    }
+                } else {
+                    throw RuntimeException("Couldn't get profile data: ${result.error}")
                 }
-            } else {
-                throw RuntimeException("Couldn't get profile data: ${result.error}")
+            } catch (t: Throwable) {
+                Timber.e(t, "Unable to initialize ProfileViewModel")
+                _eventFlow.emit(ProfileScreenEvent.UnexpectedError)
+                _uiState.update { it.copy(profileDataLoading = false) }
             }
-        }.catch {
-            Timber.e(it, "Unable to initialize ProfileViewModel")
-            showUnexpectedErrorToast(context)
-        }.onCompletion {
-            _uiState.update { it.copy(profileDataLoading = false) }
-        }.launchIn(viewModelScope)
+        }
     }
 
     fun onEmailChange(newEmail: String) =
         _uiState.update { state ->
             state.copy(
                 email = newEmail.trim(),
-                emailValidationMessage = ""
+                emailValidationMessageId = 0
             )
         }
 
@@ -108,7 +105,7 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 phone = newPhone.filter { it.isDigit() },
-                phoneValidationMessage = ""
+                phoneValidationMessageId = 0
             )
         }
 
@@ -123,50 +120,61 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(editProfile = true) }
     }
 
-    fun onSave() = flow<Nothing> {
-        _uiState.update { it.copy(profileDataSaving = true) }
+    fun onSave() = viewModelScope.launch {
         if (validateForm()) {
-            with(_uiState.value) {
-                var fileName: String?
-                localProfilePicUri?.let {
-                    fileName = "IMG_PROFILE_${
-                        LocalDate.now().format(WFRDateFormatter.formatter)
-                    }_${md5(accountId.toString())}"
-                    if (it.path != null) {
-                        context.contentResolver.openInputStream(it)?.use { inputStream ->
-                            val body: MultipartBody.Part =
-                                MultipartBody.Part.createFormData(
-                                    "file",
-                                    fileName,
-                                    inputStream.readBytes()
-                                        .toRequestBody("form-data".toMediaTypeOrNull())
-                                )
-                            restApiService.uploadImage(body)
-                            profilePic =
-                                "https://walkingforrochester.com/images/profile/$fileName.jpg"
+            _uiState.update { it.copy(profileDataSaving = true) }
+            try {
+                with(_uiState.value) {
+                    var fileName: String?
+                    localProfilePicUri?.let {
+                        fileName = "IMG_PROFILE_${
+                            LocalDate.now().format(WFRDateFormatter.formatter)
+                        }_${md5(accountId.toString())}"
+                        if (it.path != null) {
+                            context.contentResolver.openInputStream(it)?.use { inputStream ->
+                                val body: MultipartBody.Part =
+                                    MultipartBody.Part.createFormData(
+                                        "file",
+                                        fileName,
+                                        inputStream.readBytes()
+                                            .toRequestBody("form-data".toMediaTypeOrNull())
+                                    )
+                                restApiService.uploadImage(body)
+                                _uiState.update { state ->
+                                    state.copy(
+                                        profilePic =
+                                        "https://walkingforrochester.com/images/profile/$fileName.jpg"
+                                    )
+                                }
+                            }
                         }
                     }
-                }
-                restApiService.updateProfile(
-                    UpdateProfileRequest(
-                        accountId = accountId,
-                        email = email,
-                        phone = phone,
-                        nickname = nickname,
-                        communityService = communityService,
-                        imgUrl = profilePic,
-                        facebookId = facebookId
+                    restApiService.updateProfile(
+                        UpdateProfileRequest(
+                            accountId = accountId,
+                            email = email,
+                            phone = phone,
+                            nickname = nickname,
+                            communityService = communityService,
+                            imgUrl = profilePic,
+                            facebookId = facebookId
+                        )
                     )
-                )
-                _uiState.update { it.copy(localProfilePicUri = null, editProfile = false) }
+                    _uiState.update {
+                        it.copy(
+                            localProfilePicUri = null,
+                            editProfile = false,
+                            profileDataSaving = false
+                        )
+                    }
+                }
+            } catch (t: Throwable) {
+                Timber.e(t, "Unable to save user profile")
+                _eventFlow.emit(ProfileScreenEvent.UnexpectedError)
+                _uiState.update { it.copy(profileDataSaving = false) }
             }
         }
-    }.catch {
-        Timber.e(it, "Unable to save user profile")
-        showUnexpectedErrorToast(context)
-    }.onCompletion {
-        _uiState.update { it.copy(profileDataSaving = false) }
-    }.launchIn(viewModelScope)
+    }
 
     fun onCancel() = viewModelScope.launch {
         _uiState.update { previousState.copy(editProfile = false) }
@@ -195,37 +203,35 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun setLocalPhotoUri(uri: Uri?) = flow<Nothing> {
+    fun setLocalPhotoUri(uri: Uri?) = viewModelScope.launch {
         uri?.let {
             context.contentResolver.openAssetFileDescriptor(it, "r").use { fd ->
                 fd?.let { fileDescriptor ->
                     if (fileDescriptor.length > FILE_SIZE_LIMIT) {
                         _uiState.update { state -> state.copy(tooLargeImage = true) }
-                        return@flow
+                        return@launch
                     }
                 }
             }
         }
         _uiState.update { it.copy(localProfilePicUri = uri, tooLargeImage = false) }
-    }.launchIn(viewModelScope)
+    }
 
     fun onLogout() = viewModelScope.launch {
         removeAccountFromPreferences()
         _eventFlow.emit(ProfileScreenEvent.Logout)
     }
 
-    fun onDeleteAccount() {
-        viewModelScope.launch {
-            val accountId = _uiState.value.accountId
-            try {
-                restApiService.deleteUser(AccountIdRequest(accountId = accountId))
-                // If no errors, treat as a logout...
-                removeAccountFromPreferences()
-                _eventFlow.emit(ProfileScreenEvent.AccountDeleted)
-            } catch(e: Throwable) {
-                Timber.w(e, "Failed to delete account")
-                showUnexpectedErrorToast(context)
-            }
+    fun onDeleteAccount() = viewModelScope.launch {
+        val accountId = _uiState.value.accountId
+        try {
+            restApiService.deleteUser(AccountIdRequest(accountId = accountId))
+            // If no errors, treat as a logout...
+            removeAccountFromPreferences()
+            _eventFlow.emit(ProfileScreenEvent.AccountDeleted)
+        } catch (e: Throwable) {
+            Timber.w(e, "Failed to delete account")
+            _eventFlow.emit(ProfileScreenEvent.UnexpectedError)
         }
     }
 
@@ -238,38 +244,38 @@ class ProfileViewModel @Inject constructor(
 
     private suspend fun validateForm(): Boolean {
         var isValid = true
-        _uiState.update {
-            it.copy(
-                emailValidationMessage = "",
-                phoneValidationMessage = "",
-                profilePicValidationMessage = ""
-            )
-        }
-        val localState = _uiState.value.copy()
+        var emailValidationMessageId = 0
+        var phoneValidationMessageId = 0
 
-        with(localState) {
+        with(_uiState.value) {
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                emailValidationMessage = context.getString(R.string.invalid_email)
+                emailValidationMessageId = R.string.invalid_email
                 isValid = false
-            } else if (email != previousState.email && restApiService.accountByEmail(
-                    EmailAddressRequest(email = email)
-                ).accountId != null
+            } else if (
+                email != previousState.email &&
+                restApiService.accountByEmail(EmailAddressRequest(email = email)).accountId != null
             ) {
-                emailValidationMessage = context.getString(R.string.email_in_use)
+                emailValidationMessageId = R.string.email_in_use
                 isValid = false
             }
             if (phone.length != 10) {
-                phoneValidationMessage = context.getString(R.string.invalid_phone)
+                phoneValidationMessageId = R.string.invalid_phone
                 isValid = false
             }
         }
 
-        _uiState.update { localState }
+        _uiState.update {
+            it.copy(
+                emailValidationMessageId = emailValidationMessageId,
+                phoneValidationMessageId = phoneValidationMessageId
+            )
+        }
         return isValid
     }
 
     private fun getLogo(context: Context): Uri? {
-        val drawable = AppCompatResources.getDrawable(context, R.drawable.wfr_logo) as? BitmapDrawable
+        val drawable =
+            AppCompatResources.getDrawable(context, R.drawable.wfr_logo) as? BitmapDrawable
         val bitmap = drawable?.bitmap ?: return null
         var bmpUri: Uri? = null
         try {

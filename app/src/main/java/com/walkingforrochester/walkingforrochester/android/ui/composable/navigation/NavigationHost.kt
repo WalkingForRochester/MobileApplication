@@ -108,12 +108,15 @@ fun NavigationHost(
             NewsFeedScreen(contentPadding = contentPadding)
         }
         composable(route = ProfileDestination.route) {
-            ProfileScreen(onLogoutComplete = {
-                navController.navigate(LoginDestination.route) {
-                    popUpTo(0)
-                    launchSingleTop
-                }
-            })
+            ProfileScreen(
+                onLogoutComplete = {
+                    navController.navigate(LoginDestination.route) {
+                        popUpTo(LoginDestination.route)
+                        launchSingleTop = true
+                    }
+                },
+                contentPadding = contentPadding
+            )
         }
         composable(route = ContactUs.route) {
             ContactUsScreen(contentPadding = contentPadding)

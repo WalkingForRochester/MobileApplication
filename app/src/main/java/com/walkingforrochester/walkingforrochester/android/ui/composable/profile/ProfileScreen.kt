@@ -2,9 +2,11 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.profil
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -24,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
@@ -33,10 +36,12 @@ import com.walkingforrochester.walkingforrochester.android.viewmodel.ProfileView
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    profileViewModel: ProfileViewModel = hiltViewModel(),
     onLogoutComplete: () -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues(),
+    profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val snackbarHostState = LocalSnackbarHostState.current
     LaunchedEffect(Unit) {
         profileViewModel.eventFlow.collect { event ->
             when (event) {
@@ -44,9 +49,14 @@ fun ProfileScreen(
                     GoogleCredentialUtil.performSignOut(context = context)
                     onLogoutComplete()
                 }
+
                 ProfileScreenEvent.AccountDeleted -> {
                     GoogleCredentialUtil.performSignOut(context = context)
                     onLogoutComplete()
+                }
+
+                ProfileScreenEvent.UnexpectedError -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
                 }
             }
         }
@@ -69,6 +79,8 @@ fun ProfileScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .padding(contentPadding)
+            .imePadding()
     ) {
         Spacer(Modifier)
         ProfileCard(
@@ -80,7 +92,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
         } else {
             Spacer(
-                modifier = Modifier.height(12.dp)
+                modifier = Modifier.height(16.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
             WFROutlinedButton(

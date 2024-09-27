@@ -5,6 +5,7 @@ import android.net.Uri
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -400,7 +401,7 @@ fun EditProfileInfo(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            validationError = uiState.emailValidationMessage
+            validationError = errorMessage(uiState.emailValidationMessageId)
         )
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
@@ -412,7 +413,7 @@ fun EditProfileInfo(
                 keyboardType = KeyboardType.Phone,
                 imeAction = ImeAction.Next
             ),
-            validationError = uiState.phoneValidationMessage
+            validationError = errorMessage(uiState.phoneValidationMessageId)
         )
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
@@ -431,6 +432,14 @@ fun EditProfileInfo(
             labelColor = MaterialTheme.colorScheme.onSurface,
             checkmarkColor = MaterialTheme.colorScheme.inverseOnSurface
         )
+    }
+}
+
+@Composable
+private fun errorMessage(@StringRes msgId: Int): String {
+    return when {
+        msgId != 0 -> stringResource(id = msgId)
+        else -> ""
     }
 }
 

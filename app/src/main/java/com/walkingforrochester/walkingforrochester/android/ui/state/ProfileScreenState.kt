@@ -1,30 +1,31 @@
 package com.walkingforrochester.walkingforrochester.android.ui.state
 
 import android.net.Uri
+import androidx.annotation.StringRes
 
 data class ProfileScreenState(
-    var accountId: Long = 0L,
-    var email: String = "",
-    var emailValidationMessage: String = "",
-    var phone: String = "",
-    var phoneValidationMessage: String = "",
-    var nickname: String = "",
-    var profilePic: String = "",
-    var localProfilePicUri: Uri? = null,
-    var tooLargeImage: Boolean = false,
-    var profilePicValidationMessage: String = "",
-    var editProfile: Boolean = false,
-    var distanceToday: Double = 0.0,
-    var distanceOverall: Double = 0.0,
-    var durationToday: Long = 0L,
-    var durationOverall: Long = 0L,
-    var profileDataLoading: Boolean = false,
-    var profileDataSaving: Boolean = false,
-    var communityService: Boolean = false,
-    var facebookId: String? = null
+    val accountId: Long = 0L,
+    val email: String = "",
+    @StringRes val emailValidationMessageId: Int = 0,
+    val phone: String = "",
+    @StringRes val phoneValidationMessageId: Int = 0,
+    val nickname: String = "",
+    val profilePic: String = "",
+    val localProfilePicUri: Uri? = null,
+    val tooLargeImage: Boolean = false,
+    val editProfile: Boolean = false,
+    val distanceToday: Double = 0.0,
+    val distanceOverall: Double = 0.0,
+    val durationToday: Long = 0L,
+    val durationOverall: Long = 0L,
+    val profileDataLoading: Boolean = false,
+    val profileDataSaving: Boolean = false,
+    val communityService: Boolean = false,
+    val facebookId: String? = null
 )
 
 enum class ProfileScreenEvent {
     Logout,
-    AccountDeleted
+    AccountDeleted,
+    UnexpectedError
 }

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,8 +18,8 @@ android {
         applicationId = "com.walkingforrochester.walkingforrochester.android"
         minSdk = 26
         targetSdk = 35
-        versionCode = 23
-        versionName = "2.0.6"
+        versionCode = 24
+        versionName = "2.0.7"
 
         // For now only supporting English, so stripping out other languages
         // Will strip pseudoLocales en-rXA or ar-rXB as well if testing.
@@ -62,7 +64,13 @@ android {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
+    // Keep source info for android (this is default)
+    includeSourceInformation = true
+
+    featureFlags = setOf(
+        // Explicitly declare until Kotlin 2.1 released
+        ComposeFeatureFlag.StrongSkipping,
+    )
 
     // Uncomment to generate reports
     // reportsDestination = layout.buildDirectory.dir("compose_compiler")

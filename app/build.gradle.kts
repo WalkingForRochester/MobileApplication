@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -66,11 +64,6 @@ android {
 composeCompiler {
     // Keep source info for android (this is default)
     includeSourceInformation = true
-
-    featureFlags = setOf(
-        // Explicitly declare until Kotlin 2.1 released
-        ComposeFeatureFlag.StrongSkipping,
-    )
 
     // Uncomment to generate reports
     // reportsDestination = layout.buildDirectory.dir("compose_compiler")

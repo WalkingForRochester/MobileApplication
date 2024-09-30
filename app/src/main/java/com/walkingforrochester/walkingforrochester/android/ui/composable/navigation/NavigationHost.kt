@@ -47,8 +47,7 @@ fun NavigationHost(
                     }
                 },
                 onLoginComplete = {
-                    navController.popBackStack()
-                    navController.navigateSingleTopTo(LogAWalk.route)
+                    navController.navigateSingleTopTo(LogAWalk.route, clearTop = true)
                 },
                 contentPadding = contentPadding
             )
@@ -57,7 +56,7 @@ fun NavigationHost(
 
             ForgotPasswordScreen(
                 onPasswordResetComplete = {
-                    navController.navigate(LoginDestination.route)
+                    navController.navigateSingleTopTo(LoginDestination.route, clearTop = true)
                 },
                 contentPadding = contentPadding
             )
@@ -78,7 +77,12 @@ fun NavigationHost(
                     lastName = lastName ?: "",
                     facebookId = facebookId
                 ),
-                onRegistrationComplete = { navController.navigateSingleTopTo(LogAWalk.route) },
+                onRegistrationComplete = {
+                    navController.navigateSingleTopTo(
+                        LogAWalk.route,
+                        clearTop = true
+                    )
+                },
                 contentPadding = contentPadding
             )
         }
@@ -87,9 +91,7 @@ fun NavigationHost(
         ) {
             RegistrationScreen(
                 onRegistrationComplete = {
-                    navController.navigateSingleTopTo(
-                        LogAWalk.route
-                    )
+                    navController.navigateSingleTopTo(LogAWalk.route, clearTop = true)
                 },
                 contentPadding = contentPadding
             )
@@ -111,7 +113,8 @@ fun NavigationHost(
             ProfileScreen(
                 onLogoutComplete = {
                     navController.navigate(LoginDestination.route) {
-                        popUpTo(LoginDestination.route)
+                        // Use popUpTo 0 so the user can't go back to being logged in
+                        popUpTo(0)
                         launchSingleTop = true
                     }
                 },
@@ -124,7 +127,11 @@ fun NavigationHost(
     }
 }
 
-fun NavHostController.navigateSingleTopTo(route: String) = this.navigate(route) {
-    popUpTo(LogAWalk.route)
+fun NavHostController.navigateSingleTopTo(
+    route: String,
+    clearTop: Boolean = false
+) = this.navigate(route) {
+    // Use popUpTo(0) to fully clear the top to prevent backing to last destination
+    if (clearTop) popUpTo(0) else popUpTo(LogAWalk.route)
     launchSingleTop = true
 }

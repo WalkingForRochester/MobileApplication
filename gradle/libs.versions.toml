@@ -6,8 +6,8 @@ androidx-browser = "1.8.0"
 androidx-camera = "1.3.4"
 androidx-core = "1.13.1"
 androidx-core-splashscreen = "1.0.1"
-androidx-compose-bom = "2024.09.02"
-androidx-credentials = "1.2.2"
+androidx-compose-bom = "2024.09.03"
+androidx-credentials = "1.3.0"
 androidx-hilt-navigation-compose = "1.2.0"
 androidx-lifecycle = "2.8.6"
 androidx-material = "1.12.0"
@@ -52,7 +52,7 @@ facebook = "17.0.0"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "8.5.2"
+androidGradlePlugin = "8.7.0"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]

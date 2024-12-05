@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
@@ -140,7 +139,7 @@ private fun RequestLocationPermissionsContent(
                 if (dontAskAgain && isAtLeastAndroidR) {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                     intent.data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                    ContextCompat.startActivity(context, intent, null)
+                    context.startActivity(intent, null)
                 } else {
                     onRequestPermissions()
                 }

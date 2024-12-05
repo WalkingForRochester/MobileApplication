@@ -57,7 +57,6 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -372,7 +371,7 @@ private fun TakeAPic(
                 WFRButton(label = R.string.open_app_settings, onClick = {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                     intent.data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                    ContextCompat.startActivity(context, intent, null)
+                    context.startActivity(intent, null)
                 })
                 Spacer(modifier = Modifier.size(4.dp))
                 Text(

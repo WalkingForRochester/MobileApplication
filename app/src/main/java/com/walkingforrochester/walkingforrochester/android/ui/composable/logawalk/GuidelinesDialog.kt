@@ -1,12 +1,12 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -15,7 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
@@ -51,28 +57,55 @@ fun GuidelinesDialog(
             }
         }
     ) {
+        val linkStyles = TextLinkStyles(
+            style = SpanStyle(
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline
+            ),
+            focusedStyle = SpanStyle(
+                background = LocalContentColor.current.copy(alpha = .1f)
+            ),
+            hoveredStyle = SpanStyle(
+                background = LocalContentColor.current.copy(alpha = .08f)
+            ),
+            pressedStyle = SpanStyle(
+                background = LocalContentColor.current.copy(alpha = .1f)
+            )
+        )
+
+        val linkInteractionListener = LinkInteractionListener {
+            val url = (it as LinkAnnotation.Url).url
+            uriHandler.openUri(url)
+            onLinkClick()
+        }
+
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = stringResource(R.string.safety_guidelines_dialog)
             )
-                Text(
-                    modifier = Modifier.clickable {
-                        uriHandler.openUri(guidelinesUrl)
-                        onLinkClick()
-                    },
-                    text = stringResource(id = R.string.view_safety_guidelines),
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline
-                )
-                Text(
-                    modifier = Modifier.clickable {
-                        uriHandler.openUri(waiverUrl)
-                        onLinkClick()
-                    },
-                    text = stringResource(id = R.string.view_waiver),
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline
-                )
+
+            Text(
+                text = buildAnnotatedString {
+                    withLink(
+                        LinkAnnotation.Url(
+                            url = guidelinesUrl,
+                            styles = linkStyles,
+                            linkInteractionListener = linkInteractionListener
+                        )
+                    ) { append(stringResource(id = R.string.view_safety_guidelines)) }
+                }
+            )
+            Text(
+                text = buildAnnotatedString {
+                    withLink(
+                        LinkAnnotation.Url(
+                            url = waiverUrl,
+                            styles = linkStyles,
+                            linkInteractionListener = linkInteractionListener
+                        )
+                    ) { append(stringResource(id = R.string.view_waiver)) }
+                }
+            )
         }
     }
 }

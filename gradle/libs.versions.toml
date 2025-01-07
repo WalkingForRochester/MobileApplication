@@ -3,15 +3,15 @@
 androidx-activity = "1.9.3"
 androidx-annotation = "1.9.1"
 androidx-browser = "1.8.0"
-androidx-camera = "1.4.0"
+androidx-camera = "1.4.1"
 androidx-core = "1.15.0"
 androidx-core-splashscreen = "1.0.1"
-androidx-compose-bom = "2024.11.00"
+androidx-compose-bom = "2024.12.01"
 androidx-credentials = "1.3.0"
 androidx-hilt-navigation-compose = "1.2.0"
 androidx-lifecycle = "2.8.7"
 androidx-material = "1.12.0"
-androidx-navigation = "2.8.4"
+androidx-navigation = "2.8.5"
 androidx-test-espresso = "3.6.1"
 androidx-test-junit = "1.2.1"
 androidx-test-uiautomator = "2.3.0"
@@ -35,7 +35,6 @@ okhttp-bom = "4.12.0"
 retrofit-bom = "2.11.0"
 
 # google services
-play-services-auth = "21.2.0"
 play-services-location = "21.3.0"
 play-services-maps = "19.0.0"
 google-android-maps-compose = "6.1.0"
@@ -120,12 +119,13 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp-bom" }
 okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor" }
+okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver" }
+okhttp-tls = { module = "com.squareup.okhttp3:okhttp-tls" }
 retrofit-bom = { module = "com.squareup.retrofit2:retrofit-bom", version.ref = "retrofit-bom" }
 retrofit = { module = "com.squareup.retrofit2:retrofit" }
 retrofit-converter-moshi = { module = "com.squareup.retrofit2:converter-moshi" }
 
 # Google Services
-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
 google-android-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "google-android-maps-compose" }

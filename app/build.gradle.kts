@@ -142,6 +142,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     androidTestImplementation(okHttpBom)
+    androidTestImplementation(libs.okhttp.mockwebserver)
+    androidTestImplementation(libs.okhttp.tls)
 
     // retrofit
     val retrofitBom = platform(libs.retrofit.bom)
@@ -169,7 +171,6 @@ dependencies {
     kaptTest(libs.dagger.hilt.compilier)
 
     // google service
-    implementation(libs.play.services.auth)
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
     implementation(libs.google.android.maps.compose)

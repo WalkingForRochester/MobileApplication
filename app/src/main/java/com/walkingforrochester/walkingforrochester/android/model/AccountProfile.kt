@@ -29,8 +29,8 @@ data class AccountProfile(
             communityService = false,
             distanceToday = 0.0,
             totalDistance = 0.0,
-            durationToday = 0,
-            totalDuration = 0,
+            durationToday = 0L,
+            totalDuration = 0L,
             facebookId = null
         )
     }

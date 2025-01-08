@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -196,13 +195,12 @@ fun ProfileDataAndActions(
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         ProfilePic(
             profilePic = accountProfile.imageUrl,
             modifier = Modifier.padding(16.dp),
         )
-        Column {
+        Column(modifier.padding(top = 4.dp, bottom = 16.dp)) {
             ProfileActions(
                 enabled = accountProfile.accountId != 0L,
                 onEdit = onEdit,
@@ -369,7 +367,12 @@ fun ProfileActions(
     onEdit: () -> Unit,
     onShare: () -> Unit
 ) {
-    Row(horizontalArrangement = Arrangement.End, modifier = modifier.fillMaxWidth()) {
+    Row(
+        modifier = modifier
+            .padding(end = 4.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
         IconButton(onClick = onEdit, enabled = enabled) {
             Icon(
                 imageVector = Icons.Filled.Edit,
@@ -387,19 +390,19 @@ fun ProfileActions(
 
 @Composable
 fun ProfileInfo(
-    modifier: Modifier = Modifier,
     accountId: Long,
     email: String,
     phone: String,
     nickname: String,
-    communityService: Boolean
+    communityService: Boolean,
+    modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.Top,
         modifier = modifier
-            .fillMaxSize()
-            .padding(end = 16.dp, bottom = 16.dp)
+            .padding(end = 16.dp)
+            .fillMaxWidth()
     ) {
         val context = LocalContext.current
         val formattedPhone = remember(phone) {
@@ -494,13 +497,36 @@ private fun errorMessage(@StringRes msgId: Int): String {
     }
 }
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview
 @Composable
 fun PreviewProfileCard() {
     WalkingForRochesterTheme {
         ProfileCard(
             uiState = ProfileScreenState(),
-            accountProfile = AccountProfile.DEFAULT_PROFILE
+            accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
+                accountId = 1234L,
+                email = "test@email.com",
+                phoneNumber = "5551234567",
+                nickname = "Bob",
+                communityService = true,
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PreviewProfileCardEditing() {
+    WalkingForRochesterTheme {
+        ProfileCard(
+            uiState = ProfileScreenState(editProfile = true),
+            accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
+                accountId = 1234L,
+                email = "test@email.com",
+                phoneNumber = "5551234567",
+                nickname = "Bob",
+                communityService = true,
+            )
         )
     }
 }

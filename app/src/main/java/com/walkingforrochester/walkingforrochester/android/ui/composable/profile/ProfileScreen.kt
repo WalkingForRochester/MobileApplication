@@ -119,7 +119,7 @@ fun ProfileScreenContent(
             .padding(contentPadding)
             .imePadding()
     ) {
-        Spacer(Modifier)
+        Spacer(modifier = Modifier.height(8.dp))
         ProfileCard(
             modifier = Modifier.padding(horizontal = 8.dp),
             uiState = uiState,
@@ -154,10 +154,19 @@ fun ProfileScreenContent(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 34)
 @Composable
 fun PreviewProfileScreen() {
     WalkingForRochesterTheme {
-        ProfileScreen()
+        ProfileScreenContent(
+            uiState = ProfileScreenState(),
+            accountProfile =AccountProfile.DEFAULT_PROFILE.copy(
+                accountId = 1234L,
+                email = "test@email.com",
+                phoneNumber = "5551234567",
+                nickname = "Bob",
+                communityService = false,
+            )
+        )
     }
 }

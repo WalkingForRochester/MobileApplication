@@ -4,5 +4,9 @@ interface PreferenceRepository {
 
     suspend fun fetchAccountId(): Long
 
-    suspend fun removeAccountInfo(): Boolean
+    suspend fun isDarkModeEnabled(): Boolean
+
+    suspend fun updateDarkMode(enabled: Boolean)
+
+    suspend fun removeAccountInfo()
 }

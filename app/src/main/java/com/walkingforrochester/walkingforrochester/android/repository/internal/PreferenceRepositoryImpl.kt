@@ -2,6 +2,7 @@ package com.walkingforrochester.walkingforrochester.android.repository.internal
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
@@ -26,10 +27,23 @@ class PreferenceRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun removeAccountInfo(): Boolean = withContext(ioDispatcher) {
-        sharedPreferences.edit()
-            .remove(context.getString(R.string.wfr_account_id))
-            .remove(context.getString(R.string.wfr_dark_mode_enabled))
-            .commit()
+    override suspend fun isDarkModeEnabled(): Boolean = withContext(ioDispatcher) {
+        sharedPreferences.getBoolean(
+            context.getString(R.string.wfr_dark_mode_enabled),
+            false
+        )
+    }
+
+    override suspend fun updateDarkMode(enabled: Boolean) = withContext(ioDispatcher) {
+        sharedPreferences.edit(commit = true) {
+            putBoolean(context.getString(R.string.wfr_dark_mode_enabled), enabled)
+        }
+    }
+
+    override suspend fun removeAccountInfo() = withContext(ioDispatcher) {
+        sharedPreferences.edit(commit = true) {
+            remove(context.getString(R.string.wfr_account_id))
+            remove(context.getString(R.string.wfr_dark_mode_enabled))
+        }
     }
 }

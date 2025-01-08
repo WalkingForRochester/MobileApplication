@@ -1,6 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.profile
 
-import android.content.Intent
 import android.net.Uri
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -51,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.roundDouble
 import com.walkingforrochester.walkingforrochester.android.ui.PhoneNumberVisualTransformation
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
@@ -59,13 +59,18 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedTextField
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
-import com.walkingforrochester.walkingforrochester.android.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileCard(
-    modifier: Modifier = Modifier,
     uiState: ProfileScreenState,
-    profileViewModel: ProfileViewModel
+    accountProfile: AccountProfile,
+    modifier: Modifier = Modifier,
+    onEdit: () -> Unit = {},
+    onShare: () -> Unit = {},
+    onProfileChange: (AccountProfile) -> Unit = {},
+    onChoosePhoto: (Uri?) -> Unit = {},
+    onSaveProfile: () -> Unit = {},
+    onCancelEdits: () -> Unit = {}
 ) {
     Card(
         modifier = modifier.animateContentSize(),
@@ -82,7 +87,14 @@ fun ProfileCard(
         } else {
             EditableProfile(
                 uiState = uiState,
-                profileViewModel = profileViewModel
+                accountProfile = accountProfile,
+                modifier = Modifier,
+                onEdit = onEdit,
+                onShare = onShare,
+                onProfileChange = onProfileChange,
+                onChoosePhoto = onChoosePhoto,
+                onSaveProfile = onSaveProfile,
+                onCancelEdits = onCancelEdits
             )
             if (!uiState.editProfile) {
                 val dividerColor = LocalContentColor.current.copy(alpha = .2f)
@@ -92,8 +104,8 @@ fun ProfileCard(
                 )
                 ProfileStats(
                     label = stringResource(id = R.string.distances),
-                    previousStat = "${roundDouble(uiState.distanceToday)} mi",
-                    overallStat = "${roundDouble(uiState.distanceOverall)} mi"
+                    previousStat = "${roundDouble(accountProfile.distanceToday)} mi",
+                    overallStat = "${roundDouble(accountProfile.totalDistance)} mi"
                 )
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -101,8 +113,8 @@ fun ProfileCard(
                 )
                 ProfileStats(
                     label = stringResource(id = R.string.durations),
-                    previousStat = DateUtils.formatElapsedTime(uiState.durationToday / 1000),
-                    overallStat = DateUtils.formatElapsedTime(uiState.durationOverall / 1000),
+                    previousStat = DateUtils.formatElapsedTime(accountProfile.durationToday / 1000),
+                    overallStat = DateUtils.formatElapsedTime(accountProfile.totalDuration / 1000),
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 HorizontalDivider(
@@ -121,22 +133,31 @@ fun ProfileCard(
 
 @Composable
 fun EditableProfile(
-    modifier: Modifier = Modifier,
     uiState: ProfileScreenState,
-    profileViewModel: ProfileViewModel
+    accountProfile: AccountProfile,
+    modifier: Modifier = Modifier,
+    onEdit: () -> Unit = {},
+    onShare: () -> Unit = {},
+    onProfileChange: (AccountProfile) -> Unit = {},
+    onChoosePhoto: (Uri?) -> Unit = {},
+    onSaveProfile: () -> Unit = {},
+    onCancelEdits: () -> Unit = {}
 ) {
     Box(modifier = modifier) {
         if (uiState.editProfile) {
             EditProfile(
                 uiState = uiState,
-                profileViewModel = profileViewModel
+                accountProfile = accountProfile,
+                onProfileChange = onProfileChange,
+                onChoosePhoto = onChoosePhoto,
+                onSaveProfile = onSaveProfile,
+                onCancelEdits = onCancelEdits
             )
         } else {
-            val context = LocalContext.current
             ProfileDataAndActions(
-                uiState = uiState,
-                onEdit = profileViewModel::onEdit,
-                onShare =  { profileViewModel.onShare(context) }
+                accountProfile = accountProfile,
+                onEdit = onEdit,
+                onShare = onShare
             )
         }
     }
@@ -168,31 +189,31 @@ fun ProfileStats(
 
 @Composable
 fun ProfileDataAndActions(
+    accountProfile: AccountProfile,
     modifier: Modifier = Modifier,
-    uiState: ProfileScreenState,
-    onEdit: () -> Unit,
-    onShare: () -> Intent
+    onEdit: () -> Unit = {},
+    onShare: () -> Unit = {}
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         ProfilePic(
-            profilePic = uiState.profilePic,
+            profilePic = accountProfile.imageUrl,
             modifier = Modifier.padding(16.dp),
         )
         Column {
             ProfileActions(
-                enabled = uiState.accountId != 0L,
+                enabled = accountProfile.accountId != 0L,
                 onEdit = onEdit,
                 onShare = onShare
             )
             ProfileInfo(
-                accountId = uiState.accountId,
-                email = uiState.email,
-                phone = uiState.phone,
-                nickname = uiState.nickname,
-                communityService = uiState.communityService
+                accountId = accountProfile.accountId,
+                email = accountProfile.email,
+                phone = accountProfile.phoneNumber,
+                nickname = accountProfile.nickname,
+                communityService = accountProfile.communityService
             )
         }
     }
@@ -200,9 +221,13 @@ fun ProfileDataAndActions(
 
 @Composable
 fun EditProfile(
-    modifier: Modifier = Modifier,
     uiState: ProfileScreenState,
-    profileViewModel: ProfileViewModel
+    accountProfile: AccountProfile,
+    modifier: Modifier = Modifier,
+    onProfileChange: (AccountProfile) -> Unit = {},
+    onChoosePhoto: (Uri?) -> Unit = {},
+    onSaveProfile: () -> Unit = {},
+    onCancelEdits: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -212,12 +237,17 @@ fun EditProfile(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         EditProfilePic(
-            uiState = uiState,
-            setLocalPhotoUri = profileViewModel::setLocalPhotoUri
+            currentImageUrl = accountProfile.imageUrl,
+            localImageUri = uiState.localProfilePicUri,
+            imageTooLarge = uiState.tooLargeImage,
+            modifier = Modifier,
+            onChoosePhoto = onChoosePhoto
         )
         EditProfileInfo(
-            uiState = uiState,
-            profileViewModel = profileViewModel
+            accountProfile = accountProfile,
+            emailValidationMessageId = uiState.emailValidationMessageId,
+            phoneValidationMessageId = uiState.phoneValidationMessageId,
+            onProfileChange = onProfileChange
         )
         Row(
             modifier = Modifier
@@ -225,10 +255,13 @@ fun EditProfile(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            WFROutlinedButton(label = R.string.cancel, onClick = profileViewModel::onCancel)
+            WFROutlinedButton(
+                label = R.string.cancel,
+                onClick = onCancelEdits
+            )
             WFRButton(
                 label = R.string.save,
-                onClick = profileViewModel::onSave,
+                onClick = onSaveProfile,
                 loading = uiState.profileDataSaving
             )
         }
@@ -260,32 +293,28 @@ fun ProfilePic(
 
 @Composable
 fun EditProfilePic(
+    currentImageUrl: String,
+    localImageUri: Uri?,
+    imageTooLarge: Boolean,
     modifier: Modifier = Modifier,
-    uiState: ProfileScreenState,
-    setLocalPhotoUri: (Uri?) -> Unit
+    onChoosePhoto: (Uri?) -> Unit
 ) {
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        setLocalPhotoUri(uri)
+        onChoosePhoto(uri)
     }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (uiState.profilePic.isBlank()) {
-            Icon(
-                imageVector = Icons.Filled.AccountCircle,
-                contentDescription = stringResource(R.string.profile_pic),
-                modifier = modifier.size(192.dp)
-            )
-        } else {
-            uiState.localProfilePicUri?.let {
+        when {
+            localImageUri != null -> {
                 AsyncImage(
                     model = ImageRequest
                         .Builder(LocalContext.current)
-                        .data(data = it)
+                        .data(data = localImageUri)
                         .build(),
                     contentDescription = stringResource(R.string.profile_pic),
                     contentScale = ContentScale.Crop,
@@ -295,9 +324,18 @@ fun EditProfilePic(
                         .clip(CircleShape)
                 )
             }
-            if (uiState.localProfilePicUri == null) {
+
+            currentImageUrl.isBlank() -> {
+                Icon(
+                    imageVector = Icons.Filled.AccountCircle,
+                    contentDescription = stringResource(R.string.profile_pic),
+                    modifier = modifier.size(192.dp)
+                )
+            }
+
+            else -> {
                 AsyncImage(
-                    model = uiState.profilePic,
+                    model = currentImageUrl,
                     error = rememberVectorPainter(image = Icons.Filled.AccountCircle),
                     contentScale = ContentScale.Crop,
                     contentDescription = stringResource(R.string.profile_pic),
@@ -307,7 +345,8 @@ fun EditProfilePic(
                 )
             }
         }
-        if (uiState.tooLargeImage) {
+
+        if (imageTooLarge) {
             Text(
                 text = stringResource(R.string.too_large_image),
                 color = MaterialTheme.colorScheme.error,
@@ -325,9 +364,11 @@ fun EditProfilePic(
 
 @Composable
 fun ProfileActions(
-    modifier: Modifier = Modifier, enabled: Boolean, onEdit: () -> Unit, onShare: () -> Intent
+    modifier: Modifier = Modifier,
+    enabled: Boolean,
+    onEdit: () -> Unit,
+    onShare: () -> Unit
 ) {
-    val context = LocalContext.current
     Row(horizontalArrangement = Arrangement.End, modifier = modifier.fillMaxWidth()) {
         IconButton(onClick = onEdit, enabled = enabled) {
             Icon(
@@ -335,7 +376,7 @@ fun ProfileActions(
                 contentDescription = stringResource(R.string.edit_profile)
             )
         }
-        IconButton(onClick = { context.startActivity(onShare()) }, enabled = enabled) {
+        IconButton(onClick = onShare, enabled = enabled) {
             Icon(
                 imageVector = Icons.Filled.Share,
                 contentDescription = stringResource(R.string.share_profile)
@@ -381,9 +422,11 @@ fun ProfileInfo(
 
 @Composable
 fun EditProfileInfo(
+    accountProfile: AccountProfile,
+    emailValidationMessageId: Int,
+    phoneValidationMessageId: Int,
     modifier: Modifier = Modifier,
-    uiState: ProfileScreenState,
-    profileViewModel: ProfileViewModel
+    onProfileChange: (AccountProfile) -> Unit = {}
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -394,31 +437,37 @@ fun EditProfileInfo(
     ) {
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
-            value = uiState.email,
-            onValueChange = profileViewModel::onEmailChange,
+            value = accountProfile.email,
+            onValueChange = { newEmail ->
+                onProfileChange(accountProfile.copy(email = newEmail))
+            },
             labelRes = R.string.email_address,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
             ),
-            validationError = errorMessage(uiState.emailValidationMessageId)
+            validationError = errorMessage(emailValidationMessageId)
         )
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
-            value = uiState.phone,
-            onValueChange = profileViewModel::onPhoneChange,
+            value = accountProfile.phoneNumber,
+            onValueChange = { newPhone ->
+                onProfileChange(accountProfile.copy(phoneNumber = newPhone))
+            },
             labelRes = R.string.phone_number,
             visualTransformation = PhoneNumberVisualTransformation(LocalContext.current),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Phone,
                 imeAction = ImeAction.Next
             ),
-            validationError = errorMessage(uiState.phoneValidationMessageId)
+            validationError = errorMessage(phoneValidationMessageId)
         )
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
-            value = uiState.nickname,
-            onValueChange = profileViewModel::onNicknameChange,
+            value = accountProfile.nickname,
+            onValueChange = { newNickName ->
+                onProfileChange(accountProfile.copy(nickname = newNickName))
+            },
             labelRes = R.string.nickname,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
@@ -427,8 +476,10 @@ fun EditProfileInfo(
         )
         CommunityServiceCheckbox(
             modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 4.dp),
-            checked = uiState.communityService,
-            onCheckedChange = profileViewModel::onCommunityServiceChange,
+            checked = accountProfile.communityService,
+            onCheckedChange = { newValue ->
+                onProfileChange(accountProfile.copy(communityService = newValue))
+            },
             labelColor = MaterialTheme.colorScheme.onSurface,
             checkmarkColor = MaterialTheme.colorScheme.inverseOnSurface
         )
@@ -447,6 +498,9 @@ private fun errorMessage(@StringRes msgId: Int): String {
 @Composable
 fun PreviewProfileCard() {
     WalkingForRochesterTheme {
-        //ProfileCard()
+        ProfileCard(
+            uiState = ProfileScreenState(),
+            accountProfile = AccountProfile.DEFAULT_PROFILE
+        )
     }
 }

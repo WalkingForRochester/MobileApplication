@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.profile
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,11 +26,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
+import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.ProfileViewModel
 
@@ -63,13 +67,46 @@ fun ProfileScreen(
     }
 
     val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
+    val accountProfile by profileViewModel.accountProfile.collectAsStateWithLifecycle()
+
+    ProfileScreenContent(
+        uiState = uiState,
+        accountProfile = accountProfile,
+        contentPadding = contentPadding,
+        modifier = modifier,
+        onEdit = { profileViewModel.onEdit() },
+        onShare = { context.safeStartActivity(profileViewModel.onShare(context)) },
+        onProfileChange = { profileViewModel.onProfileChange(it) },
+        onChoosePhoto = { profileViewModel.onChoosePhoto(it) },
+        onSaveProfile = { profileViewModel.onSave() },
+        onCancelEdits = { profileViewModel.onCancel() },
+        onDeleteAccount = { profileViewModel.onDeleteAccount() },
+        onLogout = { profileViewModel.onLogout() }
+    )
+}
+
+@Composable
+fun ProfileScreenContent(
+    uiState: ProfileScreenState,
+    accountProfile: AccountProfile,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    onEdit: () -> Unit = {},
+    onShare: () -> Unit = {},
+    onProfileChange: (AccountProfile) -> Unit = {},
+    onChoosePhoto: (Uri?) -> Unit = {},
+    onSaveProfile: () -> Unit = {},
+    onCancelEdits: () -> Unit = {},
+    onDeleteAccount: () -> Unit = {},
+    onLogout: () -> Unit = {}
+) {
     var openAlertDialog by remember { mutableStateOf(false) }
 
     if (openAlertDialog) {
         DeleteAccountDialog(
-            hasCommunityService = uiState.communityService,
+            hasCommunityService = accountProfile.communityService,
             onDismissRequest = { openAlertDialog = false },
-            onConfirmed = { profileViewModel.onDeleteAccount() }
+            onConfirmed = onDeleteAccount
         )
     }
 
@@ -86,7 +123,13 @@ fun ProfileScreen(
         ProfileCard(
             modifier = Modifier.padding(horizontal = 8.dp),
             uiState = uiState,
-            profileViewModel = profileViewModel
+            accountProfile = accountProfile,
+            onEdit = onEdit,
+            onShare = onShare,
+            onProfileChange = onProfileChange,
+            onChoosePhoto = onChoosePhoto,
+            onSaveProfile = onSaveProfile,
+            onCancelEdits = onCancelEdits
         )
         if (uiState.editProfile) {
             Spacer(modifier = Modifier.height(8.dp))
@@ -102,7 +145,7 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(12.dp))
             WFRButton(
-                onClick = profileViewModel::onLogout,
+                onClick = onLogout,
                 label = R.string.logout,
                 modifier = Modifier.widthIn(min = 200.dp)
             )

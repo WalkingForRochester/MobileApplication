@@ -2,7 +2,6 @@ package com.walkingforrochester.walkingforrochester.android.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -16,6 +15,7 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
+import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.roundDouble
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -41,9 +40,9 @@ const val FILE_SIZE_LIMIT: Long = 20 * 1024 * 1024 // 20 megabytes
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val networkRepository: NetworkRepository,
     @ApplicationContext private val context: Context,
-    private val sharedPreferences: SharedPreferences,
+    private val networkRepository: NetworkRepository,
+    private val preferenceRepository: PreferenceRepository,
     @IODispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -82,10 +81,12 @@ class ProfileViewModel @Inject constructor(
     }
 
     private suspend fun refreshProfile() {
-        val accountId = withContext(ioDispatcher) {
-            sharedPreferences.getLong(context.getString(R.string.wfr_account_id), 0)
+        val accountId = preferenceRepository.fetchAccountId()
+        val profile = if (accountId != AccountProfile.NO_ACCOUNT) {
+            networkRepository.fetchProfile(accountId)
+        } else {
+            AccountProfile.DEFAULT_PROFILE
         }
-        val profile = networkRepository.fetchProfile(accountId)
         _accountProfile.update { profile }
     }
 
@@ -188,7 +189,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onLogout() = viewModelScope.launch {
-        removeAccountFromPreferences()
+        preferenceRepository.removeAccountInfo()
         _eventFlow.emit(ProfileScreenEvent.Logout)
     }
 
@@ -197,16 +198,10 @@ class ProfileViewModel @Inject constructor(
         val accountId = _accountProfile.value.accountId
         networkRepository.deleteUser(accountId)
         // If no errors, treat as a logout...
-        removeAccountFromPreferences()
+        preferenceRepository.removeAccountInfo()
         _eventFlow.emit(ProfileScreenEvent.AccountDeleted)
     }
 
-    private suspend fun removeAccountFromPreferences() = withContext(ioDispatcher) {
-        sharedPreferences.edit()
-            .remove(context.getString(R.string.wfr_account_id))
-            .remove(context.getString(R.string.wfr_dark_mode_enabled))
-            .commit()
-    }
 
     private suspend fun validateForm(): Boolean {
         var isValid = true

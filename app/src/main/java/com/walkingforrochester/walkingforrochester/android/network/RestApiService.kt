@@ -11,13 +11,11 @@ import com.walkingforrochester.walkingforrochester.android.network.request.Updat
 import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
 import com.walkingforrochester.walkingforrochester.android.network.response.CodeResponse
 import okhttp3.MultipartBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
-
-const val BASE_URL =
-    "https://walkingforrochester.com/php/v2/"
 
 interface RestApiService {
 
@@ -47,7 +45,7 @@ interface RestApiService {
 
     @Multipart
     @POST("uploadImage.php")
-    suspend fun uploadImage(@Part file: MultipartBody.Part)
+    suspend fun uploadImage(@Part file: MultipartBody.Part): Response<Void>
 
     @POST("leaderboard.php")
     suspend fun leaderboard(@Body leaderboardRequest: LeaderboardRequest): List<Leader>
@@ -55,4 +53,7 @@ interface RestApiService {
     @POST("logAWalk.php")
     suspend fun logAWalk(@Body logAWalkRequest: LogAWalkRequest)
 
+    companion object {
+        const val BASE_URL = "https://walkingforrochester.com/php/v2/"
+    }
 }

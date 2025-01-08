@@ -6,7 +6,6 @@ import com.squareup.moshi.Moshi
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.network.BASE_URL
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import dagger.Module
 import dagger.Provides
@@ -36,9 +35,6 @@ class AppModule {
             Context.MODE_PRIVATE
         )
 
-    @Provides
-    fun provideBaseUrl() = BASE_URL
-
     @Singleton
     @Provides
     fun provideOkHttpClient(): OkHttpClient {
@@ -47,7 +43,6 @@ class AppModule {
                 .addHeader("WFR-Auth-Token", BuildConfig.wfrAuthToken).build()
             chain.proceed(request)
         }
-
 
         return OkHttpClient.Builder().apply {
             addInterceptor(securityInterceptor)
@@ -75,24 +70,28 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideRetrofit(moshi: Moshi, okHttpClient: OkHttpClient, BASE_URL: String): Retrofit {
+    fun provideRestApiService(moshi: Moshi, okHttpClient: OkHttpClient): RestApiService {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl(BASE_URL)
+            .baseUrl(RestApiService.BASE_URL)
             .client(okHttpClient)
             .build()
+            .create(RestApiService::class.java)
     }
-
-    @Singleton
-    @Provides
-    fun provideApiService(retrofit: Retrofit): RestApiService =
-        retrofit.create(RestApiService::class.java)
 
     @DefaultDispatcher
     @Provides
     fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+
+    @IODispatcher
+    @Provides
+    fun provideIODispatcher(): CoroutineDispatcher = Dispatchers.IO
 }
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class DefaultDispatcher
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class IODispatcher

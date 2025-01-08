@@ -22,7 +22,13 @@ class PhoneNumberVisualTransformation(
     private val isDebuggable: Boolean
 
     init {
-        val telephonyManager: TelephonyManager? = context.applicationContext.getSystemService()
+        // Using try catch because preview throws exception trying to get telephony manager
+        val telephonyManager: TelephonyManager? = try {
+            context.applicationContext.getSystemService()
+        } catch (t: Throwable) {
+            Timber.w("Unable to get telephony manager: %s", t.message)
+            null
+        }
         val countryCode = determineCountryCode(telephonyManager)
         phoneNumberFormatter = PhoneNumberUtil.getInstance().getAsYouTypeFormatter(countryCode)
 

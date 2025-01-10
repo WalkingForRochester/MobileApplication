@@ -51,7 +51,7 @@ facebook = "17.0.0"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "8.7.3"
+androidGradlePlugin = "8.8.0"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]

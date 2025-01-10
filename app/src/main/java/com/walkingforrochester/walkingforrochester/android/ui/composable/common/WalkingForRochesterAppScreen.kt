@@ -1,12 +1,9 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
@@ -28,11 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.BottomBar
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.Destinations
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.LoginDestination
@@ -93,7 +87,6 @@ fun WFRNavigationDrawer(
     ) {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         AppScreen(
-            backgroundImage = if (LoginDestination == currentScreen) R.drawable.rainbowbg else null,
             topBar = {
                 TopBar(
                     currentScreen = currentScreen,
@@ -128,7 +121,6 @@ val LocalSnackbarHostState =
 @Composable
 fun AppScreen(
     modifier: Modifier = Modifier,
-    @DrawableRes backgroundImage: Int? = null,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
@@ -151,14 +143,6 @@ fun AppScreen(
                 )
             )
         ) { paddingValues ->
-            if (backgroundImage != null) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = painterResource(backgroundImage),
-                    contentDescription = "background_image",
-                    contentScale = ContentScale.Crop
-                )
-            }
             content(paddingValues)
         }
     }

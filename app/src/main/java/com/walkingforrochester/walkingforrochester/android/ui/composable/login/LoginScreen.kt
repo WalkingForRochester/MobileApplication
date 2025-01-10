@@ -1,6 +1,7 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.login
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,7 +26,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +47,8 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
+import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenState
+import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LoginViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -66,6 +71,8 @@ fun LoginScreen(
     val context = LocalContext.current
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
     val callbackManager = LocalFacebookCallbackManager.current
+
+    val coroutineScope = rememberCoroutineScope()
 
     DisposableEffect(key1 = callbackManager) {
         LoginManager.getInstance().registerCallback(
@@ -112,10 +119,6 @@ fun LoginScreen(
         }
     }
 
-    val activity = LocalActivityResultRegistryOwner.current
-
-    val coroutineScope = rememberCoroutineScope()
-
     LaunchedEffect(context, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
             // small delay before showing password manager
@@ -132,6 +135,56 @@ fun LoginScreen(
         }
     }
 
+    val activity = LocalActivityResultRegistryOwner.current
+
+    LoginScreenContent(
+        uiState = uiState,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        onForgotPassword = onForgotPassword,
+        onRegister = onRegister,
+        onContinueWithGoogle = {
+            coroutineScope.launch {
+                GoogleCredentialUtil.performSignIn(
+                    context,
+                    loginViewModel::continueWithGoogle
+                )
+            }
+        },
+        onContinueWithFacebook = {
+            activity?.let {
+                LoginManager.getInstance().logInWithReadPermissions(
+                    it, callbackManager, listOf("email", "public_profile")
+                )
+            }
+        },
+        onEmailChanged = { loginViewModel.onEmailAddressValueChange(it) },
+        onPasswordChanged = { loginViewModel.onPasswordValueChange(it) },
+        onLoginClicked = { loginViewModel.onLoginClicked(autofillData = it) }
+    )
+}
+
+@Composable
+fun LoginScreenContent(
+    uiState: LoginScreenState,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    onForgotPassword: () -> Unit = {},
+    onRegister: () -> Unit = {},
+    onContinueWithGoogle: () -> Unit = {},
+    onContinueWithFacebook: () -> Unit = {},
+    onEmailChanged: (String) -> Unit = {},
+    onPasswordChanged: (String) -> Unit = {},
+    onLoginClicked: (Boolean) -> Unit = {}
+) {
+    // Manually add background here
+    Image(
+        modifier = Modifier.fillMaxSize(),
+        painter = painterResource(R.drawable.rainbowbg),
+        contentDescription = "background_image",
+        contentScale = ContentScale.Crop
+    )
+
     LoadingOverlay(uiState.socialLoading)
 
     Column(
@@ -147,21 +200,8 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.weight(1f))
         SocialLoginButtons(
-            onContinueWithGoogle = {
-                coroutineScope.launch {
-                    GoogleCredentialUtil.performSignIn(
-                        context,
-                        loginViewModel::continueWithGoogle
-                    )
-                }
-            },
-            onContinueWithFacebook = {
-                activity?.let {
-                    LoginManager.getInstance().logInWithReadPermissions(
-                        it, callbackManager, listOf("email", "public_profile")
-                    )
-                }
-            },
+            onContinueWithGoogle = onContinueWithGoogle,
+            onContinueWithFacebook = onContinueWithFacebook,
             modifier = Modifier.padding(top = 20.dp),
         )
         Text(
@@ -172,17 +212,17 @@ fun LoginScreen(
         LoginForm(
             loginScreenState = uiState,
             onEmailAddressValueChange = { newEmailAddress, autofillPerformed ->
-                loginViewModel.onEmailAddressValueChange(newEmailAddress)
+                onEmailChanged(newEmailAddress)
                 autofillEmail = autofillPerformed
             },
             onPasswordValueChange = { newPassword, autofillPerformed ->
-                loginViewModel.onPasswordValueChange(newPassword)
+                onPasswordChanged(newPassword)
                 autofillPassword = autofillPerformed
             }
         )
         Spacer(modifier = Modifier.height(24.dp))
         WFRButton(
-            onClick = { loginViewModel.onLoginClicked(autofillData = autofillEmail && autofillPassword) },
+            onClick = { onLoginClicked(autofillEmail && autofillPassword) },
             label = R.string.sign_in,
             testTag = "login_button",
             buttonColor = Color.Black,
@@ -196,7 +236,7 @@ fun LoginScreen(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             TextButton(
-                onClick = { onForgotPassword() },
+                onClick = onForgotPassword,
                 modifier = Modifier.height(48.dp)
             ) {
                 Text(
@@ -206,7 +246,7 @@ fun LoginScreen(
                 )
             }
             TextButton(
-                onClick = { onRegister() },
+                onClick = onRegister,
                 Modifier.height(48.dp)
             ) {
                 Text(
@@ -220,8 +260,10 @@ fun LoginScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun PreviewLoginScreen() {
-    //LoginScreen(loginViewModel = LoginViewModel(RestApi.retrofitService, Dispatchers.Default))
+    WalkingForRochesterTheme {
+        LoginScreenContent(uiState = LoginScreenState())
+    }
 }

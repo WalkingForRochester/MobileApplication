@@ -6,9 +6,11 @@ import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
 import com.walkingforrochester.walkingforrochester.android.md5
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.model.ProfileException
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,24 +38,20 @@ class NetworkRepositoryImpl @Inject constructor(
         if (response.error.isNullOrBlank()) {
             return response.toAccountProfile()
         } else {
-            throw RuntimeException(response.error)
+            throw ProfileException(response.error)
         }
     }
 
-    override suspend fun fetchProfile(email: String): AccountProfile {
+    override suspend fun fetchAccountId(email: String): Long {
 
-        val response = restApiService.accountByEmail(EmailAddressRequest(email = email))
-        if (response.error.isNullOrBlank()) {
-            return response.toAccountProfile()
-        } else {
-            throw RuntimeException(response.error)
-        }
+        // Allow result to return regardless of error text. If it is an error, the
+        // account id will be NO_ACCOUNT
+        val result = restApiService.accountByEmail(EmailAddressRequest(email = email))
+        return result.toAccountProfile().accountId
     }
 
     override suspend fun isEmailInUse(email: String): Boolean {
-        val response = restApiService.accountByEmail(EmailAddressRequest(email = email))
-        Timber.d("Response: %s", response)
-        return response.accountId != null
+        return fetchAccountId(email) != AccountProfile.NO_ACCOUNT
     }
 
     override suspend fun updateProfile(profile: AccountProfile) {
@@ -68,6 +66,16 @@ class NetworkRepositoryImpl @Inject constructor(
                 facebookId = profile.facebookId
             )
         )
+    }
+
+    override suspend fun performLogin(email: String, password: String): Long {
+        val response = restApiService.login(LoginRequest(email, password))
+
+        if (response.error.isNullOrBlank()) {
+            return response.toAccountProfile().accountId
+        } else {
+            throw ProfileException(response.error)
+        }
     }
 
     override suspend fun uploadProfileImage(

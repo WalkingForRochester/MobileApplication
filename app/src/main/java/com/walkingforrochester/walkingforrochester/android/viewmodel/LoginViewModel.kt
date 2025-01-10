@@ -1,22 +1,18 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.network.RestApiService
-import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
-import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
-import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
-import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
-import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.model.ProfileException
+import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
+import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -29,9 +25,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val restApiService: RestApiService,
-    @ApplicationContext private val context: Context,
-    private val sharedPreferences: SharedPreferences
+    private val networkRepository: NetworkRepository,
+    private val preferenceRepository: PreferenceRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginScreenState())
@@ -40,13 +35,34 @@ class LoginViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<LoginScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun onLoginClicked(autofillData: Boolean = true) = viewModelScope.launch {
+
+    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+
+        if (throwable is ProfileException) {
+            Timber.e("Login failed: %s", throwable.message)
+            setAuthenticationError(throwable.message)
+        } else {
+            Timber.e(throwable, "Unexpected error processing login")
+        }
+
+        if (!_eventFlow.tryEmit(LoginScreenEvent.UnexpectedError)) {
+            Timber.w("Failed to report error due to no listener")
+        }
+
+        _uiState.update {
+            it.copy(loading = false, socialLoading = false)
+        }
+    }
+
+    fun onLoginClicked(
+        autofillData: Boolean = true
+    ) = viewModelScope.launch(context = exceptionHandler) {
         performLogin(manualLogin = !autofillData)
     }
 
     fun continueWithGoogle(
         googleCredential: GoogleIdTokenCredential
-    ) = viewModelScope.launch {
+    ) = viewModelScope.launch(context = exceptionHandler) {
         socialSignIn(
             email = googleCredential.id,
             firstName = googleCredential.givenName ?: "",
@@ -56,28 +72,23 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun performLogin(manualLogin: Boolean) {
         _uiState.update { it.copy(loading = true) }
-        try {
-            if (validateCredentials()) {
-                with(_uiState.value) {
-                    val result: AccountResponse =
-                        restApiService.login(LoginRequest(emailAddress, password))
 
-                    if (result.accountId != null) {
-                        completeLogin(result.accountId, manualLogin)
-                    } else {
-                        setAuthenticationError(result.error)
-                    }
-                }
+        if (validateCredentials()) {
+            with(_uiState.value) {
+                Timber.d("Performing login request")
+                val accountId = networkRepository.performLogin(
+                    email = emailAddress,
+                    password = password
+                )
+
+                completeLogin(accountId, manualLogin)
             }
-        } catch (t: Throwable) {
-            Timber.e(t, "Login request failed")
-            _eventFlow.emit(LoginScreenEvent.UnexpectedError)
-        } finally {
-            _uiState.update { it.copy(loading = false) }
         }
     }
 
-    fun continueWithFacebook(obj: JSONObject) = viewModelScope.launch {
+    fun continueWithFacebook(
+        obj: JSONObject
+    ) = viewModelScope.launch(context = exceptionHandler) {
         socialSignIn(
             email = obj.optString("email", ""),
             firstName = obj.optString("first_name", "Firstname"),
@@ -93,54 +104,37 @@ class LoginViewModel @Inject constructor(
         facebookId: String = ""
     ) {
         _uiState.update { it.copy(socialLoading = true) }
-        try {
-            val result: AccountResponse =
-                restApiService.accountByEmail(EmailAddressRequest(email = email))
+        val accountId = networkRepository.fetchAccountId(email = email)
 
-            if (result.accountId != null) {
-                completeLogin(accountId = result.accountId)
+        if (accountId != AccountProfile.NO_ACCOUNT) {
+            completeLogin(accountId = accountId)
 
-                if (facebookId.isNotBlank()) {
-                    // Update facebook id, if needed
-                    restApiService.userProfile(AccountIdRequest(accountId = result.accountId)).let {
-                        if (it.facebookId != facebookId) {
-                            restApiService.updateProfile(
-                                UpdateProfileRequest(
-                                    accountId = result.accountId,
-                                    email = email,
-                                    phone = it.phoneNumber ?: "",
-                                    nickname = it.nickname ?: "",
-                                    communityService = it.communityService ?: false,
-                                    imgUrl = it.imgUrl ?: "",
-                                    facebookId = facebookId
-                                )
-                            )
-                        }
-                    }
+            if (facebookId.isNotBlank()) {
+                // Update facebook id, if needed
+                val profile = networkRepository.fetchProfile(accountId = accountId)
+
+                if (profile.facebookId != facebookId) {
+                    networkRepository.updateProfile(profile.copy(facebookId = facebookId))
                 }
-            } else {
-                _uiState.update {
-                    it.copy(
-                        emailAddress = email,
-                        firstName = firstName,
-                        lastName = lastName,
-                        facebookId = facebookId,
-                    )
-                }
-                _eventFlow.emit(LoginScreenEvent.NeedsRegistration)
             }
-        } catch (t: Throwable) {
-            Timber.e(t, "Social sign in failed")
-            _eventFlow.emit(LoginScreenEvent.UnexpectedError)
-        } finally {
-            _uiState.update { it.copy(socialLoading = false) }
+        } else {
+            // Account doesn't exist, so prepopulate registration
+            _uiState.update {
+                it.copy(
+                    emailAddress = email,
+                    firstName = firstName,
+                    lastName = lastName,
+                    facebookId = facebookId,
+                )
+            }
+            _eventFlow.emit(LoginScreenEvent.NeedsRegistration)
         }
     }
 
     fun onLogin(
         newEmailAddress: String,
         newPassword: String
-    ) = viewModelScope.launch {
+    ) = viewModelScope.launch(context = exceptionHandler) {
         onEmailAddressValueChange(newEmailAddress)
         onPasswordValueChange(newPassword)
         performLogin(manualLogin = false)
@@ -206,8 +200,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private suspend fun completeLogin(accountId: Long, manualLogin: Boolean = false) {
-        sharedPreferences.edit().putLong(context.getString(R.string.wfr_account_id), accountId)
-            .apply()
+        preferenceRepository.updateAccountId(accountId = accountId)
 
         _eventFlow.emit(
             when (manualLogin) {
@@ -216,5 +209,4 @@ class LoginViewModel @Inject constructor(
             }
         )
     }
-
 }

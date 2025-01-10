@@ -9,11 +9,13 @@ interface NetworkRepository {
 
     suspend fun fetchProfile(accountId: Long): AccountProfile
 
-    suspend fun fetchProfile(email: String): AccountProfile
+    suspend fun fetchAccountId(email: String): Long
 
     suspend fun isEmailInUse(email: String): Boolean
 
     suspend fun updateProfile(profile: AccountProfile)
+
+    suspend fun performLogin(email: String, password: String): Long
 
     suspend fun uploadProfileImage(
         accountId: Long,

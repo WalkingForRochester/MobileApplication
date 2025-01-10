@@ -27,6 +27,12 @@ class PreferenceRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun updateAccountId(accountId: Long) {
+        sharedPreferences.edit(commit = true) {
+            putLong(context.getString(R.string.wfr_account_id), accountId)
+        }
+    }
+
     override suspend fun isDarkModeEnabled(): Boolean = withContext(ioDispatcher) {
         sharedPreferences.getBoolean(
             context.getString(R.string.wfr_dark_mode_enabled),

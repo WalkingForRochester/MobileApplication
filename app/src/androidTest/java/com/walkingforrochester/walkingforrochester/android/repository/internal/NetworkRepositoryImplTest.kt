@@ -10,6 +10,7 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
 import com.walkingforrochester.walkingforrochester.android.md5
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.model.ProfileException
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.buildHttpClient
 import com.walkingforrochester.walkingforrochester.android.network.installServerClientCertificate
@@ -127,17 +128,15 @@ class NetworkRepositoryImplTest {
                 .setBody(buildAccountResponse())
         )
 
-        val profile = networkRepository.fetchProfile(EMAIL)
-        validateProfile(profile)
+        val accountId = networkRepository.fetchAccountId(EMAIL)
+        assertEquals(ACCOUNT_ID, accountId)
 
         // Test empty body sample (shouldn't really happen but tests default logic)
         mockWebServer.enqueue(
             MockResponse().setResponseCode(HttpURLConnection.HTTP_OK).setBody("{}")
         )
-        val profile2 = networkRepository.fetchProfile(EMAIL)
-        assertEquals(AccountProfile.NO_ACCOUNT, profile2.accountId)
-        assertEquals("", profile2.email)
-        assertEquals(0.0, profile2.distanceToday)
+        val accountId2 = networkRepository.fetchAccountId(EMAIL)
+        assertEquals(AccountProfile.NO_ACCOUNT, accountId2)
 
         mockWebServer.enqueue(
             MockResponse()
@@ -145,16 +144,16 @@ class NetworkRepositoryImplTest {
                 .setBody(buildErrorAccountResponse())
         )
 
-        // Test api error response
-        testErrorMessage {
-            networkRepository.fetchProfile(EMAIL)
-        }
+        // Test api error response. For email fetches due to account recovery, this
+        // will return a profile instead of an error. However, the profile isn't valid
+        val accountId3 = networkRepository.fetchAccountId(EMAIL)
+        assertEquals(AccountProfile.NO_ACCOUNT, accountId3)
 
         // Test http error
         mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
 
         testHttpError {
-            networkRepository.fetchProfile(EMAIL)
+            networkRepository.fetchAccountId(EMAIL)
         }
     }
 
@@ -227,6 +226,38 @@ class NetworkRepositoryImplTest {
 
         testHttpError {
             networkRepository.updateProfile(AccountProfile.DEFAULT_PROFILE)
+        }
+    }
+
+    @Test
+    fun testLogin() = runTest {
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpURLConnection.HTTP_OK)
+                .setBody(buildAccountResponse())
+        )
+
+        val accountId = networkRepository.performLogin(email = EMAIL, password = PASSWORD)
+        assertEquals(accountId, ACCOUNT_ID)
+
+        assertEquals(1, mockWebServer.requestCount)
+        val request = mockWebServer.takeRequest()
+        val json = JSONObject(request.body.readUtf8())
+        assertEquals(EMAIL, json.getString("email"))
+        assertEquals(PASSWORD, json.getString("password"))
+
+        mockWebServer.enqueue(MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setBody(buildErrorAccountResponse())
+        )
+        testErrorMessage {
+            networkRepository.performLogin(email = EMAIL, password = PASSWORD)
+        }
+
+        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
+
+        testHttpError {
+            networkRepository.performLogin(email = EMAIL, password = PASSWORD)
         }
     }
 
@@ -345,7 +376,7 @@ class NetworkRepositoryImplTest {
             call()
         } catch (t: Throwable) {
             assertEquals(ERROR, t.message)
-            haveError = t is RuntimeException
+            haveError = t is ProfileException
         }
         assertEquals(true, haveError)
     }
@@ -400,5 +431,6 @@ class NetworkRepositoryImplTest {
         const val TOTAL_DURATION = 10000L
         const val FACEBOOK_ID = "fb1"
         const val ERROR = "error message"
+        const val PASSWORD = "password"
     }
 }

@@ -57,7 +57,7 @@ class ProfileViewModel @Inject constructor(
 
     private var previousProfile = AccountProfile.DEFAULT_PROFILE
 
-    private val handler = CoroutineExceptionHandler { context, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
         Timber.e(throwable, "Unexpected error processing profile")
 
         if (!_eventFlow.tryEmit(ProfileScreenEvent.UnexpectedError)) {
@@ -73,7 +73,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     init {
-        viewModelScope.launch(handler) {
+        viewModelScope.launch(context = exceptionHandler) {
             _uiState.update { it.copy(profileDataLoading = true) }
             refreshProfile()
             _uiState.update { it.copy(profileDataLoading = false) }
@@ -114,7 +114,7 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(editProfile = true) }
     }
 
-    fun onSave() = viewModelScope.launch(handler) {
+    fun onSave() = viewModelScope.launch(context = exceptionHandler) {
         if (validateForm()) {
             _uiState.update { it.copy(profileDataSaving = true) }
 
@@ -141,7 +141,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun onCancel() = viewModelScope.launch {
+    fun onCancel() = viewModelScope.launch(context = exceptionHandler) {
         _accountProfile.update { previousProfile }
         _uiState.update {
             it.copy(
@@ -174,7 +174,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun onChoosePhoto(uri: Uri?) = viewModelScope.launch(ioDispatcher) {
+    fun onChoosePhoto(
+        uri: Uri?
+    ) = viewModelScope.launch(context = ioDispatcher + exceptionHandler) {
         var tooLarge = false
         uri?.let {
             context.contentResolver.openAssetFileDescriptor(it, "r").use { fd ->
@@ -188,12 +190,12 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(localProfilePicUri = uri, tooLargeImage = tooLarge) }
     }
 
-    fun onLogout() = viewModelScope.launch {
+    fun onLogout() = viewModelScope.launch(context = exceptionHandler) {
         preferenceRepository.removeAccountInfo()
         _eventFlow.emit(ProfileScreenEvent.Logout)
     }
 
-    fun onDeleteAccount() = viewModelScope.launch(handler) {
+    fun onDeleteAccount() = viewModelScope.launch(context = exceptionHandler) {
         Timber.d("Deleting account...")
         val accountId = _accountProfile.value.accountId
         networkRepository.deleteUser(accountId)

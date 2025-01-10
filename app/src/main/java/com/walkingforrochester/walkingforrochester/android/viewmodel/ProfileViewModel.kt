@@ -36,7 +36,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
 
-const val FILE_SIZE_LIMIT: Long = 20 * 1024 * 1024 // 20 megabytes
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -259,5 +258,9 @@ class ProfileViewModel @Inject constructor(
                 null
             }
         }
+    }
+
+    companion object {
+        const val FILE_SIZE_LIMIT: Long = 20 * 1024 * 1024 // 20 megabytes
     }
 }

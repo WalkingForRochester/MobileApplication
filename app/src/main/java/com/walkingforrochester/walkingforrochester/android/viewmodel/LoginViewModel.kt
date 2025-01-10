@@ -84,6 +84,7 @@ class LoginViewModel @Inject constructor(
                 completeLogin(accountId, manualLogin)
             }
         }
+        _uiState.update { it.copy(loading = false) }
     }
 
     fun continueWithFacebook(
@@ -129,6 +130,7 @@ class LoginViewModel @Inject constructor(
             }
             _eventFlow.emit(LoginScreenEvent.NeedsRegistration)
         }
+        _uiState.update { it.copy(socialLoading = false) }
     }
 
     fun onLogin(

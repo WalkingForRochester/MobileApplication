@@ -78,6 +78,15 @@ class NetworkRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun forgotPassword(email: String): String {
+        val result = restApiService.forgotPassword(EmailAddressRequest(email = email))
+        return result.code
+    }
+
+    override suspend fun resetPassword(email: String, password: String) {
+        restApiService.resetPassword(LoginRequest(email, password))
+    }
+
     override suspend fun uploadProfileImage(
         accountId: Long,
         imageUri: Uri,

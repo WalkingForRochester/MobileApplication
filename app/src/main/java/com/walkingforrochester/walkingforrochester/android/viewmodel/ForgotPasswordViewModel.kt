@@ -4,12 +4,11 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.network.RestApiService
-import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
-import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
+import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.ForgotPasswordScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ForgotPasswordScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -21,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ForgotPasswordViewModel @Inject constructor(
-    private val restApiService: RestApiService,
+    private val networkRepository: NetworkRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ForgotPasswordScreenState())
@@ -30,10 +29,20 @@ class ForgotPasswordViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<ForgotPasswordScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+        Timber.e(throwable, "Unexpected error processing profile")
+
+        if (!_eventFlow.tryEmit(ForgotPasswordScreenEvent.UnexpectedError)) {
+            Timber.w("Failed to report error due to no listener")
+        }
+
+        _uiState.update { it.copy(loading = false) }
+    }
+
     fun onEmailChange(newEmail: String) {
         _uiState.update { state ->
             state.copy(
-                email = newEmail.filter { it != '\n' },
+                email = newEmail,
                 emailValidationMessageId = 0
             )
         }
@@ -51,7 +60,7 @@ class ForgotPasswordViewModel @Inject constructor(
     fun onPasswordChange(newPassword: String) {
         _uiState.update { state ->
             state.copy(
-                password = newPassword.filter { it != '\n' },
+                password = newPassword.filterNot { it.isWhitespace() },
                 passwordValidationMessageId = 0
             )
         }
@@ -60,30 +69,28 @@ class ForgotPasswordViewModel @Inject constructor(
     fun onConfirmPasswordChange(newConfirmPassword: String) {
         _uiState.update { state ->
             state.copy(
-                confirmPassword = newConfirmPassword.filter { it != '\n' },
+                confirmPassword = newConfirmPassword.filterNot { it.isWhitespace() },
                 confirmPasswordValidationMessageId = 0
             )
         }
     }
 
-    fun requestCode() = viewModelScope.launch {
+    fun requestCode() = viewModelScope.launch(context = exceptionHandler) {
         if (validateEmail()) {
             _uiState.update { it.copy(loading = true) }
-            try {
-                with(_uiState.value) {
-                    val result = restApiService.forgotPassword(EmailAddressRequest(email = email))
-                    _uiState.update { state -> state.copy(internalCode = result.code) }
+            with(_uiState.value) {
+                val code = networkRepository.forgotPassword(email = email)
+                _uiState.update { state ->
+                    state.copy(
+                        internalCode = code,
+                        loading = false
+                    )
                 }
-            } catch (t: Throwable) {
-                Timber.e(t, "Unable to send password reset code")
-                _eventFlow.emit(ForgotPasswordScreenEvent.UnexpectedError)
-            } finally {
-                _uiState.update { it.copy(loading = false) }
             }
         }
     }
 
-    fun verifyCode() = viewModelScope.launch {
+    fun verifyCode() = viewModelScope.launch(context = exceptionHandler) {
         with(_uiState.value) {
             if (code.isNotEmpty() && code == internalCode) {
                 _uiState.update { it.copy(codeVerified = true) }
@@ -93,21 +100,16 @@ class ForgotPasswordViewModel @Inject constructor(
         }
     }
 
-    fun resetPassword() = viewModelScope.launch {
+    fun resetPassword() = viewModelScope.launch(context = exceptionHandler) {
         if (validatePassword()) {
             _uiState.update { it.copy(loading = true) }
 
-            try {
-                with(_uiState.value) {
-                    restApiService.resetPassword(LoginRequest(email, password))
-                    _eventFlow.emit(ForgotPasswordScreenEvent.PasswordReset)
-                }
-            } catch (t: Throwable) {
-                Timber.e(t, "Unable to reset password")
-                _eventFlow.emit(ForgotPasswordScreenEvent.UnexpectedError)
-            } finally {
-                _uiState.update { it.copy(loading = false) }
+            with(_uiState.value) {
+                networkRepository.resetPassword(email = email, password = password)
+                _eventFlow.emit(ForgotPasswordScreenEvent.PasswordReset)
             }
+
+            _uiState.update { it.copy(loading = false) }
         }
     }
 
@@ -137,7 +139,7 @@ class ForgotPasswordViewModel @Inject constructor(
 
         val state = _uiState.value
 
-        if (state.password.length < 6) {
+        if (state.password.length < 8) {
             passwordValidationMessageId = R.string.invalid_password
             isValid = false
         }

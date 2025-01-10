@@ -17,6 +17,10 @@ interface NetworkRepository {
 
     suspend fun performLogin(email: String, password: String): Long
 
+    suspend fun forgotPassword(email: String): String
+
+    suspend fun resetPassword(email: String, password: String)
+
     suspend fun uploadProfileImage(
         accountId: Long,
         imageUri: Uri,

@@ -262,6 +262,50 @@ class NetworkRepositoryImplTest {
     }
 
     @Test
+    fun testForgotPassword() = runTest {
+        mockWebServer.enqueue(MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setBody(buildPasswordResetResponse())
+        )
+
+        val code = networkRepository.forgotPassword(EMAIL)
+        assertEquals(CODE, code)
+
+        assertEquals(1, mockWebServer.requestCount)
+        val request = mockWebServer.takeRequest()
+        val json = JSONObject(request.body.readUtf8())
+        assertEquals(EMAIL, json.getString("email"))
+
+        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
+
+        testHttpError {
+            networkRepository.forgotPassword(email = EMAIL)
+        }
+    }
+
+    @Test
+    fun testResetPassword() = runTest {
+        mockWebServer.enqueue(MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setBody("{}")
+        )
+
+        networkRepository.resetPassword(email = EMAIL, password = PASSWORD)
+
+        assertEquals(1, mockWebServer.requestCount)
+        val request = mockWebServer.takeRequest()
+        val json = JSONObject(request.body.readUtf8())
+        assertEquals(EMAIL, json.getString("email"))
+        assertEquals(PASSWORD, json.getString("password"))
+
+        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
+
+        testHttpError {
+            networkRepository.resetPassword(email = EMAIL, password = PASSWORD)
+        }
+    }
+
+    @Test
     fun testUploadProfileImage() = runTest {
         mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_OK))
         val imageUri = Uri.Builder()
@@ -410,6 +454,13 @@ class NetworkRepositoryImplTest {
         return json.toString()
     }
 
+    private fun buildPasswordResetResponse(): String {
+        val json = JSONObject().apply {
+            put("code", CODE)
+        }
+        return json.toString()
+    }
+
     private fun buildErrorAccountResponse(): String {
         val json = JSONObject().apply {
             put("error", ERROR)
@@ -432,5 +483,6 @@ class NetworkRepositoryImplTest {
         const val FACEBOOK_ID = "fb1"
         const val ERROR = "error message"
         const val PASSWORD = "password"
+        const val CODE = "testCode1"
     }
 }

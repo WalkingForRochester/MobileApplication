@@ -47,7 +47,7 @@ class NetworkRepositoryImpl @Inject constructor(
         // Allow result to return regardless of error text. If it is an error, the
         // account id will be NO_ACCOUNT
         val result = restApiService.accountByEmail(EmailAddressRequest(email = email))
-        return result.toAccountProfile().accountId
+        return result.accountId ?: AccountProfile.NO_ACCOUNT
     }
 
     override suspend fun isEmailInUse(email: String): Boolean {
@@ -72,7 +72,7 @@ class NetworkRepositoryImpl @Inject constructor(
         val response = restApiService.login(LoginRequest(email, password))
 
         if (response.error.isNullOrBlank()) {
-            return response.toAccountProfile().accountId
+            return response.accountId ?: AccountProfile.NO_ACCOUNT
         } else {
             throw ProfileException(response.error)
         }

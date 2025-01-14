@@ -10,6 +10,7 @@ import com.walkingforrochester.walkingforrochester.android.network.request.Regis
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
 import com.walkingforrochester.walkingforrochester.android.network.response.CodeResponse
+import com.walkingforrochester.walkingforrochester.android.network.response.LoginResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -20,10 +21,10 @@ import retrofit2.http.Part
 interface RestApiService {
 
     @POST("login.php")
-    suspend fun login(@Body loginRequest: LoginRequest): AccountResponse
+    suspend fun login(@Body loginRequest: LoginRequest): LoginResponse
 
     @POST("accountByEmail.php")
-    suspend fun accountByEmail(@Body emailAddressRequest: EmailAddressRequest): AccountResponse
+    suspend fun accountByEmail(@Body emailAddressRequest: EmailAddressRequest): LoginResponse
 
     @POST("registerAccount.php")
     suspend fun registerAccount(@Body registerRequest: RegisterRequest): AccountResponse

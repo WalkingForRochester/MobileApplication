@@ -1,6 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.network
 
-import com.walkingforrochester.walkingforrochester.android.model.Leader
 import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LeaderboardRequest
@@ -10,6 +9,7 @@ import com.walkingforrochester.walkingforrochester.android.network.request.Regis
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
 import com.walkingforrochester.walkingforrochester.android.network.response.CodeResponse
+import com.walkingforrochester.walkingforrochester.android.network.response.LeaderResponse
 import com.walkingforrochester.walkingforrochester.android.network.response.LoginResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
@@ -49,7 +49,7 @@ interface RestApiService {
     suspend fun uploadImage(@Part file: MultipartBody.Part): Response<Void>
 
     @POST("leaderboard.php")
-    suspend fun leaderboard(@Body leaderboardRequest: LeaderboardRequest): List<Leader>
+    suspend fun leaderboard(@Body leaderboardRequest: LeaderboardRequest): List<LeaderResponse>
 
     @POST("logAWalk.php")
     suspend fun logAWalk(@Body logAWalkRequest: LogAWalkRequest)

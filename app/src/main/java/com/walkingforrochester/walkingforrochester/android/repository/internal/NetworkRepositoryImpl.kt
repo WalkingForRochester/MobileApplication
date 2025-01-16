@@ -6,12 +6,17 @@ import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
 import com.walkingforrochester.walkingforrochester.android.md5
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.model.Leader
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardPeriod
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardType
 import com.walkingforrochester.walkingforrochester.android.model.ProfileException
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.LeaderboardRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
+import com.walkingforrochester.walkingforrochester.android.network.response.toLeaderList
 import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -85,6 +90,29 @@ class NetworkRepositoryImpl @Inject constructor(
 
     override suspend fun resetPassword(email: String, password: String) {
         restApiService.resetPassword(LoginRequest(email, password))
+    }
+
+    override suspend fun fetchLeaderboard(
+        period: LeaderboardPeriod
+    ): List<Leader> = withContext(ioDispatcher) {
+        val startDate = when (period) {
+            LeaderboardPeriod.Day -> LocalDate.now()
+            LeaderboardPeriod.Week -> LocalDate.now().minusWeeks(1)
+            LeaderboardPeriod.Month -> LocalDate.now().minusMonths(1)
+            LeaderboardPeriod.Year -> LocalDate.now().minusYears(1)
+        }
+        val endDate = LocalDate.now()
+
+        // Always fetching the collection, the view model will sort data
+        val result = restApiService.leaderboard(
+            LeaderboardRequest(
+                orderBy = LeaderboardType.Collection.name.lowercase(),
+                startDate = startDate,
+                endDate = endDate
+            )
+        )
+
+        result.toLeaderList()
     }
 
     override suspend fun uploadProfileImage(

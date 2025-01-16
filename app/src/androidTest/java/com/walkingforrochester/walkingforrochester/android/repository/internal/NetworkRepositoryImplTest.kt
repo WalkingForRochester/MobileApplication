@@ -10,6 +10,9 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
 import com.walkingforrochester.walkingforrochester.android.md5
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.model.Leader
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardPeriod
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardType
 import com.walkingforrochester.walkingforrochester.android.model.ProfileException
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.buildHttpClient
@@ -25,6 +28,7 @@ import kotlinx.coroutines.test.setMain
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okio.internal.commonToUtf8String
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Before
@@ -101,19 +105,10 @@ class NetworkRepositoryImplTest {
         assertEquals("", profile2.email)
         assertEquals(0.0, profile2.distanceToday)
 
-        mockWebServer.enqueue(
-            MockResponse()
-                .setResponseCode(HttpURLConnection.HTTP_OK)
-                .setBody(buildErrorAccountResponse())
-        )
-
         // Test api error response
         testErrorMessage {
             networkRepository.fetchProfile(ACCOUNT_ID)
         }
-
-        // Test http error
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
 
         testHttpError {
             networkRepository.fetchProfile(ACCOUNT_ID)
@@ -141,16 +136,13 @@ class NetworkRepositoryImplTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
-                .setBody(buildErrorAccountResponse())
+                .setBody(buildErrorMessageResponse())
         )
 
         // Test api error response. For email fetches due to account recovery, this
         // will return a profile instead of an error. However, the profile isn't valid
         val accountId3 = networkRepository.fetchAccountId(EMAIL)
         assertEquals(AccountProfile.NO_ACCOUNT, accountId3)
-
-        // Test http error
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
 
         testHttpError {
             networkRepository.fetchAccountId(EMAIL)
@@ -170,12 +162,10 @@ class NetworkRepositoryImplTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
-                .setBody(buildErrorAccountResponse())
+                .setBody(buildErrorMessageResponse())
         )
         assertEquals(false, networkRepository.isEmailInUse(EMAIL))
 
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
-        // Test api error response
         testHttpError {
             networkRepository.isEmailInUse(EMAIL)
         }
@@ -222,8 +212,6 @@ class NetworkRepositoryImplTest {
         assertEquals(PHONE, json.getString("phone"))
         assertEquals(IMG_URL, json.getString("imgUrl"))
 
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
-
         testHttpError {
             networkRepository.updateProfile(AccountProfile.DEFAULT_PROFILE)
         }
@@ -246,15 +234,9 @@ class NetworkRepositoryImplTest {
         assertEquals(EMAIL, json.getString("email"))
         assertEquals(PASSWORD, json.getString("password"))
 
-        mockWebServer.enqueue(MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-            .setBody(buildErrorAccountResponse())
-        )
         testErrorMessage {
             networkRepository.performLogin(email = EMAIL, password = PASSWORD)
         }
-
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
 
         testHttpError {
             networkRepository.performLogin(email = EMAIL, password = PASSWORD)
@@ -263,9 +245,10 @@ class NetworkRepositoryImplTest {
 
     @Test
     fun testForgotPassword() = runTest {
-        mockWebServer.enqueue(MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-            .setBody(buildPasswordResetResponse())
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpURLConnection.HTTP_OK)
+                .setBody(buildPasswordResetResponse())
         )
 
         val code = networkRepository.forgotPassword(EMAIL)
@@ -276,8 +259,6 @@ class NetworkRepositoryImplTest {
         val json = JSONObject(request.body.readUtf8())
         assertEquals(EMAIL, json.getString("email"))
 
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
-
         testHttpError {
             networkRepository.forgotPassword(email = EMAIL)
         }
@@ -285,9 +266,10 @@ class NetworkRepositoryImplTest {
 
     @Test
     fun testResetPassword() = runTest {
-        mockWebServer.enqueue(MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-            .setBody("{}")
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpURLConnection.HTTP_OK)
+                .setBody("{}")
         )
 
         networkRepository.resetPassword(email = EMAIL, password = PASSWORD)
@@ -298,11 +280,51 @@ class NetworkRepositoryImplTest {
         assertEquals(EMAIL, json.getString("email"))
         assertEquals(PASSWORD, json.getString("password"))
 
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
-
         testHttpError {
             networkRepository.resetPassword(email = EMAIL, password = PASSWORD)
         }
+    }
+
+    @Test
+    fun testLeaderboard() = runTest {
+        checkLeaderPeriod(LeaderboardPeriod.Year, LocalDate.now().minusYears(1))
+        checkLeaderPeriod(LeaderboardPeriod.Month, LocalDate.now().minusMonths(1))
+        checkLeaderPeriod(LeaderboardPeriod.Week, LocalDate.now().minusWeeks(1))
+        checkLeaderPeriod(LeaderboardPeriod.Day, LocalDate.now())
+
+        testHttpError {
+            networkRepository.fetchLeaderboard(LeaderboardPeriod.Week)
+        }
+    }
+
+    private suspend fun checkLeaderPeriod(period: LeaderboardPeriod, startDate: LocalDate) {
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpURLConnection.HTTP_OK)
+                .setBody(buildLeaderboardResponse())
+        )
+
+        val result = networkRepository.fetchLeaderboard(period)
+
+        assertEquals(3, result.size)
+        result.forEachIndexed { index, leader -> checkLeader(leader, index + 1) }
+
+        val request = mockWebServer.takeRequest()
+        val json = JSONObject(request.body.readUtf8())
+        assertEquals(LeaderboardType.Collection.name.lowercase(), json.getString("orderBy"))
+        assertEquals(startDate.toString(), json.getString("startDate"))
+        assertEquals(LocalDate.now().toString(), json.getString("endDate"))
+    }
+
+    private fun checkLeader(leader: Leader, index: Int) {
+        assertEquals(index.toLong(), leader.collectionPosition)
+        assertEquals(ACCOUNT_ID + index, leader.accountId)
+        assertEquals("$FIRST_NAME$index", leader.firstName)
+        assertEquals("$NICKNAME$index", leader.nickname)
+        assertEquals("$IMG_URL$index", leader.imgUrl)
+        assertEquals(index.toLong(), leader.collection)
+        assertEquals(index * TOTAL_DISTANCE, leader.distance)
+        assertEquals(index * TOTAL_DURATION, leader.duration)
     }
 
     @Test
@@ -383,8 +405,6 @@ class NetworkRepositoryImplTest {
         val json = JSONObject(request.body.readUtf8())
         assertEquals(ACCOUNT_ID, json.getLong("accountId"))
 
-        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
-
         testHttpError {
             networkRepository.deleteUser(ACCOUNT_ID)
         }
@@ -415,6 +435,12 @@ class NetworkRepositoryImplTest {
     }
 
     private suspend fun testErrorMessage(call: suspend () -> Unit) {
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpURLConnection.HTTP_OK)
+                .setBody(buildErrorMessageResponse())
+        )
+
         var haveError = false
         try {
             call()
@@ -426,6 +452,8 @@ class NetworkRepositoryImplTest {
     }
 
     private suspend fun testHttpError(call: suspend () -> Unit) {
+        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND))
+
         var haveError = false
         try {
             call()
@@ -461,11 +489,33 @@ class NetworkRepositoryImplTest {
         return json.toString()
     }
 
-    private fun buildErrorAccountResponse(): String {
+    private fun buildErrorMessageResponse(): String {
         val json = JSONObject().apply {
             put("error", ERROR)
         }
         return json.toString()
+    }
+
+    private fun buildLeaderboardResponse(): String {
+        val jsonArray = JSONArray().apply {
+            for (i in 1..3) {
+                put(buildLeader(i))
+            }
+        }
+        return jsonArray.toString()
+    }
+
+    private fun buildLeader(index: Int): JSONObject {
+        return JSONObject().apply {
+            put("place", index)
+            put("accountId", ACCOUNT_ID + index)
+            put("firstName", "$FIRST_NAME$index")
+            put("nickname", "$NICKNAME$index")
+            put("imgUrl", "$IMG_URL$index")
+            put("collection", index)
+            put("distance", index * TOTAL_DISTANCE)
+            put("duration", index * TOTAL_DURATION)
+        }
     }
 
     companion object {

@@ -1,12 +1,11 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.leaderboard
 
+import android.content.res.Configuration
 import android.text.format.DateUtils
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -35,18 +34,26 @@ import com.walkingforrochester.walkingforrochester.android.ui.theme.LeaderboardS
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @Composable
-fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) {
+fun LeaderCard(
+    leader: Leader,
+    index: Int,
+    type: TypeFilter,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
-            .padding(horizontal = 8.dp)
-            .wrapContentHeight(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+            .padding(horizontal = 8.dp),
+
         colors = CardDefaults.cardColors(
-            containerColor = when (leader.place) {
-                1L -> LeaderboardGold
-                2L -> LeaderboardSilver
-                3L -> LeaderboardBronze
-                else -> MaterialTheme.colorScheme.surfaceVariant
+            containerColor = when (index) {
+                0 -> LeaderboardGold
+                1 -> LeaderboardSilver
+                2 -> LeaderboardBronze
+                else -> MaterialTheme.colorScheme.surfaceContainerHighest
+            },
+            contentColor = when (index) {
+                in 0..2 -> Color.Black
+                else -> MaterialTheme.colorScheme.onSurface
             }
         )
     ) {
@@ -56,21 +63,15 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
                 .fillMaxWidth()
         ) {
             Text(
-                leader.place.toString(),
+                text = "${index + 1}",
+                modifier = Modifier.padding(start = 8.dp, end = 16.dp),
                 style = MaterialTheme.typography.labelLarge,
-                color = when (leader.place) {
-                    1L, 2L, 3L -> Color.Black
-                    else -> MaterialTheme.colorScheme.onSurface
-                },
-                modifier = Modifier
-                    .weight(0.2f)
-                    .padding(8.dp)
             )
-            if (leader.imgUrl.isNullOrBlank()) {
+            if (leader.imgUrl.isBlank()) {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
-                    contentDescription = "Profile Pic",
-                    modifier = Modifier.size(64.dp)
+                    contentDescription = stringResource(com.walkingforrochester.walkingforrochester.android.R.string.profile_pic),
+                    modifier = Modifier.size(64.dp),
                 )
             } else {
                 AsyncImage(
@@ -83,51 +84,48 @@ fun LeaderCard(modifier: Modifier = Modifier, leader: Leader, type: TypeFilter) 
                         .clip(CircleShape)
                 )
             }
-            Column(
-                Modifier
-                    .weight(1f)
-                    .padding(8.dp)
-            ) {
-                Text(
-                    (if (leader.nickname.isNullOrBlank()) leader.firstName else leader.nickname)
-                        ?: "",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = when (leader.place) {
-                        1L, 2L, 3L -> Color.Black
-                        else -> MaterialTheme.colorScheme.onSurface
-                    }
-                )
-                /*Text(
-                    "${leader.accountId}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = when (leader.place) {
-                        1L, 2L, 3L -> Color.Black
-                        else -> MaterialTheme.colorScheme.onSurface
-                    },
-                )*/
-            }
+
+            Text(
+                text = leader.nickname.ifBlank { leader.firstName },
+                modifier = Modifier.padding(horizontal = 8.dp).weight(1f),
+                style = MaterialTheme.typography.labelLarge,
+            )
             Text(
                 text = when (type) {
                     TypeFilter.Collection -> leader.collection.toString()
                     TypeFilter.Distance -> "${roundDouble(leader.distance)} mi"
                     TypeFilter.Duration -> DateUtils.formatElapsedTime(
-                        (leader.duration ?: 0) / 1000
+                        (leader.duration) / 1000
                     )
                 },
+                modifier = Modifier.padding(horizontal = 8.dp),
                 style = MaterialTheme.typography.labelLarge,
-                color = when (leader.place) {
-                    1L, 2L, 3L -> Color.Black
-                    else -> MaterialTheme.colorScheme.onSurface
-                }, modifier = Modifier.padding(8.dp)
             )
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun PreviewLeaderCard() {
     WalkingForRochesterTheme {
-        //LeaderCard(leader = Leader(id = 337, place = 1, name = "John Smith", collected = 13, distance = 3.3, duration = 7200))
+        LeaderCard(
+            leader = Leader(
+                collectionPosition = 1,
+                accountId = 2,
+                firstName = "John",
+                nickname = "",
+                imgUrl = "",
+                collection = 13L,
+                distance = 3.3,
+                duration = 7200L
+            ),
+            index = 2,
+            type = TypeFilter.Distance
+        )
     }
 }

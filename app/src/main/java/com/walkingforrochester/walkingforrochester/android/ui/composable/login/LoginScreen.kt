@@ -57,12 +57,11 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     modifier: Modifier = Modifier,
     onForgotPassword: () -> Unit = {},
-    onRegister: () -> Unit = {},
-    onRegisterPrefill: (
-        email: String,
-        firstName: String,
-        lastName: String,
-        facebookId: String
+    onRegister: (
+        email: String?,
+        firstName: String?,
+        lastName: String?,
+        facebookId: String?
     ) -> Unit = { _, _, _, _ -> },
     onLoginComplete: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
@@ -108,7 +107,7 @@ fun LoginScreen(
 
                     LoginScreenEvent.NeedsRegistration -> with(uiState) {
                         LoginManager.getInstance().unregisterCallback(callbackManager)
-                        onRegisterPrefill(emailAddress, firstName, lastName, facebookId)
+                        onRegister(emailAddress, firstName, lastName, facebookId)
                     }
 
                     LoginScreenEvent.UnexpectedError -> {
@@ -142,7 +141,7 @@ fun LoginScreen(
         modifier = modifier,
         contentPadding = contentPadding,
         onForgotPassword = onForgotPassword,
-        onRegister = onRegister,
+        onRegister = { onRegister(null, null, null, null) },
         onContinueWithGoogle = {
             coroutineScope.launch {
                 GoogleCredentialUtil.performSignIn(

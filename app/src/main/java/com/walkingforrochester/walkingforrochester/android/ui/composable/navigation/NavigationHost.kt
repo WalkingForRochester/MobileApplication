@@ -32,10 +32,7 @@ fun NavigationHost(
         composable(route = LoginDestination.route) {
             LoginScreen(
                 onForgotPassword = { navController.navigate(ForgotPassword.route) },
-                onRegister = {
-                    navController.navigate(Registration.route)
-                },
-                onRegisterPrefill = { email, firstName, lastName, facebookId ->
+                onRegister = { email, firstName, lastName, facebookId ->
                     navController.navigate(
                         Registration.route +
                             "?email=$email" +
@@ -65,16 +62,16 @@ fun NavigationHost(
             route = Registration.routeWithArgs,
             arguments = Registration.arguments,
         ) { navBackStackEntry ->
-            val email = navBackStackEntry.arguments?.getString("email")
-            val firstName = navBackStackEntry.arguments?.getString("fname")
-            val lastName = navBackStackEntry.arguments?.getString("lname")
+            val email = navBackStackEntry.arguments?.getString("email") ?: ""
+            val firstName = navBackStackEntry.arguments?.getString("fname") ?: ""
+            val lastName = navBackStackEntry.arguments?.getString("lname") ?: ""
             val facebookId = navBackStackEntry.arguments?.getString("fbid")
 
             RegistrationScreen(
                 initState = RegistrationScreenState(
-                    email = email ?: "",
-                    firstName = firstName ?: "",
-                    lastName = lastName ?: "",
+                    email = email,
+                    firstName = firstName,
+                    lastName = lastName,
                     facebookId = facebookId
                 ),
                 onRegistrationComplete = {
@@ -82,16 +79,6 @@ fun NavigationHost(
                         LogAWalk.route,
                         clearTop = true
                     )
-                },
-                contentPadding = contentPadding
-            )
-        }
-        composable(
-            route = Registration.route,
-        ) {
-            RegistrationScreen(
-                onRegistrationComplete = {
-                    navController.navigateSingleTopTo(LogAWalk.route, clearTop = true)
                 },
                 contentPadding = contentPadding
             )

@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.ui.composable.contact.ContactUsScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.forgotpassword.ForgotPasswordScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.leaderboard.LeaderboardScreen
@@ -14,7 +15,6 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.login.L
 import com.walkingforrochester.walkingforrochester.android.ui.composable.newsfeed.NewsFeedScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.profile.ProfileScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.registration.RegistrationScreen
-import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 
 @Composable
 fun NavigationHost(
@@ -68,7 +68,7 @@ fun NavigationHost(
             val facebookId = navBackStackEntry.arguments?.getString("fbid")
 
             RegistrationScreen(
-                initState = RegistrationScreenState(
+                profile = AccountProfile.DEFAULT_PROFILE.copy(
                     email = email,
                     firstName = firstName,
                     lastName = lastName,

@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
@@ -33,7 +34,7 @@ import com.walkingforrochester.walkingforrochester.android.viewmodel.Registratio
 @Composable
 fun RegistrationScreen(
     modifier: Modifier = Modifier,
-    initState: RegistrationScreenState? = null,
+    profile: AccountProfile = AccountProfile.DEFAULT_PROFILE,
     onRegistrationComplete: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
     registrationViewModel: RegistrationViewModel = hiltViewModel()
@@ -41,10 +42,15 @@ fun RegistrationScreen(
     val context = LocalContext.current
     val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(initState, registrationViewModel) {
-        initState?.let {
-            registrationViewModel.prefill(it)
-        }
+    LaunchedEffect(profile, registrationViewModel) {
+        registrationViewModel.prefill(profile)
+        // TODO remove as only used for compatibility
+        registrationViewModel.prefill(RegistrationScreenState(
+            email = profile.email,
+            firstName = profile.firstName,
+            lastName = profile.lastName,
+            facebookId = profile.facebookId
+        ))
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current

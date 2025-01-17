@@ -6,6 +6,7 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.RegisterRequest
@@ -33,9 +34,13 @@ class RegistrationViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RegistrationScreenState())
     val uiState = _uiState.asStateFlow()
 
+    private val _registrationProfile = MutableStateFlow(AccountProfile.DEFAULT_PROFILE)
+    val registrationProfile = _registrationProfile.asStateFlow()
+
     private val _eventFlow = MutableSharedFlow<RegistrationScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    fun prefill(profile: AccountProfile) = _registrationProfile.update { profile }
     fun prefill(initState: RegistrationScreenState) = _uiState.update { initState }
 
     fun onEmailChange(newEmail: String) =

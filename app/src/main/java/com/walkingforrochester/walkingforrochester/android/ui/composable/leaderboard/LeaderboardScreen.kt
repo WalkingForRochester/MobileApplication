@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,7 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -30,12 +29,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.model.Leader
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardPeriod
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardType
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderData
 import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderboardFiltersState
 import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderboardScreenEvent
-import com.walkingforrochester.walkingforrochester.android.ui.state.PeriodFilter
-import com.walkingforrochester.walkingforrochester.android.ui.state.TypeFilter
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LeaderboardViewModel
 
@@ -80,8 +80,8 @@ private fun LeaderboardContent(
     leaderData: LeaderData,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
-    onTypeFilterChange: (TypeFilter) -> Unit = {},
-    onPeriodFilterChange: (PeriodFilter) -> Unit = {}
+    onTypeFilterChange: (LeaderboardType) -> Unit = {},
+    onPeriodFilterChange: (LeaderboardPeriod) -> Unit = {}
 ) {
     LazyColumn(
         modifier = modifier
@@ -94,7 +94,8 @@ private fun LeaderboardContent(
         item {
             LeaderFilters(
                 modifier = Modifier.padding(bottom = 8.dp),
-                filterState = filtersState,
+                currentType = filtersState.type,
+                currentPeriod = filtersState.period,
                 onTypeFilterChange = onTypeFilterChange,
                 onPeriodFilterChange = onPeriodFilterChange
             )
@@ -105,15 +106,22 @@ private fun LeaderboardContent(
                     Box(modifier = Modifier.fillParentMaxHeight(.5f)) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
             leaderData.leaders.isNotEmpty() -> {
-                items(leaderData.leaders) { leader ->
-                    LeaderCard(leader = leader, type = filtersState.type)
+                itemsIndexed(
+                    items = leaderData.leaders,
+                    key = { _, item -> item.accountId }
+                ) { index, leader ->
+                    LeaderCard(
+                        leader = leader,
+                        index = index,
+                        type = filtersState.type
+                    )
                 }
             }
 
@@ -143,7 +151,21 @@ fun PreviewLeaderboardScreen() {
         Surface {
             LeaderboardContent(
                 filtersState = LeaderboardFiltersState(),
-                leaderData = LeaderData()
+                leaderData = LeaderData(
+                    loading = false,
+                    leaders = listOf(
+                        Leader(
+                            collectionPosition = 3,
+                            accountId = 2,
+                            firstName = "John",
+                            nickname = "",
+                            imgUrl = "",
+                            collection = 13L,
+                            distance = 3.3,
+                            duration = 7200L
+                        )
+                    )
+                )
             )
         }
     }

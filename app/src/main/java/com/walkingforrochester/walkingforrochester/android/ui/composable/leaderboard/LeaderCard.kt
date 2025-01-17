@@ -26,8 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.walkingforrochester.walkingforrochester.android.model.Leader
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardType
 import com.walkingforrochester.walkingforrochester.android.roundDouble
-import com.walkingforrochester.walkingforrochester.android.ui.state.TypeFilter
 import com.walkingforrochester.walkingforrochester.android.ui.theme.LeaderboardBronze
 import com.walkingforrochester.walkingforrochester.android.ui.theme.LeaderboardGold
 import com.walkingforrochester.walkingforrochester.android.ui.theme.LeaderboardSilver
@@ -37,7 +37,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRo
 fun LeaderCard(
     leader: Leader,
     index: Int,
-    type: TypeFilter,
+    type: LeaderboardType,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -87,14 +87,16 @@ fun LeaderCard(
 
             Text(
                 text = leader.nickname.ifBlank { leader.firstName },
-                modifier = Modifier.padding(horizontal = 8.dp).weight(1f),
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .weight(1f),
                 style = MaterialTheme.typography.labelLarge,
             )
             Text(
                 text = when (type) {
-                    TypeFilter.Collection -> leader.collection.toString()
-                    TypeFilter.Distance -> "${roundDouble(leader.distance)} mi"
-                    TypeFilter.Duration -> DateUtils.formatElapsedTime(
+                    LeaderboardType.Collection -> leader.collection.toString()
+                    LeaderboardType.Distance -> "${roundDouble(leader.distance)} mi"
+                    LeaderboardType.Duration -> DateUtils.formatElapsedTime(
                         (leader.duration) / 1000
                     )
                 },
@@ -125,7 +127,7 @@ fun PreviewLeaderCard() {
                 duration = 7200L
             ),
             index = 2,
-            type = TypeFilter.Distance
+            type = LeaderboardType.Distance
         )
     }
 }

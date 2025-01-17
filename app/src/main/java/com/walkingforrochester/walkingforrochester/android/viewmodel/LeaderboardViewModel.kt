@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.math.max
 
 @HiltViewModel
 class LeaderboardViewModel @Inject constructor(
@@ -48,7 +49,6 @@ class LeaderboardViewModel @Inject constructor(
             lastFetchTime + REFRESH_INTERVAL < System.currentTimeMillis()
         ) {
             emit(LeaderData(loading = true))
-            delay(200)
         }
         emit(determineLeaders(filter))
     }.catch { throwable ->
@@ -68,10 +68,14 @@ class LeaderboardViewModel @Inject constructor(
         if (lastFetchPeriod != filterState.period ||
             lastFetchTime + REFRESH_INTERVAL < System.currentTimeMillis()
         ) {
-
+            val time = System.currentTimeMillis()
             lastLeaderList = networkRepository.fetchLeaderboard(filterState.period)
             lastFetchPeriod = filterState.period
             lastFetchTime = System.currentTimeMillis()
+
+            // Want a minimum delay of 300ms just to not cause UI to jump between
+            // loading complete state so fast it looks like a flicker.
+            delay(max(0L, 300L - (lastFetchTime - time)))
         }
 
         val comparator = when (filterState.type) {

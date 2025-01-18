@@ -15,6 +15,7 @@ import com.walkingforrochester.walkingforrochester.android.network.request.Accou
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LeaderboardRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.RegisterRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.network.response.toLeaderList
 import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
@@ -75,6 +76,31 @@ class NetworkRepositoryImpl @Inject constructor(
 
     override suspend fun performLogin(email: String, password: String): Long {
         val response = restApiService.login(LoginRequest(email, password))
+
+        if (response.error.isNullOrBlank()) {
+            return response.accountId ?: AccountProfile.NO_ACCOUNT
+        } else {
+            throw ProfileException(response.error)
+        }
+    }
+
+    override suspend fun registerAccount(
+        profile: AccountProfile,
+        password: String
+    ): Long {
+        val response = restApiService.registerAccount(
+            RegisterRequest(
+                firstName = profile.firstName,
+                lastName = profile.lastName,
+                email = profile.email,
+                phone = profile.phoneNumber,
+                nickname = profile.nickname,
+                dateOfBirth = LocalDate.now(),
+                password = password,
+                communityService = profile.communityService,
+                facebookId = profile.facebookId
+            )
+        )
 
         if (response.error.isNullOrBlank()) {
             return response.accountId ?: AccountProfile.NO_ACCOUNT

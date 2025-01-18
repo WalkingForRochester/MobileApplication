@@ -120,7 +120,7 @@ class NetworkRepositoryImplTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
-                .setBody(buildAccountResponse())
+                .setBody(buildLoginResponse())
         )
 
         val accountId = networkRepository.fetchAccountId(EMAIL)
@@ -154,7 +154,7 @@ class NetworkRepositoryImplTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
-                .setBody(buildAccountResponse())
+                .setBody(buildLoginResponse())
         )
 
         assertEquals(true, networkRepository.isEmailInUse(EMAIL))
@@ -222,7 +222,7 @@ class NetworkRepositoryImplTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
-                .setBody(buildAccountResponse())
+                .setBody(buildLoginResponse())
         )
 
         val accountId = networkRepository.performLogin(email = EMAIL, password = PASSWORD)
@@ -240,6 +240,51 @@ class NetworkRepositoryImplTest {
 
         testHttpError {
             networkRepository.performLogin(email = EMAIL, password = PASSWORD)
+        }
+    }
+
+    @Test
+    fun testRegisterAccount() = runTest {
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpURLConnection.HTTP_OK)
+                .setBody(buildLoginResponse())
+        )
+
+        val accountId = networkRepository.registerAccount(
+            profile = AccountProfile.DEFAULT_PROFILE.copy(
+                firstName = FIRST_NAME,
+                lastName = LAST_NAME,
+                email = EMAIL,
+                phoneNumber = PHONE,
+                communityService = true,
+                nickname = NICKNAME,
+                facebookId = FACEBOOK_ID
+            ),
+            password = PASSWORD
+        )
+
+        assertEquals(ACCOUNT_ID, accountId)
+        assertEquals(1, mockWebServer.requestCount)
+        val request = mockWebServer.takeRequest()
+        val json = JSONObject(request.body.readUtf8())
+        assertEquals(FIRST_NAME, json.getString("firstName"))
+        assertEquals(LAST_NAME, json.getString("lastName"))
+        assertEquals(EMAIL, json.getString("email"))
+        assertEquals(PHONE, json.getString("phone"))
+        assertEquals(NICKNAME, json.getString("nickname"))
+        // Not used, but set to be current date
+        assertEquals(LocalDate.now().toString(), json.getString("dateOfBirth"))
+        assertEquals(PASSWORD, json.getString("password"))
+        assertEquals(true, json.getBoolean("communityService"))
+        assertEquals(FACEBOOK_ID, json.getString("facebookId"))
+
+        testErrorMessage {
+            networkRepository.registerAccount(AccountProfile.DEFAULT_PROFILE, PASSWORD)
+        }
+
+        testHttpError {
+            networkRepository.registerAccount(AccountProfile.DEFAULT_PROFILE, PASSWORD)
         }
     }
 
@@ -478,6 +523,13 @@ class NetworkRepositoryImplTest {
             put("duration", DURATION)
             put("totalDuration", TOTAL_DURATION)
             put("facebookId", FACEBOOK_ID)
+        }
+        return json.toString()
+    }
+
+    private fun buildLoginResponse(): String {
+        val json = JSONObject().apply {
+            put("accountId", ACCOUNT_ID)
         }
         return json.toString()
     }

@@ -27,7 +27,7 @@ interface RestApiService {
     suspend fun accountByEmail(@Body emailAddressRequest: EmailAddressRequest): LoginResponse
 
     @POST("registerAccount.php")
-    suspend fun registerAccount(@Body registerRequest: RegisterRequest): AccountResponse
+    suspend fun registerAccount(@Body registerRequest: RegisterRequest): LoginResponse
 
     @POST("forgotPassword.php")
     suspend fun forgotPassword(@Body emailAddressRequest: EmailAddressRequest): CodeResponse

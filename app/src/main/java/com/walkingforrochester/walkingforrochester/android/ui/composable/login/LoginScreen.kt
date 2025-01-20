@@ -134,7 +134,7 @@ fun LoginScreen(
         }
     }
 
-    val activity = LocalActivityResultRegistryOwner.current
+    val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
 
     LoginScreenContent(
         uiState = uiState,
@@ -151,7 +151,7 @@ fun LoginScreen(
             }
         },
         onContinueWithFacebook = {
-            activity?.let {
+            activityResultRegistryOwner?.let {
                 LoginManager.getInstance().logInWithReadPermissions(
                     it, callbackManager, listOf("email", "public_profile")
                 )

@@ -11,13 +11,13 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
 import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
-import com.walkingforrochester.walkingforrochester.android.getAccountId
 import com.walkingforrochester.walkingforrochester.android.md5
 import com.walkingforrochester.walkingforrochester.android.metersToMiles
 import com.walkingforrochester.walkingforrochester.android.model.LocationTrackingEvent
 import com.walkingforrochester.walkingforrochester.android.model.LocationTrackingEventType
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import com.walkingforrochester.walkingforrochester.android.network.request.LogAWalkRequest
+import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.GuidelinesDialogState
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkState
@@ -48,6 +48,7 @@ const val SPEED_LIMIT_METERS_PER_SECOND: Float = 8.9408f
 @HiltViewModel
 class LogAWalkViewModel @Inject constructor(
     private val restApiService: RestApiService,
+    private val preferenceRepository: PreferenceRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -120,7 +121,7 @@ class LogAWalkViewModel @Inject constructor(
             if (file.isNotBlank()) {
                 restApiService.logAWalk(
                     LogAWalkRequest(
-                        accountId = getAccountId(context),
+                        accountId = preferenceRepository.fetchAccountId(),
                         collect = surveyDialogState.bagsCollected,
                         distance = _uiState.value.distanceMiles,
                         duration = duration.toDouble(),
@@ -137,7 +138,7 @@ class LogAWalkViewModel @Inject constructor(
             surveyDialogState.picUri?.let {
                 val fileName = "IMG_WALKING_PICKIMAGE_${
                     LocalDate.now().format(WFRDateFormatter.formatter)
-                }_${md5(getAccountId(context).toString())}"
+                }_${md5(preferenceRepository.fetchAccountId().toString())}"
                 if (it.path != null) {
                     context.contentResolver.openInputStream(it)?.use { inputStream ->
                         val body: MultipartBody.Part =
@@ -299,8 +300,11 @@ class LogAWalkViewModel @Inject constructor(
                     path = PolyUtil.simplify(
                         _uiState.value.path + _uiState.value.path.first(),
                         1.0
-                    )
-                        .apply { removeLast() },
+                    ).apply {
+                        // remove last point added to make a polygon after simplification
+                        removeAt(size - 1)
+                    },
+
                     lastSimplificationTimestamp = System.currentTimeMillis()
                 )
             }

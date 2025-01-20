@@ -1,10 +1,8 @@
 package com.walkingforrochester.walkingforrochester.android
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.core.app.NotificationCompat
@@ -42,9 +40,6 @@ fun showNotification(context: Context, text: String) {
     }
 }
 
-fun getAccountId(context: Context): Long =
-    getPreference(context, context.getString(R.string.wfr_account_id), 0L) as Long
-
 fun getSharedPreferences(context: Context): SharedPreferences = context.getSharedPreferences(
     context.getString(R.string.wfr_preferences),
     Context.MODE_PRIVATE
@@ -75,18 +70,9 @@ fun getPreference(context: Context, key: String, defaultValue: Any): Any? =
         }
     }
 
-fun removePreference(context: Context, key: String) = with(getSharedPreferences(context).edit()) {
-    remove(key).apply()
-}
-
 fun roundDouble(d: Double?): Double = ((d ?: 0.0) * 100.0).roundToInt() / 100.0
 
 fun metersToMiles(d: Double?): Double = (d ?: 0.0) * 0.000621371192
-
-tailrec fun Context.activity(): Activity? = when (this) {
-    is Activity -> this
-    else -> (this as? ContextWrapper)?.baseContext?.activity()
-}
 
 fun md5(input: String): String {
     val md = MessageDigest.getInstance("MD5")

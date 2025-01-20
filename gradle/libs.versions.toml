@@ -1,12 +1,12 @@
 [versions]
 
-androidx-activity = "1.9.3"
+androidx-activity = "1.10.0"
 androidx-annotation = "1.9.1"
 androidx-browser = "1.8.0"
 androidx-camera = "1.4.1"
 androidx-core = "1.15.0"
 androidx-core-splashscreen = "1.0.1"
-androidx-compose-bom = "2024.12.01"
+androidx-compose-bom = "2025.01.00"
 androidx-credentials = "1.3.0"
 androidx-hilt-navigation-compose = "1.2.0"
 androidx-lifecycle = "2.8.7"
@@ -47,7 +47,7 @@ dagger-hilt = "2.51.1"
 
 coil-bom = "2.6.0"
 eventbus = "3.3.1"
-facebook = "17.0.0"
+facebook = "17.0.2"
 timber = "5.0.1"
 
 # Plugins

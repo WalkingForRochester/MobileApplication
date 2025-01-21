@@ -19,7 +19,7 @@ fun MockWebServer.buildHttpClient(): OkHttpClient {
         val msg = redactText.replace(it, "\"password\":\"******\"")
         HttpLoggingInterceptor.Logger.DEFAULT.log(msg)
     }.apply {
-        level = HttpLoggingInterceptor.Level.BASIC
+        level = HttpLoggingInterceptor.Level.BODY
     }
 
     return OkHttpClient.Builder()

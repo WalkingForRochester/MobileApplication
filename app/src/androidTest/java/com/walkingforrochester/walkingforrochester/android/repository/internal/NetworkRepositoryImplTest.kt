@@ -441,6 +441,41 @@ class NetworkRepositoryImplTest {
     }
 
     @Test
+    fun testSubmitWalk() = runTest {
+        mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_OK))
+
+        networkRepository.submitWalk(
+            accountId = ACCOUNT_ID,
+            bagsCollected = BAGS_COLLECTED,
+            distanceInMiles = DISTANCE,
+            duration = DURATION,
+            imageFileName = IMG_URL,
+            encodedPolyline = POLYLINE
+        )
+
+        assertEquals(1, mockWebServer.requestCount)
+        val request = mockWebServer.takeRequest()
+        val json = JSONObject(request.body.readUtf8())
+        assertEquals(ACCOUNT_ID, json.getLong("accountId"))
+        assertEquals(BAGS_COLLECTED, json.getInt("collect"))
+        assertEquals(DISTANCE, json.getDouble("distance"))
+        assertEquals(DURATION.toDouble(), json.getDouble("duration"))
+        assertEquals(IMG_URL, json.getString("imageFileName"))
+        assertEquals(POLYLINE, json.getString("path"))
+
+        testHttpError {
+            networkRepository.submitWalk(
+                accountId = ACCOUNT_ID,
+                bagsCollected = BAGS_COLLECTED,
+                distanceInMiles = DISTANCE,
+                duration = DURATION,
+                imageFileName = IMG_URL,
+                encodedPolyline = POLYLINE
+            )
+        }
+    }
+
+    @Test
     fun testDeleteAccount() = runTest {
         mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_OK))
         networkRepository.deleteUser(ACCOUNT_ID)
@@ -578,11 +613,13 @@ class NetworkRepositoryImplTest {
         const val PHONE = "5551234567"
         const val NICKNAME = "tester"
         const val IMG_URL = "http://example.com/image/test.jpg"
+        const val BAGS_COLLECTED = 2
         const val DISTANCE = 1.1
         const val TOTAL_DISTANCE = 5.3
         const val DURATION = 1200L
         const val TOTAL_DURATION = 10000L
         const val FACEBOOK_ID = "fb1"
+        const val POLYLINE = "23sasca"
         const val ERROR = "error message"
         const val PASSWORD = "password"
         const val CODE = "testCode1"

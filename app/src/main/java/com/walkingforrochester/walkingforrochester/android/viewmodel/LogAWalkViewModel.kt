@@ -1,7 +1,7 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
-import android.content.Context
 import android.location.Location
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.core.net.toUri
@@ -10,35 +10,28 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
-import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
-import com.walkingforrochester.walkingforrochester.android.md5
 import com.walkingforrochester.walkingforrochester.android.metersToMiles
 import com.walkingforrochester.walkingforrochester.android.model.LocationTrackingEvent
 import com.walkingforrochester.walkingforrochester.android.model.LocationTrackingEventType
-import com.walkingforrochester.walkingforrochester.android.network.RestApiService
-import com.walkingforrochester.walkingforrochester.android.network.request.LogAWalkRequest
+import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.GuidelinesDialogState
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkState
 import com.walkingforrochester.walkingforrochester.android.ui.state.SurveyDialogState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.io.File
-import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -47,9 +40,8 @@ const val SPEED_LIMIT_METERS_PER_SECOND: Float = 8.9408f
 
 @HiltViewModel
 class LogAWalkViewModel @Inject constructor(
-    private val restApiService: RestApiService,
+    private val networkRepository: NetworkRepository,
     private val preferenceRepository: PreferenceRepository,
-    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LogAWalkState())
@@ -62,6 +54,16 @@ class LogAWalkViewModel @Inject constructor(
         EventBus.getDefault().register(this)
     }
 
+    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+        Timber.e(throwable, "Unexpected error submitting a walk")
+
+        if (!_eventFlow.tryEmit(LogAWalkEvent.UnexpectedError)) {
+            Timber.w("Failed to report error due to no listener")
+        }
+
+        _uiState.update { it.copy(loading = false) }
+    }
+
     override fun onCleared() {
         super.onCleared()
 
@@ -69,17 +71,14 @@ class LogAWalkViewModel @Inject constructor(
         Timber.d("Cleared LogAWalkViewModel")
     }
 
-    fun onToggleWalk(walking: Boolean? = null) = viewModelScope.launch {
-        try {
-            val shouldStart = walking ?: !_uiState.value.walking
-            if (shouldStart) {
-                showGuidelinesDialog()
-            } else {
-                showSurveyDialog()
-            }
-        } catch (t: Throwable) {
-            Timber.e(t)
-            _eventFlow.emit(LogAWalkEvent.UnexpectedError)
+    fun onToggleWalk(
+        walking: Boolean? = null
+    ) = viewModelScope.launch(context = exceptionHandler) {
+        val shouldStart = walking ?: !_uiState.value.walking
+        if (shouldStart) {
+            showGuidelinesDialog()
+        } else {
+            showSurveyDialog()
         }
     }
 
@@ -117,45 +116,36 @@ class LogAWalkViewModel @Inject constructor(
 
     private suspend fun submitWalk() {
         with(_uiState.value) {
-            val file = uploadImage()
+            val file = uploadImage(surveyDialogState.picUri)
             if (file.isNotBlank()) {
-                restApiService.logAWalk(
-                    LogAWalkRequest(
-                        accountId = preferenceRepository.fetchAccountId(),
-                        collect = surveyDialogState.bagsCollected,
-                        distance = _uiState.value.distanceMiles,
-                        duration = duration.toDouble(),
-                        imageFileName = file,
-                        path = encodedPath
-                    )
+                networkRepository.submitWalk(
+                    accountId = preferenceRepository.fetchAccountId(),
+                    bagsCollected = surveyDialogState.bagsCollected,
+                    distanceInMiles = distanceMiles,
+                    duration = duration,
+                    imageFileName = file,
+                    encodedPolyline = encodedPath
                 )
             }
         }
     }
 
-    private suspend fun uploadImage(): String {
-        with(_uiState.value) {
-            surveyDialogState.picUri?.let {
-                val fileName = "IMG_WALKING_PICKIMAGE_${
-                    LocalDate.now().format(WFRDateFormatter.formatter)
-                }_${md5(preferenceRepository.fetchAccountId().toString())}"
-                if (it.path != null) {
-                    context.contentResolver.openInputStream(it)?.use { inputStream ->
-                        val body: MultipartBody.Part =
-                            MultipartBody.Part.createFormData(
-                                "file",
-                                fileName,
-                                inputStream.readBytes()
-                                    .toRequestBody("form-data".toMediaTypeOrNull())
-                            )
-                        restApiService.uploadImage(body)
-                        return fileName
-                    }
-                }
+    private suspend fun uploadImage(uri: Uri?): String {
+        val fileName = when {
+            uri == null -> ""
+            else -> {
+                networkRepository.uploadWalkImage(
+                    accountId = preferenceRepository.fetchAccountId(),
+                    imageUri = uri
+                )
             }
-            _eventFlow.emit(LogAWalkEvent.CameraRationalError)
-            return ""
         }
+
+        if (fileName.isBlank()) {
+            _eventFlow.emit(LogAWalkEvent.CameraRationalError)
+        }
+
+        return fileName
     }
 
     fun toggleCameraFollow(shouldFollowCamera: Boolean): Boolean {
@@ -172,7 +162,7 @@ class LogAWalkViewModel @Inject constructor(
     fun onGuidelinesLinkClick() =
         _uiState.update { it.copy(guidelinesDialogState = it.guidelinesDialogState.copy(linkClicked = true)) }
 
-    fun onAcceptGuidelines() = viewModelScope.launch {
+    fun onAcceptGuidelines() = viewModelScope.launch(context = exceptionHandler) {
         _uiState.update { it.copy(guidelinesDialogState = GuidelinesDialogState()) }
         startWalk()
     }
@@ -183,19 +173,14 @@ class LogAWalkViewModel @Inject constructor(
     fun onDismissSurveyDialog() =
         _uiState.update { it.copy(surveyDialogState = SurveyDialogState()) }
 
-    fun onDiscardWalking() = viewModelScope.launch {
+    fun onDiscardWalking() = viewModelScope.launch(context = exceptionHandler) {
         _uiState.update { LogAWalkState() }
         _eventFlow.emit(LogAWalkEvent.StopWalking)
     }
 
-    fun onSubmitWalking() = viewModelScope.launch {
-        try {
-            _uiState.update { it.copy(surveyDialogState = it.surveyDialogState.copy(showDialog = false)) }
-            stopWalk()
-        } catch (t: Throwable) {
-            Timber.e(t, "Unable to submit a Walk")
-            _eventFlow.emit(LogAWalkEvent.UnexpectedError)
-        }
+    fun onSubmitWalking() = viewModelScope.launch(context = exceptionHandler) {
+        _uiState.update { it.copy(surveyDialogState = it.surveyDialogState.copy(showDialog = false)) }
+        stopWalk()
     }
 
     fun onPickedUpLitterChange(newPickedUpLitter: Boolean) = _uiState.update {
@@ -237,15 +222,12 @@ class LogAWalkViewModel @Inject constructor(
 
     @Keep
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onLocationTrackingEvent(event: LocationTrackingEvent) = viewModelScope.launch {
-        try {
-            when (event.event) {
-                LocationTrackingEventType.Location -> trackLocation(event.locations)
-                LocationTrackingEventType.Stop -> onToggleWalk(walking = false)
-            }
-        } catch (t: Throwable) {
-            Timber.e(t, "Location event error")
-            _eventFlow.emit(LogAWalkEvent.UnexpectedError)
+    fun onLocationTrackingEvent(
+        event: LocationTrackingEvent
+    ) = viewModelScope.launch(context = exceptionHandler) {
+        when (event.event) {
+            LocationTrackingEventType.Location -> trackLocation(event.locations)
+            LocationTrackingEventType.Stop -> onToggleWalk(walking = false)
         }
     }
 

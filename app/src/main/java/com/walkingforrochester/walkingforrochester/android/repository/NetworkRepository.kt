@@ -41,5 +41,14 @@ interface NetworkRepository {
         time: LocalDate = LocalDate.now()
     ): String
 
+    suspend fun submitWalk(
+        accountId: Long,
+        bagsCollected: Int,
+        distanceInMiles: Double,
+        duration: Long,
+        imageFileName: String,
+        encodedPolyline: String
+    )
+
     suspend fun deleteUser(accountId: Long)
 }

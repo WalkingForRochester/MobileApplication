@@ -14,6 +14,7 @@ import com.walkingforrochester.walkingforrochester.android.network.RestApiServic
 import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LeaderboardRequest
+import com.walkingforrochester.walkingforrochester.android.network.request.LogAWalkRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LoginRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.RegisterRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
@@ -169,6 +170,26 @@ class NetworkRepositoryImpl @Inject constructor(
             true -> fileName
             else -> ""
         }
+    }
+
+    override suspend fun submitWalk(
+        accountId: Long,
+        bagsCollected: Int,
+        distanceInMiles: Double,
+        duration: Long,
+        imageFileName: String,
+        encodedPolyline: String
+    ) {
+        restApiService.logAWalk(
+            LogAWalkRequest(
+                accountId = accountId,
+                collect = bagsCollected,
+                distance = distanceInMiles,
+                duration = duration.toDouble(),
+                imageFileName = imageFileName,
+                path = encodedPolyline
+            )
+        )
     }
 
     override suspend fun deleteUser(accountId: Long) {

@@ -92,7 +92,12 @@ fun WFRNavigationDrawer(
                     currentScreen = currentScreen,
                     onBackButtonClick = { navController.popBackStack() },
                     onNavigationButtonClick = { scope.launch { drawerState.open() } },
-                    onProfileButtonClick = { navController.navigateSingleTopTo(ProfileDestination.route) },
+                    onProfileButtonClick = {
+                        navController.navigate(ProfileDestination.route) {
+                            // only allow one profile, but allow it to return to originating screen
+                            launchSingleTop = true
+                        }
+                    },
                     scrollBehavior = scrollBehavior
                 )
             },
@@ -149,5 +154,9 @@ fun AppScreen(
 }
 
 suspend fun SnackbarHostState.showLongCloseableSnackbar(message: String) {
-    this.showSnackbar(message = message, withDismissAction = true, duration = SnackbarDuration.Long)
+    this.showSnackbar(
+        message = message,
+        withDismissAction = true,
+        duration = SnackbarDuration.Long
+    )
 }

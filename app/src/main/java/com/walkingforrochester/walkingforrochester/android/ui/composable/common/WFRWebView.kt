@@ -1,70 +1,56 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 
-import android.annotation.SuppressLint
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.widget.FrameLayout.LayoutParams
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.rememberWebViewState
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.viewinterop.AndroidView
 
-@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun WFRWebView(modifier: Modifier = Modifier, url: String) {
-    val state = rememberWebViewState(url)
-    val visibility by animateFloatAsState(
-        targetValue = if (state.isLoading) 0f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
-        label = "webviewAnimation"
-    )
+    val urlState = remember { url }
+    var loading = remember { mutableStateOf<Boolean>(false) }
 
     Box(modifier = modifier) {
-        WebView(
-            modifier = Modifier.alpha(visibility),
-            state = state,
-            onCreated = {
-                it.settings.javaScriptEnabled = false
+        val background = MaterialTheme.colorScheme.background
+        AndroidView(
+            factory = { context ->
+                WebView(context).apply {
+                    layoutParams =
+                        LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+                    setBackgroundColor(background.toArgb())
+                    webChromeClient = ProgressClient(loading)
+                }
+            },
+            update = { webView ->
+                webView.settings.javaScriptEnabled = false
+                webView.loadUrl(urlState)
             }
         )
-        if (state.isLoading) {
+
+        AnimatedVisibility(
+            loading.value,
+            modifier = Modifier.align(Alignment.Center)
+        ) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center), color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }
 }
 
-/*class CustomWebClient : AccompanistWebViewClient() {
-
-    override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
-        super.onPageStarted(view, url, favicon)
-        Timber.d("starting: %s", url)
+class ProgressClient(val loadingState: MutableState<Boolean>) : WebChromeClient() {
+    override fun onProgressChanged(view: WebView?, newProgress: Int) {
+        loadingState.value = newProgress != 100
     }
-
-    override fun onPageFinished(view: WebView, url: String?) {
-
-        view.evaluateJavascript(
-            """
-                                (function() {
-                                    try {
-                                        document.getElementById('main-header').style.display='none';
-                                        document.getElementById('main-footer').style.display='none';
-                                    } catch (error) {
-                                        console.info('WFR header and footer elements were not found');
-                                    }
-                                })();
-                                """
-        ) {
-            //Timber.d("callback")
-            //view.settings.javaScriptEnabled = false
-        }
-        super.onPageFinished(view, url)
-    }
-}*/
+}

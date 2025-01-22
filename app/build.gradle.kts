@@ -87,6 +87,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.webkit)
+
     implementation(libs.google.googleid)
 
     // Compose
@@ -118,7 +120,6 @@ dependencies {
     androidTestImplementation(libs.androidx.test.uiautomator)
 
     implementation(libs.accompanist.permissions)
-    implementation(libs.accompanist.webview)
 
     // Kotlin
     val kotlinBom = platform(libs.kotlin.bom)

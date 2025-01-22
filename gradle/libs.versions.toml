@@ -15,8 +15,9 @@ androidx-navigation = "2.8.5"
 androidx-test-espresso = "3.6.1"
 androidx-test-junit = "1.2.1"
 androidx-test-uiautomator = "2.3.0"
+androidx-webkit = "1.12.1"
 
-accompanist = "0.34.0"
+accompanist = "0.37.0"
 junit = "4.13.2"
 
 # hilt
@@ -37,15 +38,15 @@ retrofit-bom = "2.11.0"
 # google services
 play-services-location = "21.3.0"
 play-services-maps = "19.0.0"
-google-android-maps-compose = "6.1.0"
-google-android-maps-utils = "3.5.2"
+google-android-maps-compose = "6.4.1"
+google-android-maps-utils = "3.10.0"
 google-libphonenumber = "8.13.41"
 google-googleid = "1.1.1"
 
 # dagger/hilt
 dagger-hilt = "2.51.1"
 
-coil-bom = "2.6.0"
+coil-bom = "2.7.0"
 eventbus = "3.3.1"
 facebook = "17.0.2"
 timber = "5.0.1"
@@ -94,8 +95,9 @@ androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core",
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-junit" }
 androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidx-test-uiautomator" }
 
+androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidx-webkit"}
+
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
-accompanist-webview = { module = "com.google.accompanist:accompanist-webview", version.ref = "accompanist" }
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger-hilt" }
 dagger-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "dagger-hilt" }
 dagger-hilt-compilier = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger-hilt" }

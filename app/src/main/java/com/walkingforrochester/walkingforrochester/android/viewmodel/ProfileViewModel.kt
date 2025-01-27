@@ -51,7 +51,11 @@ class ProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ProfileScreenState())
     val uiState = _uiState.asStateFlow()
 
-    private val _eventFlow = MutableSharedFlow<ProfileScreenEvent>()
+    // Because the network error may occur BEF
+    private val _eventFlow = MutableSharedFlow<ProfileScreenEvent>(
+        extraBufferCapacity = 1,
+        //onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val eventFlow = _eventFlow.asSharedFlow()
 
     private var previousProfile = AccountProfile.DEFAULT_PROFILE
@@ -71,12 +75,10 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    init {
-        viewModelScope.launch(context = exceptionHandler) {
-            _uiState.update { it.copy(profileDataLoading = true) }
-            refreshProfile()
-            _uiState.update { it.copy(profileDataLoading = false) }
-        }
+    fun loadProfile() = viewModelScope.launch(context = exceptionHandler) {
+        _uiState.update { it.copy(profileDataLoading = true) }
+        refreshProfile()
+        _uiState.update { it.copy(profileDataLoading = false) }
     }
 
     private suspend fun refreshProfile() {

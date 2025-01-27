@@ -43,6 +43,7 @@
     <string name="profile_pic">Profile Pic</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="share_profile">Share Profile</string>
+    <string name="profile_load_error">Unable to load profile. If the problem persists, please contact support.</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="email_already_registered">Email already registered</string>

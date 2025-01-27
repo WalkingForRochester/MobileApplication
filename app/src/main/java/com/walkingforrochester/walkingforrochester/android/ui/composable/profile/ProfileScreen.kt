@@ -24,7 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
@@ -63,6 +66,13 @@ fun ProfileScreen(
                     snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
                 }
             }
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            profileViewModel.loadProfile()
         }
     }
 
@@ -131,25 +141,35 @@ fun ProfileScreenContent(
             onSaveProfile = onSaveProfile,
             onCancelEdits = onCancelEdits
         )
-        if (uiState.editProfile) {
-            Spacer(modifier = Modifier.height(8.dp))
-        } else {
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            WFROutlinedButton(
-                onClick = { openAlertDialog = true },
-                label = R.string.delete_account,
-                modifier = Modifier.widthIn(min = 200.dp)
-            )
-            Spacer(Modifier.height(12.dp))
-            WFRButton(
-                onClick = onLogout,
-                label = R.string.logout,
-                modifier = Modifier.widthIn(min = 200.dp)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
+        when {
+            uiState.editProfile -> {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            accountProfile.accountId == AccountProfile.NO_ACCOUNT -> {
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+            }
+
+            else -> {
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                WFROutlinedButton(
+                    onClick = { openAlertDialog = true },
+                    label = R.string.delete_account,
+                    modifier = Modifier.widthIn(min = 200.dp)
+                )
+                Spacer(Modifier.height(12.dp))
+                WFRButton(
+                    onClick = onLogout,
+                    label = R.string.logout,
+                    modifier = Modifier.widthIn(min = 200.dp)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
@@ -160,6 +180,23 @@ fun PreviewProfileScreen() {
     WalkingForRochesterTheme {
         ProfileScreenContent(
             uiState = ProfileScreenState(),
+            accountProfile =AccountProfile.DEFAULT_PROFILE.copy(
+                accountId = 1234L,
+                email = "test@email.com",
+                phoneNumber = "5551234567",
+                nickname = "Bob",
+                communityService = false,
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewEditProfileScreen() {
+    WalkingForRochesterTheme {
+        ProfileScreenContent(
+            uiState = ProfileScreenState(editProfile = true),
             accountProfile =AccountProfile.DEFAULT_PROFILE.copy(
                 accountId = 1234L,
                 email = "test@email.com",

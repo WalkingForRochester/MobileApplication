@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,56 +76,73 @@ fun ProfileCard(
         modifier = modifier.animateContentSize(),
         elevation = CardDefaults.cardElevation()
     ) {
-        if (uiState.profileDataLoading) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                CircularProgressIndicator(
+        when {
+            uiState.profileDataLoading -> {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(vertical = 144.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+            }
+
+            accountProfile.accountId == AccountProfile.NO_ACCOUNT -> {
+                Text(
+                    text = stringResource(R.string.profile_load_error),
                     modifier = Modifier
-                        .padding(top = 144.dp, bottom = 144.dp)
-                        .align(Alignment.Center)
+                        .padding(horizontal = 24.dp, vertical = 144.dp)
+                        .fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        lineBreak = LineBreak.Heading
+                    ),
+                    textAlign = TextAlign.Center,
                 )
             }
-        } else {
-            EditableProfile(
-                uiState = uiState,
-                accountProfile = accountProfile,
-                modifier = Modifier,
-                onEdit = onEdit,
-                onShare = onShare,
-                onProfileChange = onProfileChange,
-                onChoosePhoto = onChoosePhoto,
-                onSaveProfile = onSaveProfile,
-                onCancelEdits = onCancelEdits
-            )
-            if (!uiState.editProfile) {
-                val dividerColor = LocalContentColor.current.copy(alpha = .2f)
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = dividerColor
+
+            else -> {
+                EditableProfile(
+                    uiState = uiState,
+                    accountProfile = accountProfile,
+                    modifier = Modifier,
+                    onEdit = onEdit,
+                    onShare = onShare,
+                    onProfileChange = onProfileChange,
+                    onChoosePhoto = onChoosePhoto,
+                    onSaveProfile = onSaveProfile,
+                    onCancelEdits = onCancelEdits
                 )
-                ProfileStats(
-                    label = stringResource(id = R.string.distances),
-                    previousStat = "${roundDouble(accountProfile.distanceToday)} mi",
-                    overallStat = "${roundDouble(accountProfile.totalDistance)} mi"
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = dividerColor
-                )
-                ProfileStats(
-                    label = stringResource(id = R.string.durations),
-                    previousStat = DateUtils.formatElapsedTime(accountProfile.durationToday / 1000),
-                    overallStat = DateUtils.formatElapsedTime(accountProfile.totalDuration / 1000),
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = dividerColor
-                )
-                Text(
-                    text = stringResource(id = R.string.profile_disclaimer),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                    style = MaterialTheme.typography.bodySmall
-                )
+                if (!uiState.editProfile) {
+                    val dividerColor = LocalContentColor.current.copy(alpha = .2f)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = dividerColor
+                    )
+                    ProfileStats(
+                        label = stringResource(id = R.string.distances),
+                        previousStat = "${roundDouble(accountProfile.distanceToday)} mi",
+                        overallStat = "${roundDouble(accountProfile.totalDistance)} mi"
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = dividerColor
+                    )
+                    ProfileStats(
+                        label = stringResource(id = R.string.durations),
+                        previousStat = DateUtils.formatElapsedTime(accountProfile.durationToday / 1000),
+                        overallStat = DateUtils.formatElapsedTime(accountProfile.totalDuration / 1000),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = dividerColor
+                    )
+                    Text(
+                        text = stringResource(id = R.string.profile_disclaimer),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
         }
     }
@@ -510,6 +528,17 @@ fun PreviewProfileCard() {
                 nickname = "Bob",
                 communityService = true,
             )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PreviewNoAccount() {
+    WalkingForRochesterTheme {
+        ProfileCard(
+            uiState = ProfileScreenState(),
+            accountProfile = AccountProfile.DEFAULT_PROFILE
         )
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,7 +30,6 @@ import com.walkingforrochester.walkingforrochester.android.showNotification
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestLocationPermissionsScreen
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRDialog
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
@@ -129,34 +129,55 @@ fun LogAWalkScreen(
                 )
             }
             if (uiState.mockLocation) {
-                WFRDialog(
+                WalkEndedDialog(
                     onDismissRequest = { logAWalkViewModel.onDismissMockLocationDialog() },
-                    icon = { Icon(imageVector = Icons.Filled.Warning, contentDescription = null) },
-                    title = { Text(stringResource(R.string.mock_location_detected)) },
-                    buttons = {
-                        TextButton(onClick = { logAWalkViewModel.onDismissMockLocationDialog() }) {
-                            Text(stringResource(R.string.understood))
-                        }
-                    }) {
-                    Text(stringResource(R.string.mock_location_dialog))
-                }
+                    title = stringResource(R.string.mock_location_detected),
+                    text = stringResource(R.string.mock_location_dialog)
+                )
             }
             if (uiState.movingTooFast) {
-                WFRDialog(
+                WalkEndedDialog(
                     onDismissRequest = { logAWalkViewModel.onDismissMovingTooFastDialog() },
-                    icon = { Icon(imageVector = Icons.Filled.Warning, contentDescription = null) },
-                    title = { Text(stringResource(R.string.moving_too_fast)) },
-                    buttons = {
-                        TextButton(onClick = { logAWalkViewModel.onDismissMovingTooFastDialog() }) {
-                            Text(stringResource(R.string.understood))
-                        }
-                    }) {
-                    Text(stringResource(R.string.moving_too_fast_dialog))
-                }
+                    title = stringResource(R.string.moving_too_fast),
+                    text = stringResource(R.string.moving_too_fast_dialog)
+                )
             }
         }
     } else {
         RequestLocationPermissionsScreen(permissionState = permissionState)
+    }
+}
+
+@Composable
+fun WalkEndedDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(stringResource(R.string.understood))
+            }
+        },
+        modifier = modifier,
+        icon = { Icon(imageVector = Icons.Filled.Warning, contentDescription = null) },
+        title = { Text(title) },
+        text = { Text(text) }
+    )
+}
+
+@Preview
+@Composable
+fun PreviewWalkEndedDialog() {
+    WalkingForRochesterTheme {
+        WalkEndedDialog(
+            onDismissRequest = {},
+            title = stringResource(R.string.mock_location_detected),
+            text = stringResource(R.string.mock_location_dialog)
+        )
     }
 }
 

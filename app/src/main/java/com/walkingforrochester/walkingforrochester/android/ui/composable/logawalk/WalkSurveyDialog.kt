@@ -1,9 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk
 
 import android.Manifest
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -57,17 +54,16 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CameraCapture
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.FullScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.HorizontalNumberPicker
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestPermissions
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestCameraPermissionsScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRDialog
 import com.walkingforrochester.walkingforrochester.android.ui.state.SurveyDialogState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.MaterialRed
@@ -312,6 +308,8 @@ private fun TakeAPic(
     }
 
     if (permissionState.allPermissionsGranted) {
+        // If permissions granted, clear the rational shown flag
+        logAWalkViewModel.onUpdateCameraRationalShown(false)
         if (surveyDialogState.picUri == null) {
             TextButton(
                 onClick = logAWalkViewModel::onShowCamera,
@@ -328,7 +326,15 @@ private fun TakeAPic(
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.size(12.dp))
-                Image(
+                AsyncImage(
+                    model = surveyDialogState.picUri,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(MaterialTheme.shapes.medium),
+                    contentScale = ContentScale.Crop
+                )
+                /*Image(
                     painter = rememberAsyncImagePainter(
                         model = ImageRequest
                             .Builder(LocalContext.current)
@@ -340,17 +346,24 @@ private fun TakeAPic(
                         .size(100.dp)
                         .clip(MaterialTheme.shapes.medium),
                     contentDescription = null
-                )
+                )*/
                 TextButton(onClick = logAWalkViewModel::onShowCamera) {
                     Text("Take another picture")
                 }
             }
         }
     } else {
-        RequestPermissions(
+        RequestCameraPermissionsScreen(
+            permissionState = permissionState,
+            rationalShown = surveyDialogState.cameraRationalShown,
+            onUpdateRationalShown = { logAWalkViewModel.onUpdateCameraRationalShown(it) },
+            onDismissRequest = { logAWalkViewModel.onHideCamera() }
+        )
+        /*RequestPermissions(
             permissionState = permissionState,
             askedOncePrefKey = R.string.wfr_asked_camera_permission_once,
             dontAskAgainPrefKey = R.string.wfr_dont_ask_camera_permissions,
+            askedOnceState = askedOnceState,
             rationaleContent = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Spacer(modifier = Modifier.size(12.dp))
@@ -385,6 +398,6 @@ private fun TakeAPic(
                     textAlign = TextAlign.Center
                 )
             }
-        }
+        }*/
     }
 }

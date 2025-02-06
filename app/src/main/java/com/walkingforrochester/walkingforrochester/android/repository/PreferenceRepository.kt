@@ -11,4 +11,12 @@ interface PreferenceRepository {
     suspend fun updateDarkMode(enabled: Boolean)
 
     suspend fun removeAccountInfo()
+
+    suspend fun locationRationalShown(): Boolean
+
+    suspend fun updateLocationRationalShown(shown: Boolean)
+
+    suspend fun cameraRationalShown(): Boolean
+
+    suspend fun updateCameraRationalShown(shown: Boolean)
 }

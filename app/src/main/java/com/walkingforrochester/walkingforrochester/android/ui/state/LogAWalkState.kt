@@ -5,6 +5,7 @@ import com.google.android.gms.maps.model.LatLng
 
 data class LogAWalkState(
     val walking: Boolean = false,
+    val locationRationalShown: Boolean = false,
     val followCamera: Boolean = true,
     val lastLocation: LatLng? = null,
     val path: List<LatLng> = mutableListOf(),
@@ -33,6 +34,7 @@ data class SurveyDialogState(
     val pickedUpLitter: Boolean = false,
     val bagsCollected: Int = 0,
     val showCamera: Boolean = false,
+    val cameraRationalShown: Boolean = false,
     val picUri: Uri? = null
 )
 

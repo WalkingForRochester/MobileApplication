@@ -49,11 +49,6 @@ class LogAWalkViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<LogAWalkEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    init {
-        Timber.d("Initializing LogAWalkViewModel")
-        EventBus.getDefault().register(this)
-    }
-
     private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
         Timber.e(throwable, "Unexpected error submitting a walk")
 
@@ -64,11 +59,49 @@ class LogAWalkViewModel @Inject constructor(
         _uiState.update { it.copy(loading = false) }
     }
 
+    init {
+        Timber.d("Initializing LogAWalkViewModel")
+        EventBus.getDefault().register(this)
+    }
+
     override fun onCleared() {
         super.onCleared()
 
         EventBus.getDefault().unregister(this)
         Timber.d("Cleared LogAWalkViewModel")
+    }
+
+    fun recoverWalkingState() = viewModelScope.launch(context = exceptionHandler) {
+        _uiState.update {
+            it.copy(
+                locationRationalShown = preferenceRepository.locationRationalShown()
+            )
+        }
+    }
+
+    fun onUpdateLocationRationalShown(
+        shown: Boolean
+    ) = viewModelScope.launch(context = exceptionHandler) {
+        preferenceRepository.updateLocationRationalShown(shown)
+        _uiState.update {
+            it.copy(
+                locationRationalShown = preferenceRepository.locationRationalShown()
+            )
+        }
+    }
+
+    fun onUpdateCameraRationalShown(
+        shown: Boolean
+    ) = viewModelScope.launch(context = exceptionHandler) {
+        preferenceRepository.updateCameraRationalShown(shown)
+
+        _uiState.update {
+            it.copy(
+                surveyDialogState = it.surveyDialogState.copy(
+                    cameraRationalShown = preferenceRepository.cameraRationalShown()
+                ),
+            )
+        }
     }
 
     fun onToggleWalk(
@@ -167,8 +200,16 @@ class LogAWalkViewModel @Inject constructor(
         startWalk()
     }
 
-    private fun showSurveyDialog() =
-        _uiState.update { it.copy(surveyDialogState = SurveyDialogState(showDialog = true)) }
+    private fun showSurveyDialog() = viewModelScope.launch(context = exceptionHandler) {
+        _uiState.update {
+            it.copy(
+                surveyDialogState = SurveyDialogState(
+                    showDialog = true,
+                    cameraRationalShown = preferenceRepository.cameraRationalShown()
+                )
+            )
+        }
+    }
 
     fun onDismissSurveyDialog() =
         _uiState.update { it.copy(surveyDialogState = SurveyDialogState()) }

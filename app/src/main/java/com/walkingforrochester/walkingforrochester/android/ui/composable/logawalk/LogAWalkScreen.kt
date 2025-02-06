@@ -22,7 +22,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.walkingforrochester.walkingforrochester.android.R
@@ -75,6 +78,13 @@ fun LogAWalkScreen(
         }
     }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+            logAWalkViewModel.recoverWalkingState()
+        }
+    }
+
     val uiState by logAWalkViewModel.uiState.collectAsStateWithLifecycle()
 
 
@@ -83,7 +93,7 @@ fun LogAWalkScreen(
             listOf(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.POST_NOTIFICATIONS
+                //Manifest.permission.POST_NOTIFICATIONS
             )
         } else {
             listOf(
@@ -96,6 +106,8 @@ fun LogAWalkScreen(
     LoadingOverlay(uiState.loading)
 
     if (permissionState.allPermissionsGranted) {
+        // If all permissions granted, rational is reset
+        logAWalkViewModel.onUpdateLocationRationalShown(false)
         Box(modifier = modifier.fillMaxSize()) {
             LogAWalkMap(
                 toggleCameraFollow = logAWalkViewModel::toggleCameraFollow,
@@ -144,7 +156,11 @@ fun LogAWalkScreen(
             }
         }
     } else {
-        RequestLocationPermissionsScreen(permissionState = permissionState)
+        RequestLocationPermissionsScreen(
+            permissionState = permissionState,
+            rationalShown = uiState.locationRationalShown,
+            onUpdateRationalShown = { it -> logAWalkViewModel.onUpdateLocationRationalShown(it) }
+        )
     }
 }
 

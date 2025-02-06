@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.squareup.moshi.FromJson
@@ -39,36 +38,6 @@ fun showNotification(context: Context, text: String) {
         notify(NOTIFICATION_ID, builder.build())
     }
 }
-
-fun getSharedPreferences(context: Context): SharedPreferences = context.getSharedPreferences(
-    context.getString(R.string.wfr_preferences),
-    Context.MODE_PRIVATE
-)
-
-fun savePreference(context: Context, key: String, value: Any) =
-    with(getSharedPreferences(context).edit()) {
-        when (value) {
-            is Boolean -> putBoolean(key, value)
-            is Int -> putInt(key, value)
-            is Long -> putLong(key, value)
-            is Float -> putFloat(key, value)
-            is String -> putString(key, value)
-            else -> error("Cannot save preference of type ${value.javaClass}, try using SharedPreferences SDK methods")
-        }
-        apply()
-    }
-
-fun getPreference(context: Context, key: String, defaultValue: Any): Any? =
-    with(getSharedPreferences(context)) {
-        when (defaultValue) {
-            is Boolean -> getBoolean(key, defaultValue)
-            is Int -> getInt(key, defaultValue)
-            is Long -> getLong(key, defaultValue)
-            is Float -> getFloat(key, defaultValue)
-            is String -> getString(key, defaultValue)
-            else -> error("Cannot get preference of type ${defaultValue.javaClass}, try using SharedPreferences SDK methods")
-        }
-    }
 
 fun roundDouble(d: Double?): Double = ((d ?: 0.0) * 100.0).roundToInt() / 100.0
 

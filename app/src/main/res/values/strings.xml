@@ -9,8 +9,6 @@
     <string name="forgot_password_question">Forgot Password?</string>
     <string name="new_here_sign_up">New here? Sign up</string>
     <string name="unexpected_error">Unexpected error. Please contact app administrator</string>
-    <string name="wfr_preferences" translatable="false">walking_for_rochester_preferences</string>
-    <string name="wfr_account_id" translatable="false">walking_for_rochester_account_id</string>
     <string name="auth_error">Authentication error</string>
     <string name="email_address">Email Address</string>
     <string name="first_name">First Name</string>
@@ -55,7 +53,6 @@
     <string name="walking_notification">You are Walking For Rochester!</string>
     <string name="stop_walking">Stop Walking</string>
     <string name="dark_mode">Dark mode</string>
-    <string name="wfr_dark_mode_enabled" translatable="false">walking_for_rochester_dark_mode_enabled</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="please_open_settings_to_grant_permissions">In order to continue, you need to allow this permission in the Settings app.</string>
     <string name="open_app_settings">Settings</string>

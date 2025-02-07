@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import com.squareup.moshi.Moshi
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
-import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import dagger.Module
 import dagger.Provides
@@ -29,11 +28,9 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
-        context.getSharedPreferences(
-            context.getString(R.string.wfr_preferences),
-            Context.MODE_PRIVATE
-        )
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE)
+    }
 
     @Singleton
     @Provides
@@ -64,9 +61,11 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideMoshi(): Moshi = Moshi.Builder()
-        .add(LocalDateAdapter())
-        .build()
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder()
+            .add(LocalDateAdapter())
+            .build()
+    }
 
     @Singleton
     @Provides
@@ -86,6 +85,10 @@ class AppModule {
     @IODispatcher
     @Provides
     fun provideIODispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    companion object {
+        const val PREFERENCE_FILE = "walking_for_rochester_preferences"
+    }
 }
 
 @Retention(AnnotationRetention.BINARY)

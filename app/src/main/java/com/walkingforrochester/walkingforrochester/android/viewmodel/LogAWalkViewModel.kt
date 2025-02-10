@@ -74,7 +74,8 @@ class LogAWalkViewModel @Inject constructor(
     fun recoverWalkingState() = viewModelScope.launch(context = exceptionHandler) {
         _uiState.update {
             it.copy(
-                locationRationalShown = preferenceRepository.locationRationalShown()
+                locationRationalShown = preferenceRepository.locationRationalShown(),
+                notificationRationalShown = preferenceRepository.notificationRationalShown()
             )
         }
     }
@@ -86,6 +87,17 @@ class LogAWalkViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 locationRationalShown = preferenceRepository.locationRationalShown()
+            )
+        }
+    }
+
+    fun onUpdateNotificationRationalShown(
+        shown: Boolean
+    ) = viewModelScope.launch(context = exceptionHandler) {
+        preferenceRepository.updateNotificationRationalShown(shown)
+        _uiState.update {
+            it.copy(
+                notificationRationalShown = preferenceRepository.notificationRationalShown()
             )
         }
     }
@@ -299,15 +311,17 @@ class LogAWalkViewModel @Inject constructor(
 
     private suspend fun validateLocation(location: Location): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && location.isMock) {
-            _uiState.update { LogAWalkState(mockLocation = true) }
+            _uiState.update { it.copy(mockLocation = true) }
             _eventFlow.emit(LogAWalkEvent.MockLocationDetected)
 
             return false
         }
 
-        if (location.hasSpeed() && location.hasSpeedAccuracy() && location.speed - location.speedAccuracyMetersPerSecond > SPEED_LIMIT_METERS_PER_SECOND) {
-            location.speed
-            _uiState.update { LogAWalkState(movingTooFast = true) }
+        if (location.hasSpeed() &&
+            location.hasSpeedAccuracy() &&
+            location.speed - location.speedAccuracyMetersPerSecond > SPEED_LIMIT_METERS_PER_SECOND) {
+            Timber.w("Computed speed is %f", location.speed - location.speedAccuracyMetersPerSecond)
+            _uiState.update { it.copy(movingTooFast = true) }
             _eventFlow.emit(LogAWalkEvent.MovingTooFast)
 
             return false

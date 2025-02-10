@@ -30,7 +30,6 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.modifier.autofill
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
-import timber.log.Timber
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -54,8 +53,7 @@ fun RegistrationForm(
     ) {
         WFRTextField(
             value = registrationProfile.firstName,
-            onValueChange = { Timber.d("JSR on first name change")
-                onProfileChange(registrationProfile.copy(firstName = it)) },
+            onValueChange = { onProfileChange(registrationProfile.copy(firstName = it)) },
             labelRes = R.string.first_name,
             modifier = Modifier
                 .padding(horizontal = 16.dp)

@@ -15,6 +15,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +36,7 @@ import com.walkingforrochester.walkingforrochester.android.showNotification
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestLocationPermissionsScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestNotificationPermissionsScreen
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
@@ -85,27 +89,40 @@ fun LogAWalkScreen(
         }
     }
 
+    var requestNotificationPermission by remember { mutableStateOf(false) }
+    var notificationPermissionShown by remember { mutableStateOf(false) }
+
     val uiState by logAWalkViewModel.uiState.collectAsStateWithLifecycle()
 
 
-    val permissionState = rememberMultiplePermissionsState(
+    val locationPermissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    )
+
+    val notificationPermissionState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                //Manifest.permission.POST_NOTIFICATIONS
+                Manifest.permission.POST_NOTIFICATIONS
             )
         } else {
-            listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
+            emptyList()
+        },
+        onPermissionsResult = {
+            // Callback from launchMultiplePermissionRequest(). Regardless of permission
+            // grant, prevent dialog from showing again this run and start the walk.
+            // Notification is "optional" in that it just isn't shown but service still runs.
+            notificationPermissionShown = true
+            requestNotificationPermission = false
+            logAWalkViewModel.onToggleWalk()
         }
     )
 
     LoadingOverlay(uiState.loading)
 
-    if (permissionState.allPermissionsGranted) {
+    if (locationPermissionState.allPermissionsGranted) {
         // If all permissions granted, rational is reset
         logAWalkViewModel.onUpdateLocationRationalShown(false)
         Box(modifier = modifier.fillMaxSize()) {
@@ -121,7 +138,20 @@ fun LogAWalkScreen(
             )
             StartStopWalkButton(
                 walking = uiState.walking,
-                onClick = logAWalkViewModel::onToggleWalk,
+                onClick = {
+                    if (uiState.walking) {
+                        logAWalkViewModel.onToggleWalk()
+                    } else {
+                        if (notificationPermissionState.permissions.isEmpty() ||
+                            notificationPermissionState.allPermissionsGranted
+                        ) {
+                            logAWalkViewModel.onUpdateNotificationRationalShown(false)
+                            logAWalkViewModel.onToggleWalk()
+                        } else {
+                            requestNotificationPermission = true
+                        }
+                    }
+                },
                 modifier = Modifier
                     .padding(contentPadding)
                     .padding(16.dp)
@@ -154,12 +184,33 @@ fun LogAWalkScreen(
                     text = stringResource(R.string.moving_too_fast_dialog)
                 )
             }
+            if (requestNotificationPermission) {
+                if (notificationPermissionShown) {
+                    logAWalkViewModel.onToggleWalk()
+                    requestNotificationPermission = false
+                } else {
+                    RequestNotificationPermissionsScreen(
+                        permissionState = notificationPermissionState,
+                        rationalShown = uiState.notificationRationalShown,
+                        onUpdateRationalShown = {
+                            logAWalkViewModel.onUpdateNotificationRationalShown(it)
+                        },
+                        onDismissRequest = {
+                            logAWalkViewModel.onToggleWalk()
+                            requestNotificationPermission = false
+                            notificationPermissionShown = true
+                        }
+                    )
+                }
+            }
         }
     } else {
         RequestLocationPermissionsScreen(
-            permissionState = permissionState,
+            permissionState = locationPermissionState,
             rationalShown = uiState.locationRationalShown,
-            onUpdateRationalShown = { it -> logAWalkViewModel.onUpdateLocationRationalShown(it) }
+            onUpdateRationalShown = { it ->
+                logAWalkViewModel.onUpdateLocationRationalShown(it)
+            }
         )
     }
 }

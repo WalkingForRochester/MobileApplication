@@ -16,6 +16,10 @@ interface PreferenceRepository {
 
     suspend fun updateLocationRationalShown(shown: Boolean)
 
+    suspend fun notificationRationalShown(): Boolean
+
+    suspend fun updateNotificationRationalShown(shown: Boolean)
+
     suspend fun cameraRationalShown(): Boolean
 
     suspend fun updateCameraRationalShown(shown: Boolean)

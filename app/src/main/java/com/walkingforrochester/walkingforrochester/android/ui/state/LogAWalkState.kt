@@ -6,6 +6,7 @@ import com.google.android.gms.maps.model.LatLng
 data class LogAWalkState(
     val walking: Boolean = false,
     val locationRationalShown: Boolean = false,
+    val notificationRationalShown: Boolean = false,
     val followCamera: Boolean = true,
     val lastLocation: LatLng? = null,
     val path: List<LatLng> = mutableListOf(),

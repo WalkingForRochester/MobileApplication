@@ -61,6 +61,16 @@ class PreferenceRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun notificationRationalShown(): Boolean = withContext(ioDispatcher) {
+        sharedPreferences.getBoolean(NOTIFICATION_RATIONAL_KEY, false)
+    }
+
+    override suspend fun updateNotificationRationalShown(shown: Boolean) = withContext(ioDispatcher) {
+        sharedPreferences.edit(commit = true) {
+            putBoolean(NOTIFICATION_RATIONAL_KEY, shown)
+        }
+    }
+
     override suspend fun cameraRationalShown(): Boolean = withContext(ioDispatcher) {
         sharedPreferences.getBoolean(CAMERA_RATIONAL_KEY, false)
     }
@@ -76,6 +86,7 @@ class PreferenceRepositoryImpl @Inject constructor(
         private const val ACCOUNT_ID_KEY = "walking_for_rochester_account_id"
         private const val LOCATION_RATIONAL_KEY =
             "walking_for_rochester_asked_location_permission_once"
+        private const val NOTIFICATION_RATIONAL_KEY = "asked_notification_permission_once"
         private const val CAMERA_RATIONAL_KEY = "walking_for_rochester_asked_camera_permission_once"
     }
 }

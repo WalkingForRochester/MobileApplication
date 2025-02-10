@@ -44,6 +44,8 @@
     <string name="profile_load_error">Unable to load profile. If the problem persists, please contact support.</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="skip_label">Skip</string>
+    <string name="close_app_label">Close app</string>
     <string name="email_already_registered">Email already registered</string>
     <string name="email_in_use">Email is already in use</string>
     <string name="choose_new_photo">Choose new photo</string>
@@ -59,11 +61,10 @@
     <string name="close_button">Close</string>
     <string name="continue_button">Continue</string>
     <string name="location_title">Location</string>
-    <string name="location_permission_rationale_old">Precise location and Notification permissions are important to efficiently track your location while you are Walking for Rochester.\n\nWe promise not to spam you with notifications!</string>
     <string name="location_permission_rationale">Walking for Rochester uses your precise location to display your position and current route while using the app.</string>
-    <string name="wfr_dont_ask_location_permissions">walking_for_rochester_dont_ask_location_permissions</string>
-    <string name="wfr_asked_location_permission_once">walking_for_rochester_asked_location_permission_once</string>
-    <string name="accept">Accept</string>
+    <string name="notification_permission_title">Notifications</string>
+    <string name="notification_permission_rationale">Walking for Rochester uses a notification to show information about your active walk.</string>
+     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
     <string name="safety_guidelines_dialog">I agree to abide by the guidelines and consent to the waiver.</string>
 

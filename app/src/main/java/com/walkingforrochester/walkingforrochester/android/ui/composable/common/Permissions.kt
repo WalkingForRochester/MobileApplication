@@ -44,14 +44,42 @@ fun RequestLocationPermissionsScreen(
         onUpdateRationalShown = onUpdateRationalShown,
         onDismissRequest = {
             if (activity is ComponentActivity) {
-                Timber.d("JSR calling onBackPressed")
                 activity.onBackPressedDispatcher.onBackPressed()
             } else {
-                Timber.d("JSR moving to back")
                 activity?.moveTaskToBack(false)
             }
-        }
+        },
+        dismissButtonLabel = stringResource(R.string.close_app_label)
     )
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun RequestNotificationPermissionsScreen(
+    permissionState: MultiplePermissionsState,
+    rationalShown: Boolean,
+    onUpdateRationalShown: (Boolean) -> Unit = {},
+    onDismissRequest: () -> Unit = {}
+) {
+    // If rational shown, proceed as any notifications are not shown to the user,
+    // but doesn't impact the ability to launch the foreground service.
+    if (rationalShown) {
+        onDismissRequest()
+    } else {
+        DisplayRationalDialog(
+            permissionState = permissionState,
+            title = stringResource(R.string.notification_permission_title),
+            rational = stringResource(R.string.notification_permission_rationale),
+            rationalShown = false,
+            onOpenSettings = { onDismissRequest() },
+            onUpdateRationalShown = {
+                // Update rational shown only if was last chance to show rational.
+                onUpdateRationalShown(permissionState.shouldShowRationale)
+            },
+            onDismissRequest = onDismissRequest,
+            dismissButtonLabel = stringResource(R.string.skip_label)
+        )
+    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -82,12 +110,12 @@ private fun RequestPermissions(
     onUpdateRationalShown: (Boolean) -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    dismissButtonLabel: String = stringResource(R.string.cancel)
 ) {
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        Timber.d("JSR result = %d", it.resultCode)
         permissionState.launchMultiplePermissionRequest()
     }
 
@@ -98,25 +126,20 @@ private fun RequestPermissions(
         rationalShown || permissionState.permissions.any { it.status.shouldShowRationale } -> {
             Timber.d("showing rationale")
 
-            permissionState.permissions.forEach {
-                Timber.d("JSR %s %s", it.permission, it.status)
-            }
             DisplayRationalDialog(
                 permissionState = permissionState,
                 title = rationalTitle,
                 rational = rationalText,
-                settingsLauncher = launcher,
                 rationalShown = rationalShown,
+                onOpenSettings = { openSettings(launcher) },
                 onUpdateRationalShown = onUpdateRationalShown,
                 modifier = modifier,
-                onDismissRequest = onDismissRequest
+                onDismissRequest = onDismissRequest,
+                dismissButtonLabel = dismissButtonLabel
             )
         }
 
         else -> {
-            permissionState.permissions.forEach {
-                Timber.d("JSR %s %s", it.permission, it.status)
-            }
             LaunchedEffect(Unit) {
                 Timber.d("requesting permissions")
                 permissionState.launchMultiplePermissionRequest()
@@ -131,10 +154,11 @@ private fun DisplayRationalDialog(
     permissionState: MultiplePermissionsState,
     title: String,
     rational: String,
-    settingsLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
     rationalShown: Boolean,
+    onOpenSettings: () -> Unit,
     onUpdateRationalShown: (Boolean) -> Unit,
     onDismissRequest: () -> Unit,
+    dismissButtonLabel: String,
     modifier: Modifier = Modifier
 ) {
     AlertDialog(
@@ -144,7 +168,7 @@ private fun DisplayRationalDialog(
             TextButton(onClick = {
 
                 if (rationalShown) {
-                    openSettings(settingsLauncher)
+                    onOpenSettings()
                 } else {
                     permissionState.launchMultiplePermissionRequest()
                     // Indicate rational was shown
@@ -157,7 +181,7 @@ private fun DisplayRationalDialog(
         modifier = modifier,
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.cancel))
+                Text(text = dismissButtonLabel)
             }
         },
         title = { Text(text = title) },
@@ -180,7 +204,6 @@ private fun openSettings(launcher: ManagedActivityResultLauncher<Intent, Activit
     }
 
     try {
-        Timber.d("JSR starting settings intent")
         launcher.launch(intent)
     } catch (e: ActivityNotFoundException) {
         Timber.w("Failed to open settings: %s", e.message)

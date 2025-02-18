@@ -9,9 +9,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
-import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.di.AppModule
+import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.notNullValue
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -20,9 +22,21 @@ import org.junit.runner.RunWith
 class LoginFormTest {
     private lateinit var device: UiDevice
 
-    // This tests to make sure UI tests can find the resource ids
+    @After
+    fun teardown() {
+        // Launch the app
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val prefs = context.getSharedPreferences(
+            AppModule.PREFERENCE_FILE,
+            Context.MODE_PRIVATE
+        )
+        prefs.edit().clear().commit()
+    }
+
+    // This tests to make sure UI tests can find the resource ids. These are used by
+    // play store to auto populate test account per play store policy
     @Test
-    fun testLogin() {
+    fun testLogin() = runTest {
         // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
@@ -40,13 +54,14 @@ class LoginFormTest {
         // Launch the app
         val context = ApplicationProvider.getApplicationContext<Context>()
         val prefs = context.getSharedPreferences(
-            context.getString(R.string.wfr_preferences),
+            AppModule.PREFERENCE_FILE,
             Context.MODE_PRIVATE
         )
         prefs.edit().clear().commit()
 
         val intent = context.packageManager.getLaunchIntentForPackage(
-            context.packageName)?.apply {
+            context.packageName
+        )?.apply {
             // Clear out any previous instances
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
@@ -71,7 +86,7 @@ class LoginFormTest {
 
         device.waitForIdle()
 
-        Thread.sleep(5000)
+        Thread.sleep(2000)
     }
 
     companion object {

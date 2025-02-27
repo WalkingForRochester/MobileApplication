@@ -15,7 +15,7 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import kotlin.math.roundToInt
+import kotlin.math.round
 
 @SuppressLint("MissingPermission")
 fun showNotification(context: Context, text: String) {
@@ -39,9 +39,9 @@ fun showNotification(context: Context, text: String) {
     }
 }
 
-fun roundDouble(d: Double?): Double = ((d ?: 0.0) * 100.0).roundToInt() / 100.0
+fun roundDouble(d: Double?): Double = round((d ?: 0.0) * 100.0) / 100.0
 
-fun metersToMiles(d: Double?): Double = (d ?: 0.0) * 0.000621371192
+fun metersToMiles(d: Double?): Double = (d ?: 0.0) / 1609.344
 
 fun md5(input: String): String {
     val md = MessageDigest.getInstance("MD5")
@@ -59,7 +59,7 @@ class LocalDateAdapter {
         formatters.forEach { formatter ->
             try {
                 return LocalDate.parse(value, formatter)
-            } catch (dtpe: DateTimeParseException) {
+            } catch (_: DateTimeParseException) {
                 //
             }
         }

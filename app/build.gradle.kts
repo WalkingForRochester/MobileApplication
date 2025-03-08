@@ -2,9 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.maps.secrets.plugin)
 }
 
@@ -164,13 +163,13 @@ dependencies {
     // Dagger/Hilt
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.dagger.hilt.android)
-    kapt(libs.dagger.hilt.compilier)
+    ksp(libs.dagger.hilt.compilier)
 
     androidTestImplementation(libs.dagger.hilt.android.testing)
-    kaptAndroidTest(libs.dagger.hilt.compilier)
+    kspAndroidTest(libs.dagger.hilt.compilier)
 
     testImplementation(libs.dagger.hilt.android.testing)
-    kaptTest(libs.dagger.hilt.compilier)
+    kspTest(libs.dagger.hilt.compilier)
 
     // google service
     implementation(libs.play.services.location)
@@ -205,8 +204,4 @@ secrets {
     defaultPropertiesFileName = "secrets.defaults.properties"
 
     // See https://github.com/google/secrets-gradle-plugin/tree/main for full options
-}
-
-kapt {
-    correctErrorTypes = true
 }

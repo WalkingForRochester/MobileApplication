@@ -17,6 +17,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -74,43 +77,47 @@ class MainActivity : ComponentActivity() {
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
 
+            var initialized by remember { mutableStateOf(false) }
             LaunchedEffect(mainViewModel) {
                 // Wait until state is available to before removing splash screen
-                mainViewModel.uiState.first()
+                initialized = mainViewModel.initialized.first()
                 keepSplashScreenOn = false
             }
 
             val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
-            val darkMode = uiState.darkMode
 
-            WalkingForRochesterTheme(darkTheme = darkMode) {
-                Surface {
-                    val connection by connectivityState()
-                    if (connection == ConnectionState.Unavailable) {
-                        NoConnectionOverlay()
-                    }
+            if (initialized) {
+                val darkMode = uiState.darkMode
 
-                    CompositionLocalProvider(
-                        LocalFacebookCallbackManager provides callbackManager,
-                    ) {
-                        val context = LocalContext.current
-                        val toolbarColor = MaterialTheme.colorScheme.surface.toArgb()
-                        val dividerColor = DividerDefaults.color.toArgb()
+                WalkingForRochesterTheme(darkTheme = darkMode) {
+                    Surface {
+                        val connection by connectivityState()
+                        if (connection == ConnectionState.Unavailable) {
+                            NoConnectionOverlay()
+                        }
 
                         CompositionLocalProvider(
-                            value = LocalUriHandler provides customTabsManager.createUriHandler(
-                                context = context,
-                                isDarkMode = darkMode,
-                                toolbarColor = toolbarColor,
-                                navigationBarDividerColor = dividerColor
-                            )
+                            LocalFacebookCallbackManager provides callbackManager,
                         ) {
-                            WalkingForRochesterAppScreen(
-                                onStartWalking = { foregroundLocationService?.subscribeToLocationUpdates() },
-                                onStopWalking = { foregroundLocationService?.unsubscribeToLocationUpdates() },
-                                onToggleDarkMode = { mainViewModel.onToggleDarkMode(it) },
-                                uiState = uiState
-                            )
+                            val context = LocalContext.current
+                            val toolbarColor = MaterialTheme.colorScheme.surface.toArgb()
+                            val dividerColor = DividerDefaults.color.toArgb()
+
+                            CompositionLocalProvider(
+                                value = LocalUriHandler provides customTabsManager.createUriHandler(
+                                    context = context,
+                                    isDarkMode = darkMode,
+                                    toolbarColor = toolbarColor,
+                                    navigationBarDividerColor = dividerColor
+                                )
+                            ) {
+                                WalkingForRochesterAppScreen(
+                                    onStartWalking = { foregroundLocationService?.subscribeToLocationUpdates() },
+                                    onStopWalking = { foregroundLocationService?.unsubscribeToLocationUpdates() },
+                                    onToggleDarkMode = { mainViewModel.onToggleDarkMode(it) },
+                                    uiState = uiState
+                                )
+                            }
                         }
                     }
                 }

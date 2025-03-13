@@ -1,7 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.di
 
-import android.content.Context
-import android.content.SharedPreferences
 import com.squareup.moshi.Moshi
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
@@ -9,7 +7,6 @@ import com.walkingforrochester.walkingforrochester.android.network.RestApiServic
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -25,12 +22,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
-
-    @Singleton
-    @Provides
-    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        return context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE)
-    }
 
     @Singleton
     @Provides

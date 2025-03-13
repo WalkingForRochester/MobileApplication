@@ -6,12 +6,12 @@ import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
@@ -20,23 +20,28 @@ class MainViewModel @Inject constructor(
     private val preferenceRepository: PreferenceRepository,
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<MainUiState>
-    val uiState: StateFlow<MainUiState>
-
-    init {
-        val state = runBlocking {
-            MainUiState(
-                darkMode = preferenceRepository.isDarkModeEnabled(),
-                loggedIn = preferenceRepository.fetchAccountId() != AccountProfile.NO_ACCOUNT
-            )
+    private var _initialized = false
+    val initialized = flow {
+        preferenceRepository.cleanOldPreferences()
+        while (!_initialized) {
+            delay(10)
         }
-        _uiState = MutableStateFlow(state)
-        uiState = _uiState.asStateFlow()
+        emit(true)
     }
 
-    fun onToggleDarkMode(darkMode: Boolean) = viewModelScope.launch {
-        _uiState.update { it.copy(darkMode = darkMode) }
+    val uiState = preferenceRepository.userPreferences.map {
+        _initialized = true
+        MainUiState(
+            darkMode = it.isDarkMode,
+            loggedIn = it.accountId != AccountProfile.NO_ACCOUNT
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainUiState()
+    )
 
+    fun onToggleDarkMode(darkMode: Boolean) = viewModelScope.launch {
         preferenceRepository.updateDarkMode(darkMode)
     }
 }

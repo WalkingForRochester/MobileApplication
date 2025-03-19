@@ -1,7 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.profile
 
 import android.net.Uri
-import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -50,8 +49,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.formatDouble
+import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
-import com.walkingforrochester.walkingforrochester.android.roundDouble
 import com.walkingforrochester.walkingforrochester.android.ui.PhoneNumberVisualTransformation
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
@@ -120,8 +120,8 @@ fun ProfileCard(
                     )
                     ProfileStats(
                         label = stringResource(id = R.string.distances),
-                        previousStat = "${roundDouble(accountProfile.distanceToday)} mi",
-                        overallStat = "${roundDouble(accountProfile.totalDistance)} mi"
+                        previousStat = "${accountProfile.distanceToday.formatDouble()} mi",
+                        overallStat = "${accountProfile.totalDistance.formatDouble()} mi"
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -129,8 +129,8 @@ fun ProfileCard(
                     )
                     ProfileStats(
                         label = stringResource(id = R.string.durations),
-                        previousStat = DateUtils.formatElapsedTime(accountProfile.durationToday / 1000),
-                        overallStat = DateUtils.formatElapsedTime(accountProfile.totalDuration / 1000),
+                        previousStat = accountProfile.durationToday.formatElapsedMilli(),
+                        overallStat = accountProfile.totalDuration.formatElapsedMilli(),
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     HorizontalDivider(

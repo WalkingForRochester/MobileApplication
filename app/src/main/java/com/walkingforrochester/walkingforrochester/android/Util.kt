@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.icu.text.NumberFormat
+import androidx.annotation.StringRes
+import androidx.compose.ui.text.intl.Locale
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.squareup.moshi.FromJson
@@ -15,10 +18,13 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import kotlin.math.round
+import kotlin.time.Duration.Companion.milliseconds
 
 @SuppressLint("MissingPermission")
-fun showNotification(context: Context, text: String) {
+fun showNotification(
+    context: Context,
+    @StringRes messageResId: Int
+) {
     val launchActivityIntent = Intent(context, MainActivity::class.java)
     val activityPendingIntent = PendingIntent.getActivity(
         context,
@@ -26,10 +32,18 @@ fun showNotification(context: Context, text: String) {
         launchActivityIntent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
+    val title = context.getString(R.string.app_name)
+    val message = context.getString(messageResId)
+
+    val bigTextStyle = NotificationCompat.BigTextStyle()
+        .bigText(message)
+        .setBigContentTitle(title)
+
     val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
         .setSmallIcon(R.mipmap.ic_launcher)
-        .setContentTitle(context.getString(R.string.app_name))
-        .setContentText(text)
+        .setStyle(bigTextStyle)
+        .setContentTitle(title)
+        .setContentText(message)
         .setContentIntent(activityPendingIntent)
         .setDefaults(NotificationCompat.DEFAULT_ALL)
         .setAutoCancel(true)
@@ -39,9 +53,41 @@ fun showNotification(context: Context, text: String) {
     }
 }
 
-fun roundDouble(d: Double?): Double = round((d ?: 0.0) * 100.0) / 100.0
+fun Double.metersToMiles(): Double = this / 1609.344
 
-fun metersToMiles(d: Double?): Double = (d ?: 0.0) / 1609.344
+private var LAST_LOCALE = Locale.current
+private var NUMBER_FORMAT = buildNumberFormat(LAST_LOCALE)
+
+private fun buildNumberFormat(locale: Locale): NumberFormat {
+    return NumberFormat.getNumberInstance(locale.platformLocale).apply {
+        minimumFractionDigits = 2
+        maximumFractionDigits = 2
+    }
+}
+
+fun Double.formatDouble(locale: Locale = Locale.current): String {
+    if (LAST_LOCALE != locale) {
+        LAST_LOCALE = locale
+        NUMBER_FORMAT = buildNumberFormat(LAST_LOCALE)
+    }
+    return NUMBER_FORMAT.format(this)
+}
+
+fun Double.formatMetersToMiles(locale: Locale = Locale.current): String {
+    return "${this.metersToMiles().formatDouble(locale)} mi"
+}
+
+private const val twoDigit = "%02d"
+fun Long.formatElapsedMilli(): String {
+    return this.milliseconds.toComponents { hours, minutes, seconds, nanoseconds ->
+        val minSec = "${twoDigit.format(minutes)}:${twoDigit.format(seconds)}"
+        if (hours > 0) {
+            "$hours:$minSec"
+        } else {
+            minSec
+        }
+    }
+}
 
 fun md5(input: String): String {
     val md = MessageDigest.getInstance("MD5")

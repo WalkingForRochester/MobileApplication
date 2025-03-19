@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.text.format.DateUtils
 import android.util.Patterns
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.FileProvider
@@ -13,10 +12,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
+import com.walkingforrochester.walkingforrochester.android.formatDouble
+import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
-import com.walkingforrochester.walkingforrochester.android.roundDouble
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -163,12 +163,10 @@ class ProfileViewModel @Inject constructor(
                 putExtra(
                     Intent.EXTRA_TEXT,
                     "Check out my stats with Walking For Rochester!\nDistance, last walk: ${
-                        roundDouble(
-                            distanceToday
-                        )
-                    } mi. overall: ${roundDouble(totalDistance)} mi\nDuration, last walk: ${
-                        DateUtils.formatElapsedTime(durationToday / 1000)
-                    }. overall: ${DateUtils.formatElapsedTime(totalDuration / 1000)}"
+                        distanceToday.formatDouble()
+                    } mi. overall: ${totalDistance.formatDouble()} mi\nDuration, last walk: ${
+                        durationToday.formatElapsedMilli()
+                    }. overall: ${totalDuration.formatElapsedMilli()}"
                 )
             }
             return Intent.createChooser(sendIntent, "Share statistics")

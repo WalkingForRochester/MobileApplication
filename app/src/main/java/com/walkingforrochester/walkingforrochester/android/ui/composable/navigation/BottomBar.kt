@@ -41,7 +41,11 @@ fun BottomBar(
                     },
                     label = { Text(text = stringResource(id = it.title)) },
                     selected = currentScreen == it,
-                    onClick = { onScreenSelected(it) }
+                    onClick = {
+                        if (currentScreen != it) {
+                            onScreenSelected(it)
+                        }
+                    }
                 )
             }
         }

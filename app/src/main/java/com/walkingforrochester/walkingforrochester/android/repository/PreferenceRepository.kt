@@ -8,13 +8,9 @@ interface PreferenceRepository {
     val userPreferences: Flow<UserPreferences>
     val accountId: Flow<Long>
 
-    suspend fun cleanOldPreferences()
-
     suspend fun fetchAccountId(): Long
 
     suspend fun updateAccountId(accountId: Long)
-
-    val isDarkModeEnabled: Flow<Boolean>
 
     suspend fun updateDarkMode(enabled: Boolean)
 

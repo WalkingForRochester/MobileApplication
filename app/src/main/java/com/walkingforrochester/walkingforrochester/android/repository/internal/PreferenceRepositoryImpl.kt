@@ -37,7 +37,7 @@ class PreferenceRepositoryImpl @Inject constructor(
         }
     )
 
-    override suspend fun cleanOldPreferences() {
+    private suspend fun cleanOldPreferences() {
         context.dataStore.edit { prefs ->
             prefs.remove(booleanPreferencesKey("walking_for_rochester_dont_ask_location_permissions"))
             prefs.remove(booleanPreferencesKey("walking_for_rochester_dont_ask_camera_permissions"))
@@ -60,7 +60,7 @@ class PreferenceRepositoryImpl @Inject constructor(
     }
 
     override suspend fun fetchAccountId(): Long {
-        return context.dataStore.data.first()[ACCOUNT_ID_KEY] ?: AccountProfile.NO_ACCOUNT
+        return accountId.first()
     }
 
     override suspend fun updateAccountId(accountId: Long) {
@@ -68,13 +68,6 @@ class PreferenceRepositoryImpl @Inject constructor(
             data[ACCOUNT_ID_KEY] = accountId
         }
     }
-
-    override val isDarkModeEnabled: Flow<Boolean> = context.dataStore.data
-        .onStart {
-            cleanOldPreferences()
-        }.map { data ->
-            data[DARK_MODE_KEY] == true
-        }
 
     override suspend fun updateDarkMode(enabled: Boolean) {
         context.dataStore.edit { data ->

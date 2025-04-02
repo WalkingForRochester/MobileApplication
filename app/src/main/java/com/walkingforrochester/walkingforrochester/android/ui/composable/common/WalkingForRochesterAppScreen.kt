@@ -42,16 +42,12 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun WalkingForRochesterAppScreen(
-    onStartWalking: () -> Unit,
-    onStopWalking: () -> Unit,
     onToggleDarkMode: (Boolean) -> Unit = {},
     uiState: MainUiState = MainUiState()
 ) {
     WFRNavigationDrawer(
         uiState = uiState,
         onToggleDarkMode = onToggleDarkMode,
-        onStartWalking = onStartWalking,
-        onStopWalking = onStopWalking,
     )
 }
 
@@ -59,16 +55,15 @@ fun WalkingForRochesterAppScreen(
 @Composable
 fun WFRNavigationDrawer(
     uiState: MainUiState,
-    onToggleDarkMode: (Boolean) -> Unit,
-    onStartWalking: () -> Unit,
-    onStopWalking: () -> Unit
+    onToggleDarkMode: (Boolean) -> Unit
 ) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination
-    val currentScreen = Destinations
-        .find { it.route == currentDestination?.route || it.routeWithArgs == currentDestination?.route }
-        ?: LoginDestination
+    val currentScreen = Destinations.find {
+        it.route == currentDestination?.route || it.routeWithArgs == currentDestination?.route
+    } ?: LoginDestination
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -102,18 +97,18 @@ fun WFRNavigationDrawer(
                 )
             },
             bottomBar = {
-                BottomBar(menuItems = bottomBarDestinations,
+                BottomBar(
+                    menuItems = bottomBarDestinations,
                     currentScreen = currentScreen,
                     onScreenSelected = { screen ->
                         navController.navigateSingleTopTo(screen.route)
                     })
-            }) { contentPadding ->
+            }
+        ) { contentPadding ->
             NavigationHost(
                 navController = navController,
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 loggedIn = uiState.loggedIn,
-                onStartWalking = onStartWalking,
-                onStopWalking = onStopWalking,
                 contentPadding = contentPadding
             )
         }

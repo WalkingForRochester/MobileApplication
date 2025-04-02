@@ -1,7 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android
 
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
@@ -46,18 +45,22 @@ val LocalFacebookCallbackManager =
 class MainActivity : ComponentActivity() {
 
     private var callbackManager = CallbackManager.Factory.create()
-    private val foregroundOnlyServiceConnection = object : ServiceConnection {
+
+    private val foregroundLocationServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as ForegroundLocationService.LocalBinder
-            foregroundLocationService = binder.service
+            Timber.d("onServiceConnected")
+        }
+
+        override fun onNullBinding(name: ComponentName?) {
+            Timber.d("onNullBinding - service bound")
+            // Doing nothing as there are no controls for the service being exposed anymore
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            foregroundLocationService = null
+            Timber.d("onServiceDisconnected")
         }
     }
 
-    private var foregroundLocationService: ForegroundLocationService? = null
     private lateinit var customTabsManager: CustomTabsManager
     private var keepSplashScreenOn = true
 
@@ -91,11 +94,6 @@ class MainActivity : ComponentActivity() {
 
                 WalkingForRochesterTheme(darkTheme = darkMode) {
                     Surface {
-                        val connection by connectivityState()
-                        if (connection == ConnectionState.Unavailable) {
-                            NoConnectionOverlay()
-                        }
-
                         CompositionLocalProvider(
                             LocalFacebookCallbackManager provides callbackManager,
                         ) {
@@ -112,12 +110,15 @@ class MainActivity : ComponentActivity() {
                                 )
                             ) {
                                 WalkingForRochesterAppScreen(
-                                    onStartWalking = { foregroundLocationService?.subscribeToLocationUpdates() },
-                                    onStopWalking = { foregroundLocationService?.unsubscribeToLocationUpdates() },
                                     onToggleDarkMode = { mainViewModel.onToggleDarkMode(it) },
                                     uiState = uiState
                                 )
                             }
+                        }
+
+                        val connection by connectivityState()
+                        if (connection == ConnectionState.Unavailable) {
+                            NoConnectionOverlay()
                         }
                     }
                 }
@@ -125,23 +126,24 @@ class MainActivity : ComponentActivity() {
         }
 
         customTabsManager = CustomTabsManager(application, lifecycle)
-        // TODO this should be onStart/Stop, but due to service bug, must be create/destroy
-        val serviceIntent = Intent(this, ForegroundLocationService::class.java)
-        bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)
 
         processIntent()
     }
 
-    override fun onDestroy() {
-        Timber.d("onDestroy()")
-        if (isFinishing) {
-            Timber.d("activity finishing")
-            foregroundLocationService?.unsubscribeToLocationUpdates()
-        }
+    override fun onStart() {
+        Timber.d("onStart()")
+        super.onStart()
 
-        foregroundLocationService = null
-        unbindService(foregroundOnlyServiceConnection)
-        super.onDestroy()
+        val serviceIntent = Intent(this, ForegroundLocationService::class.java)
+        bindService(serviceIntent, foregroundLocationServiceConnection, BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        Timber.d("onStop()")
+
+        unbindService(foregroundLocationServiceConnection)
+
+        super.onStop()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -156,7 +158,7 @@ class MainActivity : ComponentActivity() {
         val stopWalking =
             intent.getBooleanExtra(ForegroundLocationService.EXTRA_STOP_WALKING, false)
         if (stopWalking) {
-            foregroundLocationService?.stopFromIntent()
+            /// TODO convert this to deep link to be processed by nav host
         }
     }
 

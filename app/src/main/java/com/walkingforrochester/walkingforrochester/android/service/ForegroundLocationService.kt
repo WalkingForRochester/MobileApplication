@@ -58,7 +58,7 @@ class ForegroundLocationService : LifecycleService() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 walkRepository.walkData.collect {
-                    if (it.state == WalkState.STARTED) {
+                    if (it.state == WalkState.IN_PROGRESS) {
                         startService()
                     } else {
                         stopService()

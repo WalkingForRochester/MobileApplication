@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
+import com.walkingforrochester.walkingforrochester.android.repository.WalkRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -17,12 +18,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val preferenceRepository: PreferenceRepository,
+    private val preferenceRepository: PreferenceRepository
 ) : ViewModel() {
 
     private var _initialized = false
     val initialized = flow {
-        preferenceRepository.cleanOldPreferences()
         while (!_initialized) {
             delay(10)
         }

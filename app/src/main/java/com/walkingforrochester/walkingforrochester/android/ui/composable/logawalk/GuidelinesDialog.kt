@@ -34,7 +34,6 @@ import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRo
 @Composable
 fun GuidelinesDialog(
     modifier: Modifier = Modifier,
-    onLinkClick: () -> Unit = {},
     onAcceptGuideLines: () -> Unit = {},
     onDismissGuidelines: () -> Unit = {},
 ) {
@@ -86,7 +85,6 @@ fun GuidelinesDialog(
             val linkInteractionListener = LinkInteractionListener {
                 val url = (it as LinkAnnotation.Url).url
                 uriHandler.openUri(url)
-                onLinkClick()
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

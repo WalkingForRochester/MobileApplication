@@ -1,18 +1,21 @@
 package com.walkingforrochester.walkingforrochester.android
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.icu.text.NumberFormat
 import androidx.annotation.StringRes
 import androidx.compose.ui.text.intl.Locale
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import com.walkingforrochester.walkingforrochester.android.service.ForegroundLocationService.Companion.NOTIFICATION_CHANNEL_ID
 import com.walkingforrochester.walkingforrochester.android.service.ForegroundLocationService.Companion.NOTIFICATION_ID
+import timber.log.Timber
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.time.LocalDate
@@ -20,7 +23,6 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import kotlin.time.Duration.Companion.milliseconds
 
-@SuppressLint("MissingPermission")
 fun showNotification(
     context: Context,
     @StringRes messageResId: Int
@@ -48,8 +50,14 @@ fun showNotification(
         .setDefaults(NotificationCompat.DEFAULT_ALL)
         .setAutoCancel(true)
 
-    with(NotificationManagerCompat.from(context)) {
-        notify(NOTIFICATION_ID, builder.build())
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+        == PackageManager.PERMISSION_GRANTED
+    ) {
+        with(NotificationManagerCompat.from(context)) {
+            notify(NOTIFICATION_ID, builder.build())
+        }
+    } else {
+        Timber.d("Skipping notification as permission not granted")
     }
 }
 

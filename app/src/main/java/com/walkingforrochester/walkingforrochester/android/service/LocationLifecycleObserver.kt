@@ -18,7 +18,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
-import kotlinx.coroutines.channels.onSuccess
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -58,11 +57,7 @@ class LocationLifecycleObserver(
         val callback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
-                    Timber.d("Have location: %s", location)
                     trySendBlocking(location)
-                        .onSuccess {
-                            Timber.d("Sent location: %s", location)
-                        }
                         .onFailure {
                             Timber.w("Failed to send location")
                         }
@@ -71,6 +66,11 @@ class LocationLifecycleObserver(
         }
 
         try {
+            // Get last location...
+            fusedLocationProviderClient.lastLocation.await()?.let {
+                trySendBlocking(it)
+            }
+
             fusedLocationProviderClient.requestLocationUpdates(
                 buildLocationRequest(),
                 defaultDispatcher.asExecutor(),

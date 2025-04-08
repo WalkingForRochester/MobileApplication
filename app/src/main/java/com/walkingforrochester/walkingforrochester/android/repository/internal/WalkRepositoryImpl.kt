@@ -136,10 +136,19 @@ class WalkRepositoryImpl @Inject constructor(
     }
 
     private fun buildBounds(path: List<LatLng>): LatLngBounds {
+        val startBounds = path.first().toFixedBounds(50.0)
+        val endBounds = path.last().toFixedBounds(50.0)
+
         return LatLngBounds.Builder().apply {
+            include(startBounds.northeast)
+            include(startBounds.southwest)
+
             for (point in path) {
                 include(point)
             }
+
+            include(endBounds.northeast)
+            include(endBounds.southwest)
         }.build()
     }
 

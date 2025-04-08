@@ -33,8 +33,6 @@ class LeaderboardViewModel @Inject constructor(
     private val networkRepository: NetworkRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
-
-    private val _leaderboardFilters = MutableStateFlow(LeaderboardFiltersState())
     val leaderboardFilters = _leaderboardFilters.asStateFlow()
 
     private val _eventFlow = MutableSharedFlow<LeaderboardScreenEvent>()
@@ -108,5 +106,6 @@ class LeaderboardViewModel @Inject constructor(
 
     companion object {
         const val REFRESH_INTERVAL = 10 * 60L * 1000L // ten minutes
+        private val _leaderboardFilters = MutableStateFlow(LeaderboardFiltersState())
     }
 }

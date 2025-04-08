@@ -35,7 +35,7 @@ class WalkRepositoryImpl @Inject constructor(
 
     private var lastLocation: Location? = null
 
-    private val _currentLocation = MutableStateFlow(LocationData.DEFAULT.latLng)
+    private val _currentLocation = MutableStateFlow(LocationData.ROCHESTER_NY.latLng)
     private val _walkData = MutableStateFlow(WalkData())
 
     override val currentLocation = _currentLocation.asStateFlow()
@@ -96,20 +96,21 @@ class WalkRepositoryImpl @Inject constructor(
         _walkData.update { WalkData() }
     }
 
-    override suspend fun updateCurrentLocation(location: Location) =
-        withContext(defaultDispatcher) {
-            Timber.d("have new location %s", location)
-            if (isBetterLocation(location)) {
-                Timber.d("have better location: %s", location)
-                lastLocation = location
-                val locationData = location.toLocationData()
-                _currentLocation.update { locationData.latLng }
+    override suspend fun updateCurrentLocation(
+        location: Location
+    ) = withContext(defaultDispatcher) {
+        Timber.d("have new location %s", location)
+        if (isBetterLocation(location)) {
+            Timber.d("have better location: %s", location)
+            lastLocation = location
+            val locationData = location.toLocationData()
+            _currentLocation.update { locationData.latLng }
 
-                if (_walkData.value.state == WalkState.IN_PROGRESS) {
-                    updateWalk(locationData)
-                }
+            if (_walkData.value.state == WalkState.IN_PROGRESS) {
+                updateWalk(locationData)
             }
         }
+    }
 
     private fun updateWalk(locationData: LocationData) {
         Timber.d("Updating walk: %s", locationData)

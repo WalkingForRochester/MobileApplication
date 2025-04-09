@@ -33,12 +33,15 @@ fun HorizontalNumberPicker(
     minValue: Int,
     maxValue: Int,
     modifier: Modifier = Modifier,
-    defaultValue: Int = minValue,
+    currentValue: Int = minValue,
     buttonSize: Dp = 32.dp,
     textStyle: TextStyle = MaterialTheme.typography.titleMedium,
     onValueChange: (Int) -> Unit = {}
 ) {
-    var currentValue by rememberSaveable { mutableIntStateOf(if (defaultValue > maxValue) maxValue else if (defaultValue < minValue) minValue else defaultValue) }
+    val adjustedValue = currentValue.coerceIn(minValue, maxValue)
+    if (adjustedValue != currentValue) {
+        onValueChange(adjustedValue)
+    }
 
     Row(
         modifier = modifier.widthIn(min = 120.dp),
@@ -47,11 +50,11 @@ fun HorizontalNumberPicker(
     ) {
         IconButton(
             onClick = {
-                if (currentValue > minValue) {
-                    onValueChange(--currentValue)
+                if (adjustedValue > minValue) {
+                    onValueChange(adjustedValue - 1)
                 }
             },
-            enabled = currentValue > minValue
+            enabled = adjustedValue > minValue
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Default.ArrowLeft,
@@ -61,17 +64,17 @@ fun HorizontalNumberPicker(
         }
 
         Text(
-            text = "$currentValue",
+            text = "$adjustedValue",
             style = textStyle
         )
 
         IconButton(
             onClick = {
-                if (currentValue < maxValue) {
-                    onValueChange(++currentValue)
+                if (adjustedValue < maxValue) {
+                    onValueChange(adjustedValue + 1)
                 }
             },
-            enabled = currentValue < maxValue
+            enabled = adjustedValue < maxValue
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Default.ArrowRight,
@@ -91,7 +94,7 @@ fun PreviewHorizontalNumberPicker() {
             HorizontalNumberPicker(
                 minValue = 0,
                 maxValue = 88,
-                defaultValue = 78,
+                currentValue = 78,
                 onValueChange = {})
         }
     }

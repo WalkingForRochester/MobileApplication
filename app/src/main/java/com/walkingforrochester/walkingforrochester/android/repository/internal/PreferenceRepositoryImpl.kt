@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.walkingforrochester.walkingforrochester.android.di.AppModule.Companion.PREFERENCE_FILE
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.model.PermissionPreferences
 import com.walkingforrochester.walkingforrochester.android.model.UserPreferences
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -82,9 +83,15 @@ class PreferenceRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun locationRationalShown(): Boolean {
-        return context.dataStore.data.first()[LOCATION_RATIONAL_KEY] == true
-    }
+    override val permissionPreferences: Flow<PermissionPreferences> =
+        context.dataStore.data.map { data ->
+            PermissionPreferences(
+                locationRationalShown = data[LOCATION_RATIONAL_KEY] == true,
+                notificationRationalShown = data[NOTIFICATION_RATIONAL_KEY] == true,
+                cameraRationalShown = data[CAMERA_RATIONAL_KEY] == true
+            )
+        }
+
 
     override suspend fun updateLocationRationalShown(shown: Boolean) {
         context.dataStore.edit { data ->
@@ -92,18 +99,10 @@ class PreferenceRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun notificationRationalShown(): Boolean {
-        return context.dataStore.data.first()[NOTIFICATION_RATIONAL_KEY] == true
-    }
-
     override suspend fun updateNotificationRationalShown(shown: Boolean) {
         context.dataStore.edit { data ->
             data[NOTIFICATION_RATIONAL_KEY] = shown
         }
-    }
-
-    override suspend fun cameraRationalShown(): Boolean {
-        return context.dataStore.data.first()[CAMERA_RATIONAL_KEY] == true
     }
 
     override suspend fun updateCameraRationalShown(shown: Boolean) {

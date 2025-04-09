@@ -1,163 +1,184 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
-import androidx.compose.foundation.layout.Box
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
+import androidx.core.graphics.createBitmap
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.RoundCap
+import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.GoogleMapComposable
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
+import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.ktx.backgroundInPreview
+import com.walkingforrochester.walkingforrochester.android.model.LocationData
+import com.walkingforrochester.walkingforrochester.android.model.WalkData
+import com.walkingforrochester.walkingforrochester.android.model.WalkData.WalkState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.MapPathBlue
-import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
+import timber.log.Timber
 import kotlin.math.roundToInt
 
 
 @SuppressLint("MissingPermission")
 @Composable
 fun LogAWalkMap(
+    currentLocation: LatLng,
+    currentWalk: WalkData,
     modifier: Modifier = Modifier,
-    toggleCameraFollow: (Boolean) -> Boolean,
-    followCamera: Boolean,
-    lastLocation: LatLng? = null,
-    selectedAddressLocation: LatLng? = null,
-    path: List<LatLng> = listOf(),
-    startingPoint: LatLng? = null,
-    finishingPoint: LatLng? = null,
-    contentPadding: PaddingValues = PaddingValues()
+    showCurrentLocation: Boolean = true,
+    contentPadding: PaddingValues = PaddingValues(),
 ) {
+    val cameraPositionState = rememberCameraPositionState()
+    var lastLocation by rememberSaveable { mutableStateOf(LocationData.DEFAULT.latLng) }
+    var followCamera by rememberSaveable { mutableStateOf(true) }
+
+
+    if (cameraPositionState.isMoving &&
+        cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
+    ) {
+        followCamera = false
+    }
+
+    LaunchedEffect(followCamera, currentLocation) {
+        if (followCamera && currentLocation != lastLocation) {
+            val dist = SphericalUtil.computeDistanceBetween(currentLocation, lastLocation)
+            val cameraUpdate = CameraUpdateFactory.newLatLng(currentLocation)
+            when {
+                lastLocation == LocationData.DEFAULT.latLng -> {
+                    Timber.d("Initial move: %s", currentLocation)
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(currentLocation, 16f)
+                    )
+                }
+
+                dist < 1000 -> {
+                    Timber.d("animating to %s %s", currentLocation, lastLocation)
+                    cameraPositionState.animate(update = cameraUpdate)
+                }
+
+                else -> {
+                    // Moving if large distance change.
+                    Timber.d("moving to %s %s", currentLocation, lastLocation)
+                    cameraPositionState.move(update = cameraUpdate)
+                }
+            }
+            lastLocation = currentLocation
+        } else {
+            Timber.d("skipping %s = %s ", currentLocation, lastLocation)
+            lastLocation = currentLocation
+        }
+    }
+
+    GoogleMap(
+        modifier = modifier.backgroundInPreview(Color.Gray),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(
+            isMyLocationEnabled = showCurrentLocation,
+            maxZoomPreference = 20f,
+            minZoomPreference = 9f
+        ),
+        uiSettings = MapUiSettings(
+            zoomControlsEnabled = showCurrentLocation,
+            zoomGesturesEnabled = showCurrentLocation
+        ),
+        onMyLocationButtonClick = {
+            followCamera = true
+            // indicate camera should animate to current location
+            false
+        },
+        contentPadding = contentPadding
+    ) {
+        RenderWalkDataOnMap(currentWalk)
+    }
+}
+
+@Composable
+@GoogleMapComposable
+fun RenderWalkDataOnMap(currentWalk: WalkData) {
     val context = LocalContext.current
-    val cameraPosition = rememberCameraPositionState()
+    val startingMarkerState = rememberUpdatedMarkerState()
+    if (currentWalk.state == WalkState.IN_PROGRESS ||
+        currentWalk.state == WalkState.COMPLETE
+    ) {
+        startingMarkerState.position = currentWalk.startPosition
 
-    if (cameraPosition.isMoving && cameraPosition.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
-        toggleCameraFollow(false)
-    }
-
-    LaunchedEffect(Unit) {
-        LocationServices
-            .getFusedLocationProviderClient(context)
-            .lastLocation.addOnSuccessListener { location ->
-                location?.let {
-                    cameraPosition.position =
-                        CameraPosition.fromLatLngZoom(LatLng(it.latitude, it.longitude), 16f)
-                }
-            }
-        LocationServices
-            .getFusedLocationProviderClient(context)
-            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-            .addOnSuccessListener { location ->
-                location?.let {
-                    cameraPosition.position =
-                        CameraPosition.fromLatLngZoom(LatLng(it.latitude, it.longitude), 16f)
-                }
-            }
-    }
-
-    LaunchedEffect(followCamera, lastLocation) {
-        if (followCamera && lastLocation != null) {
-            cameraPosition.animate(CameraUpdateFactory.newLatLng(lastLocation), Int.MAX_VALUE)
-        }
-    }
-
-    LaunchedEffect(selectedAddressLocation) {
-        selectedAddressLocation?.let {
-            cameraPosition.animate(CameraUpdateFactory.newLatLng(it), Int.MAX_VALUE)
-        }
-    }
-
-    Box(modifier = modifier) {
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPosition,
-            properties = MapProperties(isMyLocationEnabled = true),
-            onMyLocationButtonClick = {
-                toggleCameraFollow(true)
-            },
-            contentPadding = contentPadding
-        ) {
-            startingPoint?.let {
-                Marker(
-                    state = rememberMarkerState(position = it),
-                    icon = getMarkerIconFromDrawable(LocalContext.current.getDrawable(com.walkingforrochester.walkingforrochester.android.R.drawable.ic_walk)!!)
-                )
-            }
-
-            Polyline(
-                points = path,
-                color = MapPathBlue,
-                width = 20f,
-                startCap = RoundCap(),
-                endCap = RoundCap()
-            )
-
-            finishingPoint?.let {
-                Marker(
-                    state = rememberMarkerState(position = it),
-                    icon = getMarkerIconFromDrawable(LocalContext.current.getDrawable(com.walkingforrochester.walkingforrochester.android.R.drawable.ic_finish)!!)
-                )
-            }
-
-            selectedAddressLocation?.let {
-                val markerState = rememberMarkerState()
-                markerState.position = it
-                Marker(
-                    state = markerState,
-                    icon = getMarkerIconFromDrawable(
-                        drawable = LocalContext.current.getDrawable(com.walkingforrochester.walkingforrochester.android.R.drawable.ic_location)!!,
-                        color = Color.Red
+        Marker(
+            state = startingMarkerState,
+            icon = remember(R.drawable.ic_walk) {
+                getMarkerIconFromDrawable(
+                    drawable = AppCompatResources.getDrawable(
+                        context,
+                        R.drawable.ic_walk
                     )
                 )
             }
-        }
+        )
+
+        Polyline(
+            points = currentWalk.path,
+            color = MapPathBlue,
+            width = 20f,
+            startCap = RoundCap(),
+            endCap = RoundCap()
+        )
+    }
+
+    val finishingMarkerState = rememberUpdatedMarkerState()
+
+    if (currentWalk.endPosition != LocationData.DEFAULT.latLng) {
+        finishingMarkerState.position = currentWalk.endPosition
+
+        Marker(
+            state = finishingMarkerState,
+            icon = remember(R.drawable.ic_finish) {
+                getMarkerIconFromDrawable(
+                    drawable = AppCompatResources.getDrawable(
+                        context,
+                        R.drawable.ic_finish
+                    )
+                )
+            }
+        )
     }
 }
 
 private fun getMarkerIconFromDrawable(
-    drawable: Drawable,
+    drawable: Drawable?,
     color: Color = Color.Black
 ): BitmapDescriptor {
+    if (drawable == null) return BitmapDescriptorFactory.defaultMarker()
     val canvas = Canvas()
-    val bitmap = Bitmap.createBitmap(
-        (drawable.intrinsicWidth * 1.5).roundToInt(),
-        (drawable.intrinsicHeight * 1.5).roundToInt(),
-        Bitmap.Config.ARGB_8888
-    )
+    val width = (drawable.intrinsicWidth * 1.5).roundToInt()
+    val height = (drawable.intrinsicHeight * 1.5).roundToInt()
+    val bitmap = createBitmap(width = width, height = height)
     canvas.setBitmap(bitmap)
-    drawable.setBounds(
-        0, 0, (drawable.intrinsicWidth * 1.5).roundToInt(),
-        (drawable.intrinsicHeight * 1.5).roundToInt()
-    )
-    drawable.colorFilter = PorterDuffColorFilter(color.hashCode(), PorterDuff.Mode.MULTIPLY)
+    drawable.setBounds(0, 0, width, height)
+
+    drawable.setTint(color.toArgb())
+    //drawable.colorFilter = PorterDuffColorFilter(color.hashCode(), PorterDuff.Mode.MULTIPLY)
     drawable.draw(canvas)
     return BitmapDescriptorFactory.fromBitmap(bitmap)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewWalkMap() {
-    WalkingForRochesterTheme {
-        //WalkMap()
-    }
 }

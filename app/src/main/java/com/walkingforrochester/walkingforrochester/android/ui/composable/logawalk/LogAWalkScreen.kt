@@ -2,14 +2,17 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.logawa
 
 import android.Manifest
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -17,54 +20,72 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.gms.maps.model.LatLng
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.showNotification
+import com.walkingforrochester.walkingforrochester.android.model.LocationData
+import com.walkingforrochester.walkingforrochester.android.model.WalkData
+import com.walkingforrochester.walkingforrochester.android.model.WalkData.WalkState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestLocationPermissionsScreen
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestNotificationPermissionsScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ShowLocationRational
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ShowNotificationRational
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.checkOrRequestPermission
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
+import timber.log.Timber
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LogAWalkScreen(
     modifier: Modifier = Modifier,
-    onStartWalking: () -> Unit = {},
-    onStopWalking: () -> Unit = {},
+    onNavigateToSubmitWalk: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
     logAWalkViewModel: LogAWalkViewModel = hiltViewModel()
 ) {
     val snackbarHostState = LocalSnackbarHostState.current
     val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         logAWalkViewModel.eventFlow.collect { event ->
             when (event) {
-                LogAWalkEvent.StartWalking -> onStartWalking()
-                LogAWalkEvent.StopWalking -> onStopWalking()
+                LogAWalkEvent.StartWalking -> {
+                    //onStartWalking()
+                }
+
+                LogAWalkEvent.StopWalking -> {
+                    //onNavigateToSubmitWalk()
+                }
+
+                LogAWalkEvent.WalkCompleted -> {
+                    onNavigateToSubmitWalk()
+                }
+
                 LogAWalkEvent.MockLocationDetected -> {
-                    onStopWalking()
-                    showNotification(context = context, text = "Spoof Location detected")
+                    //  onStopWalking()
                 }
 
                 LogAWalkEvent.MovingTooFast -> {
-                    onStopWalking()
-                    showNotification(context = context, text = "You're moving too fast")
+                    // onStopWalking()
                 }
 
                 LogAWalkEvent.Submitted -> snackbarHostState.showSnackbar(
@@ -82,136 +103,243 @@ fun LogAWalkScreen(
         }
     }
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            logAWalkViewModel.recoverWalkingState()
-        }
-    }
-
-    var requestNotificationPermission by remember { mutableStateOf(false) }
-    var notificationPermissionShown by remember { mutableStateOf(false) }
+    var showLocationRational by remember { mutableStateOf(false) }
 
     val uiState by logAWalkViewModel.uiState.collectAsStateWithLifecycle()
-
+    val permissionPreferences by logAWalkViewModel.permissionPreferences.collectAsStateWithLifecycle()
 
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    )
-
-    val notificationPermissionState = rememberMultiplePermissionsState(
-        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            listOf(
-                Manifest.permission.POST_NOTIFICATIONS
-            )
-        } else {
-            emptyList()
-        },
+        ),
         onPermissionsResult = {
-            // Callback from launchMultiplePermissionRequest(). Regardless of permission
-            // grant, prevent dialog from showing again this run and start the walk.
-            // Notification is "optional" in that it just isn't shown but service still runs.
-            notificationPermissionShown = true
-            requestNotificationPermission = false
-            logAWalkViewModel.onToggleWalk()
+            val rejectedPermissions = it.filterNot { it.value }
+
+            if (rejectedPermissions.isEmpty()) {
+                // all granted, so mark rational not shown
+                logAWalkViewModel.onUpdateLocationRationalShown(false)
+            } else {
+                // Location required for app so put up rational
+                showLocationRational = true
+            }
         }
     )
 
+    LifecycleStartEffect(context) {
+        logAWalkViewModel.recoverWalkingState()
+        locationPermissionState.checkOrRequestPermission(
+            rationalShown = permissionPreferences.locationRationalShown,
+            onShowRational = { showLocationRational = true },
+        )
+        Timber.d("started...")
+        onStopOrDispose {
+            when (lifecycle.currentState) {
+                Lifecycle.State.CREATED -> Timber.d("stopped...")
+                else -> Timber.d("disposed...")
+            }
+        }
+    }
+
     LoadingOverlay(uiState.loading)
 
+    val currentLocation by logAWalkViewModel.currentLocation.collectAsStateWithLifecycle()
+    val currentWalk by logAWalkViewModel.currentWalk.collectAsStateWithLifecycle()
+
+    LogAWalkContent(
+        currentLocation = currentLocation,
+        currentWalk = currentWalk,
+        locationPermissionGranted = locationPermissionState.allPermissionsGranted,
+        notificationRationalShown = permissionPreferences.notificationRationalShown,
+        modifier = modifier,
+        onStartWalk = { logAWalkViewModel.onStartWalk() },
+        onStopWalk = { logAWalkViewModel.onStopWalk() },
+        onClearWalk = { logAWalkViewModel.onClearWalk() },
+        onUpdateNotificationRationalShown = { logAWalkViewModel.onUpdateNotificationRationalShown(it) },
+        contentPadding = contentPadding
+    )
+
     if (locationPermissionState.allPermissionsGranted) {
-        // If all permissions granted, rational is reset
         logAWalkViewModel.onUpdateLocationRationalShown(false)
-        Box(modifier = modifier.fillMaxSize()) {
-            LogAWalkMap(
-                toggleCameraFollow = logAWalkViewModel::toggleCameraFollow,
-                followCamera = uiState.followCamera,
-                lastLocation = uiState.lastLocation,
-                selectedAddressLocation = uiState.selectedAddressLocation,
-                path = uiState.path,
-                startingPoint = uiState.startingPoint,
-                finishingPoint = uiState.finishingPoint,
-                contentPadding = contentPadding
-            )
+    }
+
+    if (showLocationRational) {
+        // Because rational shown if OS permission request dismissed, only mark
+        // rational shown if is required.
+        val rationalRequired =
+            permissionPreferences.locationRationalShown || locationPermissionState.permissions.any { it.status.shouldShowRationale }
+
+        ShowLocationRational(
+            permissionState = locationPermissionState,
+            rationalShown = permissionPreferences.locationRationalShown,
+            onRequestPermissions = {
+                logAWalkViewModel.onUpdateLocationRationalShown(rationalRequired)
+                showLocationRational = false
+            },
+            onDismissRequest = { showLocationRational = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun LogAWalkContent(
+    currentLocation: LatLng,
+    currentWalk: WalkData,
+    locationPermissionGranted: Boolean,
+    notificationRationalShown: Boolean,
+    modifier: Modifier = Modifier,
+    onStartWalk: () -> Unit = {},
+    onStopWalk: () -> Unit = {},
+    onClearWalk: () -> Unit = {},
+    onUpdateNotificationRationalShown: (Boolean) -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues()
+) {
+    var showGuidelinesDialog by rememberSaveable { mutableStateOf(false) }
+    var showStopWalkDialog by rememberSaveable { mutableStateOf(false) }
+
+    var showNotificationRational by rememberSaveable { mutableStateOf(false) }
+    var notificationRationalShownOnce by rememberSaveable { mutableStateOf(false) }
+
+    val notificationPermissionState = rememberNotificationPermission { granted ->
+        // Callback from launchMultiplePermissionRequest().
+        if (granted) {
+            // If permissions granted, reset everything
+            onUpdateNotificationRationalShown(false)
+            notificationRationalShownOnce = false
+        }
+
+        // Regardless of permission grant show walking guidelines.
+        // Notification is "optional" in that it just isn't shown but service still runs.
+        showGuidelinesDialog = true
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        LogAWalkMap(
+            currentLocation = currentLocation,
+            currentWalk = currentWalk,
+            showCurrentLocation = locationPermissionGranted,
+            contentPadding = contentPadding,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        AnimatedVisibility(
+            visible = locationPermissionGranted,
+            modifier.align(alignment = Alignment.BottomCenter)
+        ) {
+            val isWalking = currentWalk.state == WalkState.IN_PROGRESS
             StartStopWalkButton(
-                walking = uiState.walking,
+                walking = isWalking,
                 onClick = {
-                    if (uiState.walking) {
-                        logAWalkViewModel.onToggleWalk()
+                    if (isWalking) {
+                        showStopWalkDialog = true
                     } else {
-                        if (notificationPermissionState.permissions.isEmpty() ||
-                            notificationPermissionState.allPermissionsGranted
-                        ) {
-                            logAWalkViewModel.onUpdateNotificationRationalShown(false)
-                            logAWalkViewModel.onToggleWalk()
+                        if (notificationPermissionState.status.isGranted) {
+                            Timber.d("JSR notification granted...")
+                            onUpdateNotificationRationalShown(false)
+                            notificationRationalShownOnce = false
+                            showGuidelinesDialog = true
                         } else {
-                            requestNotificationPermission = true
+                            showNotificationRational = true
                         }
                     }
                 },
                 modifier = Modifier
                     .padding(contentPadding)
                     .padding(16.dp)
-                    .align(alignment = Alignment.BottomCenter)
             )
-            if (uiState.guidelinesDialogState.showDialog) {
-                GuidelinesDialog(
-                    onLinkClick = { logAWalkViewModel.onGuidelinesLinkClick() },
-                    onAcceptGuideLines = { logAWalkViewModel.onAcceptGuidelines() },
-                    onDismissGuidelines = { logAWalkViewModel.onDismissGuidelines() }
+        }
+        if (showGuidelinesDialog) {
+            GuidelinesDialog(
+                onAcceptGuideLines = {
+                    showGuidelinesDialog = false
+                    onStartWalk()
+                },
+                onDismissGuidelines = { showGuidelinesDialog = false }
+            )
+        }
+        if (showStopWalkDialog) {
+            StopWalkConfirmationDialog(
+                onStopWalk = {
+                    showStopWalkDialog = false
+                    onStopWalk()
+                },
+                onDismiss = { showStopWalkDialog = false }
+            )
+        }
+
+        if (currentWalk.state == WalkState.MOCK_LOCATION_DETECTED) {
+            WalkEndedDialog(
+                onDismissRequest = { onClearWalk() },
+                title = stringResource(R.string.mock_location_detected),
+                text = stringResource(R.string.mock_location_dialog)
+            )
+        }
+
+        if (currentWalk.state == WalkState.SPEEDING_DETECTED) {
+            WalkEndedDialog(
+                onDismissRequest = { onClearWalk() },
+                title = stringResource(R.string.moving_too_fast),
+                text = stringResource(R.string.moving_too_fast_dialog)
+            )
+        }
+
+        if (showNotificationRational) {
+            if (notificationRationalShownOnce) {
+                // User already saw our rational dialog once
+                // Do not show again regardless of permission state and
+                // start the walk
+                showGuidelinesDialog = true
+                showNotificationRational = false
+            } else {
+                ShowNotificationRational(
+                    notificationPermissionState = notificationPermissionState,
+                    rationalShown = notificationRationalShown,
+                    onRequestPermissions = {
+                        Timber.d("JSR show permissions")
+                        // If requested to see permissions, mark that
+                        // the rational was shown when this is at least the 2nd time
+                        // showing the rational
+                        onUpdateNotificationRationalShown(notificationRationalShown || notificationPermissionState.status.shouldShowRationale)
+
+                        // Also indicate the rational was shown once
+                        // so user isn't asked again
+                        notificationRationalShownOnce = true
+                        showNotificationRational = false
+                    },
+                    onDismissRequest = {
+                        Timber.d("JSR dismiss rational")
+                        notificationRationalShownOnce = true
+                        showNotificationRational = false
+
+                        // User skipped, so go ahead and start walk
+                        // nice notification is optional
+                        showGuidelinesDialog = true
+                    }
                 )
-            }
-            if (uiState.surveyDialogState.showDialog) {
-                WalkSurveyDialog(
-                    logAWalkViewModel = logAWalkViewModel,
-                    surveyDialogState = uiState.surveyDialogState,
-                )
-            }
-            if (uiState.mockLocation) {
-                WalkEndedDialog(
-                    onDismissRequest = { logAWalkViewModel.onDismissMockLocationDialog() },
-                    title = stringResource(R.string.mock_location_detected),
-                    text = stringResource(R.string.mock_location_dialog)
-                )
-            }
-            if (uiState.movingTooFast) {
-                WalkEndedDialog(
-                    onDismissRequest = { logAWalkViewModel.onDismissMovingTooFastDialog() },
-                    title = stringResource(R.string.moving_too_fast),
-                    text = stringResource(R.string.moving_too_fast_dialog)
-                )
-            }
-            if (requestNotificationPermission) {
-                if (notificationPermissionShown) {
-                    logAWalkViewModel.onToggleWalk()
-                    requestNotificationPermission = false
-                } else {
-                    RequestNotificationPermissionsScreen(
-                        permissionState = notificationPermissionState,
-                        rationalShown = uiState.notificationRationalShown,
-                        onUpdateRationalShown = {
-                            logAWalkViewModel.onUpdateNotificationRationalShown(it)
-                        },
-                        onDismissRequest = {
-                            logAWalkViewModel.onToggleWalk()
-                            requestNotificationPermission = false
-                            notificationPermissionShown = true
-                        }
-                    )
-                }
             }
         }
-    } else {
-        RequestLocationPermissionsScreen(
-            permissionState = locationPermissionState,
-            rationalShown = uiState.locationRationalShown,
-            onUpdateRationalShown = { it ->
-                logAWalkViewModel.onUpdateLocationRationalShown(it)
-            }
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun rememberNotificationPermission(
+    onPermissionResult: (Boolean) -> Unit
+): PermissionState {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(
+            permission = Manifest.permission.POST_NOTIFICATIONS,
+            onPermissionResult = onPermissionResult
         )
+    } else {
+        remember {
+            object : PermissionState {
+                override fun launchPermissionRequest() {}
+                override val permission: String = "notification"
+                override val status: PermissionStatus = PermissionStatus.Granted
+            }
+        }
     }
 }
 
@@ -236,7 +364,7 @@ fun WalkEndedDialog(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 fun PreviewWalkEndedDialog() {
     WalkingForRochesterTheme {
@@ -248,10 +376,17 @@ fun PreviewWalkEndedDialog() {
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 fun PreviewWalkScreen() {
     WalkingForRochesterTheme {
-        LogAWalkScreen(onStartWalking = {}, onStopWalking = {})
+        Surface(modifier = Modifier.size(200.dp)) {
+            LogAWalkContent(
+                currentLocation = LocationData.ROCHESTER_NY.latLng,
+                currentWalk = WalkData(state = WalkState.IDLE),
+                locationPermissionGranted = true,
+                notificationRationalShown = false
+            )
+        }
     }
 }

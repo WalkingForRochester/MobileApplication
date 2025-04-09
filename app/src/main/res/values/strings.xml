@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Walking For Rochester</string>
+
+    <string name="ok_button">OK</string>
+
     <string name="continue_with_google">Continue with Google</string>
     <string name="continue_with_facebook">Continue with Facebook</string>
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</string>
@@ -111,10 +114,19 @@
     <string name="increase_value">Increase value</string>
     <string name="decrease_value">Decrease value</string>
 
+    <string name="photo_required">A photo is required in order to submit your walk.</string>
+    <string name="discard_walk_title">Discard walk</string>
+    <string name="discard_walk_confirmation">Are you sure you do not want to submit your walk?</string>
+    <string name="discard_button">Discard</string>
+    <string name="distance_label">Distance:</string>
+    <string name="duration_label">Duration:</string>
+    <string name="retake_button">Retake</string>
+
+
 
     <string name="did_you_pick_up_litter">Did you pick up litter?</string>
     <string name="continue_walking">Continue\nWalking</string>
-    <string name="discard">Discard</string>
+
     <string name="submit">Submit</string>
     <string name="how_many_bags_collected">How many bags of litter did you collect?</string>
     <string name="take_picture_of_litter">Please take a picture of the litter you collected, or where you walked.</string>

@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -63,7 +64,6 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CameraCapture
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.FullScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.HorizontalNumberPicker
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.RequestCameraPermissionsScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRDialog
 import com.walkingforrochester.walkingforrochester.android.ui.state.SurveyDialogState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.MaterialRed
@@ -71,16 +71,20 @@ import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkVie
 
 @Composable
 fun WalkSurveyDialog(
-    modifier: Modifier = Modifier,
     logAWalkViewModel: LogAWalkViewModel,
-    surveyDialogState: SurveyDialogState
+    surveyDialogState: SurveyDialogState,
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit = {}
 ) {
     WFRDialog(
         modifier = modifier.padding(horizontal = 8.dp),
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false),
         contentTextStyle = MaterialTheme.typography.bodyLarge,
         buttonsArrangement = Arrangement.SpaceAround,
-        onDismissRequest = logAWalkViewModel::onDismissSurveyDialog,
+        onDismissRequest = {
+            logAWalkViewModel.onDiscardWalking()
+            onDismiss()
+        },
         icon = {
             Icon(
                 painter = painterResource(id = R.drawable.ic_finish),
@@ -97,7 +101,8 @@ fun WalkSurveyDialog(
         buttons = {
             SurveyButtons(
                 logAWalkViewModel = logAWalkViewModel,
-                surveyDialogState = surveyDialogState
+                surveyDialogState = surveyDialogState,
+                onDismiss = onDismiss
             )
         }
     ) {
@@ -108,7 +113,8 @@ fun WalkSurveyDialog(
 @Composable
 private fun SurveyButtons(
     logAWalkViewModel: LogAWalkViewModel,
-    surveyDialogState: SurveyDialogState
+    surveyDialogState: SurveyDialogState,
+    onDismiss: () -> Unit
 ) {
     val contentPadding = PaddingValues(
         top = ButtonDefaults.ContentPadding.calculateTopPadding(),
@@ -116,8 +122,11 @@ private fun SurveyButtons(
         bottom = ButtonDefaults.ContentPadding.calculateBottomPadding(),
         end = 16.dp
     )
-    OutlinedButton(
-        onClick = logAWalkViewModel::onDismissSurveyDialog,
+    /*OutlinedButton(
+        onClick = {
+            logAWalkViewModel.onDismissSurveyDialog()
+            onDismiss()
+        },
         modifier = Modifier.height(56.dp),
         contentPadding = contentPadding
     ) {
@@ -126,9 +135,12 @@ private fun SurveyButtons(
             style = LocalTextStyle.current.copy(lineBreak = LineBreak.Simple),
             textAlign = TextAlign.Center
         )
-    }
+    }*/
     Button(
-        onClick = logAWalkViewModel::onDiscardWalking,
+        onClick = {
+            logAWalkViewModel.onDiscardWalking()
+            onDismiss()
+        },
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialRed,
             contentColor = Color.White
@@ -136,10 +148,13 @@ private fun SurveyButtons(
         modifier = Modifier.height(56.dp),
         contentPadding = contentPadding
     ) {
-        Text(stringResource(id = R.string.discard))
+        Text(stringResource(id = R.string.discard_button))
     }
     Button(
-        onClick = logAWalkViewModel::onSubmitWalking,
+        onClick = {
+            logAWalkViewModel.onSubmitWalking()
+            onDismiss()
+        },
         modifier = Modifier.height(56.dp),
         enabled = surveyDialogState.picUri != null,
         colors = ButtonDefaults.buttonColors(
@@ -210,7 +225,7 @@ private fun SurveyContent(
                     HorizontalNumberPicker(
                         minValue = 0,
                         maxValue = 10,
-                        defaultValue = 0,
+                        currentValue = 0,
                         onValueChange = logAWalkViewModel::onBagsCollectedChange
                     )
                 }
@@ -311,9 +326,8 @@ private fun TakeAPic(
         // If permissions granted, clear the rational shown flag
         logAWalkViewModel.onUpdateCameraRationalShown(false)
         if (surveyDialogState.picUri == null) {
-            TextButton(
+            IconButton(
                 onClick = logAWalkViewModel::onShowCamera,
-                contentPadding = PaddingValues(12.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.AddAPhoto,
@@ -353,12 +367,12 @@ private fun TakeAPic(
             }
         }
     } else {
-        RequestCameraPermissionsScreen(
+       /* RequestCameraPermissionsScreen(
             permissionState = permissionState,
             rationalShown = surveyDialogState.cameraRationalShown,
             onUpdateRationalShown = { logAWalkViewModel.onUpdateCameraRationalShown(it) },
             onDismissRequest = { logAWalkViewModel.onHideCamera() }
-        )
+        )*/
         /*RequestPermissions(
             permissionState = permissionState,
             askedOncePrefKey = R.string.wfr_asked_camera_permission_once,

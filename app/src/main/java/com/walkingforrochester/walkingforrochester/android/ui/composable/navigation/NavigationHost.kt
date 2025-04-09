@@ -133,12 +133,12 @@ fun NavigationHost(
             enterTransition = { fadeIn() + slideInHorizontally(initialOffsetX = { it }) },
             exitTransition = { fadeOut() + scaleOut() }
         ) {
-            /*SubmitWalkScreen(
+            SubmitWalkScreen(
                 onCompletion = {
                     navController.popBackStack()
                 },
                 contentPadding = contentPadding
-            )*/
+            )
         }
 
         composable(route = ContactUs.route) {

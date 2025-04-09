@@ -13,7 +13,7 @@ data class WalkData(
     val durationMilli: Long = 0,
     val distanceMeters: Double = 0.0,
     val startPosition: LatLng = DEFAULT_POSITION,
-    val endPosition: LatLng = DEFAULT_POSITION,
+    val endPosition: LatLng = DEFAULT_END_POSITION,
     val path: List<LatLng> = emptyList<LatLng>(),
     val bounds: LatLngBounds = DEFAULT_BOUNDS,
     val bagsOfLitter: Int = 0,
@@ -28,8 +28,9 @@ data class WalkData(
     }
 
     companion object {
-        val DEFAULT_POSITION = LatLng(0.0, 0.0)
+        val DEFAULT_POSITION = LocationData.ROCHESTER_NY.latLng
         val DEFAULT_BOUNDS = DEFAULT_POSITION.toFixedBounds(100.0)
+        val DEFAULT_END_POSITION = LocationData.DEFAULT.latLng
     }
 }
 

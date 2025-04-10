@@ -9,9 +9,5 @@ fun Location.toLocationData(): LocationData {
     return LocationData(
         latLng = LatLng(latitude, longitude),
         isMock = LocationCompat.isMock(this),
-        adjustedSpeed = when {
-            hasSpeed() && hasAccuracy() -> speed - speedAccuracyMetersPerSecond
-            else -> 0f
-        }
     )
 }

@@ -23,8 +23,7 @@ data class WalkData(
         IDLE,
         IN_PROGRESS,
         COMPLETE,
-        MOCK_LOCATION_DETECTED,
-        SPEEDING_DETECTED
+        MOCK_LOCATION_DETECTED
     }
 
     companion object {

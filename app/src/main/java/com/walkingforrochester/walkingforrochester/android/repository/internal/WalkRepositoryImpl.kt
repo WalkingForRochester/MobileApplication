@@ -118,21 +118,16 @@ class WalkRepositoryImpl @Inject constructor(
             val newPath = buildPath(it.path, locationData.latLng)
             val endedDueToMockLocation =
                 it.state == WalkState.MOCK_LOCATION_DETECTED || locationData.isMock
-            val endedDueToMovingToFast =
-                it.state == WalkState.SPEEDING_DETECTED || locationData.adjustedSpeed > SPEED_LIMIT_METERS_PER_SECOND
 
-            Timber.d("speed: %f", locationData.adjustedSpeed)
             it.copy(
                 path = newPath,
                 bounds = it.bounds.including(locationData.latLng),
                 state = when {
                     endedDueToMockLocation -> WalkState.MOCK_LOCATION_DETECTED
-                    endedDueToMovingToFast -> WalkState.SPEEDING_DETECTED
                     else -> it.state
                 }
             )
         }
-
     }
 
     private fun buildBounds(path: List<LatLng>): LatLngBounds {
@@ -189,6 +184,7 @@ class WalkRepositoryImpl @Inject constructor(
         val isSignificantlyOlder = timeDelta <= -TWO_MINUTES
         val isRefreshTime: Boolean = timeDelta >= FIFTEEN_SECONDS
         val accuracyDelta = location.accuracy - lastLocation.accuracy
+        val notSignificantlyLessAccurate = accuracyDelta <= MINIMUM_ACCURACY_DELTA
 
         // Determine location quality using a combination of timeliness and accuracy
         return when {
@@ -200,12 +196,13 @@ class WalkRepositoryImpl @Inject constructor(
             }
             // Newer and more accurate
             timeDelta > 0 && accuracyDelta < 0f -> true
-            // Newer and the user moved
-            timeDelta > 0 && location.distanceTo(lastLocation) > MOVED_DISTANCE -> true
+            // Newer and not significantly less accurate and the user moved
+            timeDelta > 0 && notSignificantlyLessAccurate &&
+                location.distanceTo(lastLocation) > MOVED_DISTANCE -> true
             // Same or better accuracy and time to refresh
             isRefreshTime && accuracyDelta <= 0f -> true
             // Time to refresh and not significantly less accurate from same provider
-            isRefreshTime && accuracyDelta <= MINIMUM_ACCURACY_DELTA &&
+            isRefreshTime && notSignificantlyLessAccurate &&
                 location.provider == lastLocation.provider -> true
 
             else -> false
@@ -217,8 +214,5 @@ class WalkRepositoryImpl @Inject constructor(
         const val TWO_MINUTES = 2 * 60 * 1000
         private const val MINIMUM_ACCURACY_DELTA = 200f
         private const val MOVED_DISTANCE = 1f
-
-        // 20 mi/h = 8.9408 m/s
-        private const val SPEED_LIMIT_METERS_PER_SECOND: Float = 8.9408f
     }
 }

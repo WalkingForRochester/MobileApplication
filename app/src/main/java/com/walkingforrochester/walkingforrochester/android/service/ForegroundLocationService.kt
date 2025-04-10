@@ -64,13 +64,6 @@ class ForegroundLocationService : LifecycleService() {
                         stopService()
 
                         when (it.state) {
-                            WalkState.SPEEDING_DETECTED -> {
-                                showNotification(
-                                    context = context,
-                                    messageResId = R.string.moving_too_fast_dialog
-                                )
-                            }
-
                             WalkState.MOCK_LOCATION_DETECTED -> {
                                 showNotification(
                                     context = context,

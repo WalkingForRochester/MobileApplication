@@ -5,18 +5,15 @@ import com.google.android.gms.maps.model.LatLng
 data class LocationData(
     val latLng: LatLng,
     val isMock: Boolean,
-    val adjustedSpeed: Float,
 ) {
     companion object {
         val DEFAULT = LocationData(
             latLng = LatLng(0.0, 0.0),
             isMock = false,
-            adjustedSpeed = 0f
         )
         val ROCHESTER_NY = LocationData(
             latLng = LatLng(43.1566, -77.6088),
             isMock = false,
-            adjustedSpeed = 0f
         )
     }
 }

@@ -276,14 +276,6 @@ fun LogAWalkContent(
             )
         }
 
-        if (currentWalk.state == WalkState.SPEEDING_DETECTED) {
-            WalkEndedDialog(
-                onDismissRequest = { onClearWalk() },
-                title = stringResource(R.string.moving_too_fast),
-                text = stringResource(R.string.moving_too_fast_dialog)
-            )
-        }
-
         if (showNotificationRational) {
             if (notificationRationalShownOnce) {
                 // User already saw our rational dialog once

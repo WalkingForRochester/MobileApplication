@@ -143,9 +143,7 @@
     <string name="submission_complete_message">Thank you for submitting your walk!</string>
     <string name="understood">Understood</string>
     <string name="mock_location_dialog">We\'ve detected you\'re spoofing your location and ended your walk.</string>
-    <string name="moving_too_fast_dialog">We\'ve detected you\'re moving too fast and ended your walk.</string>
     <string name="mock_location_detected">Spoof location detected</string>
-    <string name="moving_too_fast">Moving too fast</string>
     <string name="too_large_image">Selected image is too large (maximum 20 megabytes)</string>
     <string name="search">Search</string>
     <string name="enter_an_address">Enter an address</string>

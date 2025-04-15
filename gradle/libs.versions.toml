@@ -4,9 +4,9 @@ androidx-activity = "1.10.1"
 androidx-annotation = "1.9.1"
 androidx-browser = "1.8.0"
 androidx-camera = "1.4.2"
-androidx-core = "1.15.0"
+androidx-core = "1.16.0"
 androidx-core-splashscreen = "1.0.1"
-androidx-compose-bom = "2025.03.01"
+androidx-compose-bom = "2025.04.00"
 androidx-credentials = "1.5.0"
 androidx-datastore = "1.1.4"
 androidx-hilt-navigation-compose = "1.2.0"
@@ -23,7 +23,7 @@ junit = "4.13.2"
 
 # kotlin
 kotlin = "2.1.20"
-kotlinx-coroutines-bom = "1.10.1"
+kotlinx-coroutines-bom = "1.10.2"
 ksp = "2.1.20-1.0.31"
 
 # square
@@ -35,9 +35,9 @@ retrofit-bom = "2.11.0"
 
 # google services
 play-services-location = "21.3.0"
-play-services-maps = "19.1.0"
+play-services-maps = "19.2.0"
 google-android-maps-compose = "6.5.2"
-google-android-maps-utils = "3.11.2"
+google-android-maps-utils = "3.12.0"
 google-libphonenumber = "8.13.41"
 google-googleid = "1.1.1"
 
@@ -69,7 +69,9 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 androidx-compose-material3-window-size = { module = "androidx.compose.material3:material3-window-size-class" }
+
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }

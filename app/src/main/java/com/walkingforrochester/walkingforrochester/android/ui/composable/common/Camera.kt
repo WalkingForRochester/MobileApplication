@@ -1,6 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 
-import android.content.Context
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.camera.core.CameraSelector
@@ -9,7 +8,6 @@ import androidx.camera.core.ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.core.UseCase
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
@@ -33,9 +31,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.ktx.executor
+import com.walkingforrochester.walkingforrochester.android.ktx.getCameraProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,11 +61,12 @@ fun CameraPreview(
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
             }
-            onUseCase(Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
-                }
+            onUseCase(
+                Preview.Builder()
+                    .build()
+                    .also {
+                        it.surfaceProvider = previewView.surfaceProvider
+                    }
             )
             previewView
         }
@@ -160,13 +160,4 @@ suspend fun ImageCapture.takePicture(executor: Executor): File {
     }
 }
 
-suspend fun Context.getCameraProvider(): ProcessCameraProvider = suspendCoroutine { continuation ->
-    ProcessCameraProvider.getInstance(this).also { future ->
-        future.addListener({
-            continuation.resume(future.get())
-        }, executor)
-    }
-}
 
-val Context.executor: Executor
-    get() = ContextCompat.getMainExecutor(this)

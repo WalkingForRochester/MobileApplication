@@ -174,11 +174,12 @@ fun NavigationHost(
             enterTransition = { fadeIn() }, //+ slideInHorizontally(initialOffsetX = { it }) },
             exitTransition = { fadeOut() + scaleOut() }
         ) {
-            /*TakePictureScreen(
+            TakePictureScreen(
+                windowSizeClass = windowAdaptiveInfo.windowSizeClass,
                 onCompletion = {
                     navController.popBackStack()
                 },
-            )*/
+            )
         }
 
         composable(route = ContactUs.route) {

@@ -4,13 +4,16 @@ import android.Manifest
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +40,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,11 +57,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
@@ -76,28 +87,30 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.logawal
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun SubmitWalkScreen(
     modifier: Modifier = Modifier,
     onCompletion: () -> Unit = {},
-    contentPadding: PaddingValues = PaddingValues(),
+    onTakePicture: () -> Unit = {},
+    windowSizeClass: WindowSizeClass = WindowSizeClass.compute(410.dp.value, 800.dp.value),
     logAWalkViewModel: LogAWalkViewModel = hiltViewModel()
 ) {
-    val uiState by logAWalkViewModel.uiState.collectAsStateWithLifecycle()
     val walkData by logAWalkViewModel.currentWalk.collectAsStateWithLifecycle()
     val permissionPreferences by logAWalkViewModel.permissionPreferences.collectAsStateWithLifecycle()
 
     SubmitWalkContent(
         walkData = walkData,
         cameraRationalShown = permissionPreferences.cameraRationalShown,
+        windowSizeClass = windowSizeClass,
         modifier = modifier,
         onDiscardWalk = {
             logAWalkViewModel.onDiscardWalking()
             onCompletion()
         },
         onLitterChange = logAWalkViewModel::onBagsCollectedChange,
+        onTakePicture = onTakePicture,
         onSubmitWalk = logAWalkViewModel::onSubmitWalking
     )
 }
@@ -107,15 +120,16 @@ fun SubmitWalkScreen(
 fun SubmitWalkContent(
     walkData: WalkData,
     cameraRationalShown: Boolean,
+    windowSizeClass: WindowSizeClass,
     modifier: Modifier = Modifier,
     onDiscardWalk: () -> Unit = {},
     onLitterChange: (Int) -> Unit = {},
+    onTakePicture: () -> Unit = {},
     onSubmitWalk: () -> Unit = {},
     onUpdateCameraRationalShown: (Boolean) -> Unit = {}
 ) {
     var showDiscardWalkDialog by remember { mutableStateOf(false) }
     var showPhotoRequiredDialog by remember { mutableStateOf(false) }
-    var showCameraPermissionRational by remember { mutableStateOf(false) }
 
     BackHandler {
         showDiscardWalkDialog = true
@@ -127,29 +141,6 @@ fun SubmitWalkContent(
         } else {
             showPhotoRequiredDialog = true
         }
-    }
-
-    val cameraPermission = rememberPermissionState(
-        permission = Manifest.permission.CAMERA,
-        onPermissionResult = { permissionGranted ->
-            if (permissionGranted) {
-                onUpdateCameraRationalShown(false)
-                // TODO show camera screen
-                Timber.d("JSR show camera via permission result")
-            }
-        }
-    )
-
-    if (showCameraPermissionRational) {
-        ShowCameraRational(
-            cameraPermissionState = cameraPermission,
-            rationalShown = cameraRationalShown,
-            onRequestPermissions = {
-                onUpdateCameraRationalShown(true)
-                showCameraPermissionRational = false
-            },
-            onDismissRequest = { showCameraPermissionRational = false },
-        )
     }
 
     Scaffold(
@@ -195,145 +186,110 @@ fun SubmitWalkContent(
             )
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(padding),
-            //.padding(horizontal = 16.dp)
+        val dividerColor = DividerDefaults.color.copy(alpha = 0.3f)
 
-        ) {
-            HorizontalDivider(color = DividerDefaults.color.copy(alpha = 0.3f))
-            SubmitWalkMap(
-                walkData = walkData,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            )
-            HorizontalDivider(color = DividerDefaults.color.copy(alpha = 0.3f))
+        val portrait = windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT &&
+            windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.EXPANDED
+
+        if (portrait) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .verticalScroll(rememberScrollState())
+                    .padding(padding)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(R.string.distance_label),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = walkData.distanceMeters.formatMetersToMiles(),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+
+                // To not allow map to dominate on tablets, use a bigger
+                // ratio vs phones
+                val ratio = when (windowSizeClass.windowWidthSizeClass) {
+                    WindowWidthSizeClass.COMPACT -> 1.4f
+                    else -> 2f
                 }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(ratio)
                 ) {
-                    Text(
-                        text = stringResource(R.string.duration_label),
-                        style = MaterialTheme.typography.bodyLarge
+                    SubmitWalkMap(
+                        walkData = walkData,
+                        modifier = Modifier.fillMaxSize()
                     )
-                    Text(
-                        text = walkData.durationMilli.formatElapsedMilli(),
-                        style = MaterialTheme.typography.bodyLarge
+                    HorizontalDivider(
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        color = dividerColor
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        color = dividerColor
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(R.string.how_many_bags_collected),
+                SubmitWalkDetails(
+                    walkData = walkData,
+                    cameraRationalShown = cameraRationalShown,
                     modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyLarge
+                    onLitterChange = onLitterChange,
+                    onTakePicture = onTakePicture,
+                    onUpdateCameraRationalShown = onUpdateCameraRationalShown
                 )
+            }
+        } else {
+            // Landscape
+            val layoutDirection = LocalLayoutDirection.current
 
-                HorizontalNumberPicker(
-                    minValue = 0,
-                    maxValue = 15,
-                    currentValue = walkData.bagsOfLitter,
-                    onValueChange = onLitterChange
-                )
-
-                Spacer(modifier = Modifier.size(16.dp))
-
-                if (walkData.imageUri == Uri.EMPTY) {
-                    Text(
-                        text = stringResource(R.string.take_picture_of_litter),
-                        modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    IconButton(
-                        onClick = {
-                            cameraPermission.checkOrRequestPermission(
-                                rationalShown = cameraRationalShown,
-                                onPermissionsGranted = {
-                                    onUpdateCameraRationalShown(false)
-                                    // TODO show camera...
-                                    Timber.d("JSR show camera via icon button")
-                                },
-                                onShowRational = {
-                                    showCameraPermissionRational = true
-                                }
-                            )
-                        },
-                        modifier = Modifier.size(100.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AddAPhoto,
-                            contentDescription = stringResource(
-                                R.string.take_picture_of_litter_description
-                            ),
-                            modifier = Modifier.size(76.dp),
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = padding.calculateTopPadding(),
+                        end = padding.calculateRightPadding(layoutDirection)
+                    ),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    SubmitWalkMap(
+                        walkData = walkData,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            start = padding.calculateLeftPadding(layoutDirection),
+                            bottom = padding.calculateBottomPadding()
                         )
-                    }
-                    Spacer(Modifier.height(100.dp))
-                } else {
-                    AsyncImage(
-                        model = walkData.imageUri,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .size(200.dp)
-                            .clip(MaterialTheme.shapes.medium),
-                        contentScale = ContentScale.Crop
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    WFROutlinedButton(
-                        onClick = {
-                            // TODO show camera...
-                        },
-                        label = R.string.retake_button
+                    HorizontalDivider(
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        color = dividerColor
+                    )
+                    VerticalDivider(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        color = dividerColor
                     )
                 }
 
-                ///Spacer(modifier = Modifier.height(16.dp))
-                // Spacer(modifier = Modifier.weight(1f))
-
-                /* WFRButton(
-                 onClick = {
-                 },
-                 modifier = Modifier.widthIn(120.dp),
-                 label = R.string.submit,
-                 enabled = surveyDialogState.picUri != null
-             )*/
-
-                Spacer(modifier = Modifier.height(8.dp))
+                SubmitWalkDetails(
+                    walkData = walkData,
+                    cameraRationalShown = cameraRationalShown,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                    onLitterChange = onLitterChange,
+                    onTakePicture = onTakePicture,
+                    onUpdateCameraRationalShown = onUpdateCameraRationalShown
+                )
             }
         }
     }
 }
 
+
 @Composable
 fun SubmitWalkMap(
     walkData: WalkData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val cameraPositionState = rememberCameraPositionState()
 
@@ -367,9 +323,145 @@ fun SubmitWalkMap(
 
             // indicate camera movement handled
             true
-        }
+        },
+        contentPadding = contentPadding
     ) {
         RenderWalkDataOnMap(walkData)
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun SubmitWalkDetails(
+    walkData: WalkData,
+    cameraRationalShown: Boolean,
+    modifier: Modifier = Modifier,
+    onLitterChange: (Int) -> Unit = {},
+    onTakePicture: () -> Unit = {},
+    onUpdateCameraRationalShown: (Boolean) -> Unit = {}
+) {
+    var showCameraPermissionRational by remember { mutableStateOf(false) }
+
+    val cameraPermission = rememberPermissionState(
+        permission = Manifest.permission.CAMERA,
+        onPermissionResult = { permissionGranted ->
+            if (permissionGranted) {
+                onUpdateCameraRationalShown(false)
+                onTakePicture()
+            }
+        }
+    )
+
+    if (showCameraPermissionRational) {
+        ShowCameraRational(
+            cameraPermissionState = cameraPermission,
+            rationalShown = cameraRationalShown,
+            onRequestPermissions = {
+                onUpdateCameraRationalShown(true)
+                showCameraPermissionRational = false
+            },
+            onDismissRequest = { showCameraPermissionRational = false },
+        )
+    }
+
+    Column(
+        modifier = modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.distance_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = walkData.distanceMeters.formatMetersToMiles(),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.duration_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = walkData.durationMilli.formatElapsedMilli(),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.how_many_bags_collected),
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        HorizontalNumberPicker(
+            minValue = 0,
+            maxValue = 15,
+            currentValue = walkData.bagsOfLitter,
+            onValueChange = onLitterChange
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        if (walkData.imageUri == Uri.EMPTY) {
+            Text(
+                text = stringResource(R.string.take_picture_of_litter),
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            IconButton(
+                onClick = {
+                    cameraPermission.checkOrRequestPermission(
+                        rationalShown = cameraRationalShown,
+                        onPermissionsGranted = {
+                            onUpdateCameraRationalShown(false)
+                            onTakePicture()
+                        },
+                        onShowRational = {
+                            showCameraPermissionRational = true
+                        }
+                    )
+                },
+                modifier = Modifier.size(100.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AddAPhoto,
+                    contentDescription = stringResource(
+                        R.string.take_picture_of_litter_description
+                    ),
+                    modifier = Modifier.size(76.dp),
+                )
+            }
+            Spacer(Modifier.height(100.dp))
+        } else {
+            AsyncImage(
+                model = walkData.imageUri,
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .size(200.dp)
+                    .clip(MaterialTheme.shapes.medium),
+                contentScale = ContentScale.Fit
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            WFROutlinedButton(
+                onClick = { onTakePicture() },
+                label = R.string.retake_button
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -414,18 +506,23 @@ fun PhotoRequiredDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @PreviewLightDark
+//@PreviewScreenSizes
 @Composable
 fun SubmitWalkContentPreview() {
     WalkingForRochesterTheme {
         Surface {
+            val info = currentWindowAdaptiveInfo()
+
             SubmitWalkContent(
                 walkData = WalkData(
                     distanceMeters = 100.0,
                     durationMilli = 5332,
                     bagsOfLitter = 1
                 ),
-                cameraRationalShown = false
+                cameraRationalShown = false,
+                windowSizeClass = info.windowSizeClass
             )
         }
     }

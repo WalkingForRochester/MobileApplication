@@ -80,6 +80,8 @@
     <string name="forgot_password">Forgot Password</string>
     <string name="sign_up">Sign Up</string>
     <string name="log_a_walk">Log a Walk</string>
+    <string name="submit_walk">Submit Walk</string>
+    <string name="take_picture">Take Picture</string>
     <string name="leaderboard">Leaderboard</string>
     <string name="news_feed">News Feed</string>
     <string name="profile">Profile</string>

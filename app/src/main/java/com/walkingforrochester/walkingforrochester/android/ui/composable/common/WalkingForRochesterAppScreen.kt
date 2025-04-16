@@ -12,7 +12,6 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
@@ -36,7 +35,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.navigat
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.TopBar
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.bottomBarDestinations
 import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.drawerDestinations
-import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.navigateSingleTopTo
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.navigateAndClearBackStack
 import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
 import kotlinx.coroutines.launch
 
@@ -55,7 +54,7 @@ fun WalkingForRochesterAppScreen(
 @Composable
 fun WFRNavigationDrawer(
     uiState: MainUiState,
-    onToggleDarkMode: (Boolean) -> Unit
+    onToggleDarkMode: (Boolean) -> Unit,
 ) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
@@ -73,7 +72,9 @@ fun WFRNavigationDrawer(
         menuItems = drawerDestinations,
         currentScreen = currentScreen,
         onScreenSelected = { screen ->
-            navController.navigateSingleTopTo(screen.route)
+            navController.navigate(screen.route) {
+                launchSingleTop = true
+            }
         },
         onCloseDrawer = {
             scope.launch { drawerState.close() }
@@ -101,7 +102,7 @@ fun WFRNavigationDrawer(
                     menuItems = bottomBarDestinations,
                     currentScreen = currentScreen,
                     onScreenSelected = { screen ->
-                        navController.navigateSingleTopTo(screen.route)
+                        navController.navigateAndClearBackStack(screen.route)
                     })
             }
         ) { contentPadding ->
@@ -146,12 +147,4 @@ fun AppScreen(
             content(paddingValues)
         }
     }
-}
-
-suspend fun SnackbarHostState.showLongCloseableSnackbar(message: String) {
-    this.showSnackbar(
-        message = message,
-        withDismissAction = true,
-        duration = SnackbarDuration.Long
-    )
 }

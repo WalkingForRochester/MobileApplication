@@ -5,6 +5,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -21,7 +23,9 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.newsfee
 import com.walkingforrochester.walkingforrochester.android.ui.composable.profile.ProfileScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.registration.RegistrationScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.submitwalk.SubmitWalkScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture.TakePictureScreen
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun NavigationHost(
     navController: NavHostController,
@@ -35,6 +39,9 @@ fun NavigationHost(
             else -> LogAWalk.route
         }
     }
+
+    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -42,20 +49,28 @@ fun NavigationHost(
     ) {
         composable(route = LoginDestination.route) {
             LoginScreen(
-                onForgotPassword = { navController.navigate(ForgotPassword.route) },
+                onForgotPassword = {
+                    navController.navigate(route = ForgotPassword.route) {
+                        launchSingleTop = true
+                    }
+                },
                 onRegister = { email, firstName, lastName, facebookId ->
                     navController.navigate(
-                        Registration.route +
+                        route = Registration.route +
                             "?email=$email" +
                             "&fname=$firstName" +
                             "&lname=$lastName" +
                             "&fbid=$facebookId"
                     ) {
                         popUpTo(LoginDestination.route)
+                        launchSingleTop = true
                     }
                 },
                 onLoginComplete = {
-                    navController.navigateSingleTopTo(LogAWalk.route, clearTop = true)
+                    navController.navigateAndClearBackStack(
+                        route = LogAWalk.route,
+                        clearToRoot = true
+                    )
                 },
                 contentPadding = contentPadding
             )
@@ -64,7 +79,10 @@ fun NavigationHost(
         composable(route = ForgotPassword.route) {
             ForgotPasswordScreen(
                 onPasswordResetComplete = {
-                    navController.navigateSingleTopTo(LoginDestination.route, clearTop = true)
+                    navController.navigateAndClearBackStack(
+                        LoginDestination.route,
+                        clearToRoot = true
+                    )
                 },
                 contentPadding = contentPadding
             )
@@ -87,9 +105,9 @@ fun NavigationHost(
                     facebookId = facebookId
                 ),
                 onRegistrationComplete = {
-                    navController.navigateSingleTopTo(
+                    navController.navigateAndClearBackStack(
                         LogAWalk.route,
-                        clearTop = true
+                        clearToRoot = true
                     )
                 },
                 contentPadding = contentPadding
@@ -105,7 +123,9 @@ fun NavigationHost(
                 //o//nStartWalking = { },
                 //onStopWalking = { },
                 onNavigateToSubmitWalk = {
-                    navController.navigate(SubmitWalk.route)
+                    navController.navigate(SubmitWalk.route) {
+                        launchSingleTop = true
+                    }
                 },
                 contentPadding = contentPadding
             )
@@ -122,7 +142,10 @@ fun NavigationHost(
         composable(route = ProfileDestination.route) {
             ProfileScreen(
                 onLogoutComplete = {
-                    navController.navigateSingleTopTo(LoginDestination.route, clearTop = true)
+                    navController.navigateAndClearBackStack(
+                        route = LoginDestination.route,
+                        clearToRoot = true
+                    )
                 },
                 contentPadding = contentPadding
             )
@@ -137,8 +160,25 @@ fun NavigationHost(
                 onCompletion = {
                     navController.popBackStack()
                 },
-                contentPadding = contentPadding
+                onTakePicture = {
+                    navController.navigate(route = TakePicture.route) {
+                        launchSingleTop = true
+                    }
+                },
+                windowSizeClass = windowAdaptiveInfo.windowSizeClass
             )
+        }
+
+        composable(
+            route = TakePicture.route,
+            enterTransition = { fadeIn() }, //+ slideInHorizontally(initialOffsetX = { it }) },
+            exitTransition = { fadeOut() + scaleOut() }
+        ) {
+            /*TakePictureScreen(
+                onCompletion = {
+                    navController.popBackStack()
+                },
+            )*/
         }
 
         composable(route = ContactUs.route) {
@@ -147,11 +187,11 @@ fun NavigationHost(
     }
 }
 
-fun NavHostController.navigateSingleTopTo(
+fun NavHostController.navigateAndClearBackStack(
     route: String,
-    clearTop: Boolean = false
+    clearToRoot: Boolean = false
 ) = this.navigate(route) {
     // Use popUpTo(0) to fully clear the top to prevent backing to last destination
-    if (clearTop) popUpTo(0) else popUpTo(LogAWalk.route)
+    if (clearToRoot) popUpTo(0) else popUpTo(LogAWalk.route)
     launchSingleTop = true
 }

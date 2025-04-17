@@ -3,6 +3,7 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.takepi
 import android.net.Uri
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
@@ -21,15 +22,15 @@ import javax.inject.Inject
 @HiltViewModel
 class TakePictureViewModel @Inject constructor(
     private val walkRepository: WalkRepository,
-    @IODispatcher val ioDispatcher: CoroutineDispatcher
+    @IODispatcher val ioDispatcher: CoroutineDispatcher,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _imageUri = MutableStateFlow(Uri.EMPTY)
-    val imageUri = _imageUri.asStateFlow()
+    val imageUri = savedStateHandle.getStateFlow(IMAGE_URI_KEY, Uri.EMPTY)
 
     fun captureImageFile(imageFile: File) {
         Timber.d("updateImageFile: %s", imageFile.name)
-        _imageUri.update { imageFile.toUri() }
+        savedStateHandle[IMAGE_URI_KEY] = imageFile.toUri()
     }
 
     fun confirmImage(filesDir: File) = viewModelScope.launch {
@@ -43,9 +44,15 @@ class TakePictureViewModel @Inject constructor(
 
     private suspend fun renameFile(targetFile: File): Boolean = withContext(ioDispatcher) {
         try {
-            val imageFile = _imageUri.value.toFile()
-            imageFile.renameTo(targetFile)
-            true
+            val imageUri: Uri? = savedStateHandle[IMAGE_URI_KEY]
+            if (imageUri != null) {
+                val imageFile = imageUri.toFile()
+                imageFile.renameTo(targetFile)
+                true
+            } else {
+                Timber.w("Image uri is null")
+                false
+            }
         } catch (e: Exception) {
             Timber.w("Failed to rename file: %s", e.message)
             false
@@ -59,5 +66,7 @@ class TakePictureViewModel @Inject constructor(
     companion object {
         const val CAPTURE_FILE_NAME = "wfr_walk_capture.jpg"
         const val CONFIRM_FILE_NAME = "wfr_walk_confirm.jpg"
+
+        private val IMAGE_URI_KEY = "imageUri"
     }
 }

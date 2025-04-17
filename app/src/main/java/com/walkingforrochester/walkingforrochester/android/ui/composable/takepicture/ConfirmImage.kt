@@ -28,12 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import coil.compose.AsyncImage
+import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ktx.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
@@ -79,7 +81,7 @@ fun ConfirmImage(
                 ConfirmImageButton(
                     onClick = onDiscardImage,
                     iconVector = Icons.Filled.Close,
-                    iconDescription = "Discard Image",
+                    iconDescription = stringResource(R.string.discard_image_desc),
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )
@@ -88,7 +90,7 @@ fun ConfirmImage(
                 ConfirmImageButton(
                     onClick = onConfirmImage,
                     iconVector = Icons.Filled.Check,
-                    iconDescription = "Confirm Image",
+                    iconDescription = stringResource(R.string.confirm_image_desc),
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )
@@ -110,7 +112,7 @@ fun ConfirmImage(
                 ConfirmImageButton(
                     onClick = onConfirmImage,
                     iconVector = Icons.Filled.Check,
-                    iconDescription = "Confirm Image",
+                    iconDescription = stringResource(R.string.confirm_image_desc),
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )
@@ -120,7 +122,7 @@ fun ConfirmImage(
                 ConfirmImageButton(
                     onClick = onDiscardImage,
                     iconVector = Icons.Filled.Close,
-                    iconDescription = "Discard Image",
+                    iconDescription = stringResource(R.string.discard_image_desc),
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )

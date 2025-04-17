@@ -124,7 +124,8 @@
     <string name="duration_label">Duration:</string>
     <string name="retake_button">Retake</string>
 
-
+    <string name="discard_image_desc">Discard image</string>
+    <string name="confirm_image_desc">Confirm image</string>
 
     <string name="did_you_pick_up_litter">Did you pick up litter?</string>
     <string name="continue_walking">Continue\nWalking</string>

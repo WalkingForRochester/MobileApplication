@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,6 +47,7 @@ import com.walkingforrochester.walkingforrochester.android.network.PasswordCrede
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButtonDefaults
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
@@ -224,9 +226,12 @@ fun LoginScreenContent(
             onClick = { onLoginClicked(autofillEmail && autofillPassword) },
             label = R.string.sign_in,
             testTag = "login_button",
-            buttonColor = Color.Black,
-            labelColor = Color.White,
-            loading = uiState.loading
+            loading = uiState.loading,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White
+            ),
+            contentPadding = WFRButtonDefaults.wideContentPadding
         )
         Row(
             modifier = Modifier

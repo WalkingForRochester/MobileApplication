@@ -1,6 +1,7 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
 import android.util.Patterns
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -27,6 +28,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val networkRepository: NetworkRepository,
     private val preferenceRepository: PreferenceRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginScreenState())
@@ -35,6 +37,14 @@ class LoginViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<LoginScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    init {
+        // Restore email from saved state. Not doing password for security reasons.
+        _uiState.update {
+            it.copy(
+                emailAddress = savedStateHandle[EMAIL_KEY] ?: "",
+            )
+        }
+    }
 
     private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
 
@@ -140,6 +150,7 @@ class LoginViewModel @Inject constructor(
         onEmailAddressValueChange(newEmailAddress)
         onPasswordValueChange(newPassword)
         performLogin(manualLogin = false)
+        savedStateHandle[EMAIL_KEY] = newEmailAddress
     }
 
     fun onEmailAddressValueChange(newEmailAddress: String) {
@@ -151,6 +162,7 @@ class LoginViewModel @Inject constructor(
                 authenticationErrorMessageId = 0,
             )
         }
+        savedStateHandle[EMAIL_KEY] = newEmailAddress
     }
 
     fun onPasswordValueChange(newPassword: String) {
@@ -210,5 +222,9 @@ class LoginViewModel @Inject constructor(
                 else -> LoginScreenEvent.LoginComplete
             }
         )
+    }
+
+    companion object {
+        private const val EMAIL_KEY = "email"
     }
 }

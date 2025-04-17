@@ -126,8 +126,6 @@ class MainActivity : ComponentActivity() {
         }
 
         customTabsManager = CustomTabsManager(application, lifecycle)
-
-        processIntent()
     }
 
     override fun onStart() {
@@ -146,24 +144,8 @@ class MainActivity : ComponentActivity() {
         super.onStop()
     }
 
-    override fun onNewIntent(intent: Intent) {
-        Timber.d("onNewIntent()")
-        super.onNewIntent(intent)
-        this.intent = intent
-
-        processIntent()
-    }
-
-    private fun processIntent() {
-        val stopWalking =
-            intent.getBooleanExtra(ForegroundLocationService.EXTRA_STOP_WALKING, false)
-        if (stopWalking) {
-            /// TODO convert this to deep link to be processed by nav host
-        }
-    }
-
     private val myBackPressCallback = object : OnBackPressedCallback(
-        enabled = true
+        enabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
     ) {
         override fun handleOnBackPressed() {
             moveTaskToBack(false)

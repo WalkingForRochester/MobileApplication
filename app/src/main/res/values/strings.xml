@@ -55,8 +55,7 @@
     <string name="empty_leaderboard">No activity found for the specified filters</string>
     <string name="logout">Logout</string>
     <string name="notification_channel_name">Walk in Progress</string>
-    <string name="walking_notification">You are Walking For Rochester!</string>
-    <string name="stop_walking">Stop Walking</string>
+    <string name="walking_notification">Tap to see walk.</string>
     <string name="dark_mode">Dark mode</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="please_open_settings_to_grant_permissions">In order to continue, you need to allow this permission in the Settings app.</string>

@@ -105,15 +105,6 @@ class ForegroundLocationService : LifecycleService() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val cancelIntent = Intent(this, MainActivity::class.java)
-            .putExtra(EXTRA_STOP_WALKING, true)
-        val cancelPendingIntent = PendingIntent.getActivity(
-            this,
-            -1,
-            cancelIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         val notificationCompatBuilder =
             NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
 
@@ -127,11 +118,6 @@ class ForegroundLocationService : LifecycleService() {
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .addAction(
-                R.drawable.ic_stop,
-                getString(R.string.stop_walking),
-                cancelPendingIntent
-            )
             .build()
     }
 

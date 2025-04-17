@@ -8,6 +8,7 @@ import android.net.Uri
 import android.util.Patterns
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.FileProvider
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
@@ -43,6 +44,7 @@ class ProfileViewModel @Inject constructor(
     private val networkRepository: NetworkRepository,
     private val preferenceRepository: PreferenceRepository,
     @IODispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _accountProfile = MutableStateFlow<AccountProfile>(AccountProfile.DEFAULT_PROFILE)
@@ -78,6 +80,7 @@ class ProfileViewModel @Inject constructor(
     fun loadProfile() = viewModelScope.launch(context = exceptionHandler) {
         _uiState.update { it.copy(profileDataLoading = true) }
         refreshProfile()
+        recoverSavedState()
         _uiState.update { it.copy(profileDataLoading = false) }
     }
 
@@ -108,11 +111,14 @@ class ProfileViewModel @Inject constructor(
                 communityService = accountProfile.communityService
             )
         }
+
+        updateSavedState()
     }
 
     fun onEdit() {
         previousProfile = _accountProfile.value.copy()
         _uiState.update { it.copy(editProfile = true) }
+        updateSavedState()
     }
 
     fun onSave() = viewModelScope.launch(context = exceptionHandler) {
@@ -139,6 +145,8 @@ class ProfileViewModel @Inject constructor(
                     profileDataSaving = false
                 )
             }
+
+            updateSavedState()
         }
     }
 
@@ -150,6 +158,7 @@ class ProfileViewModel @Inject constructor(
                 editProfile = false
             )
         }
+        updateSavedState()
     }
 
     fun onShare(context: Context): Intent {
@@ -187,6 +196,7 @@ class ProfileViewModel @Inject constructor(
             }
         }
         _uiState.update { it.copy(localProfilePicUri = uri, tooLargeImage = tooLarge) }
+        updateSavedState()
     }
 
     fun onLogout() = viewModelScope.launch(context = exceptionHandler) {
@@ -260,7 +270,44 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    private fun recoverSavedState() {
+        val editProfile: Boolean = true == savedStateHandle[EDIT_PROFILE_KEY]
+        if (editProfile) {
+            previousProfile = _accountProfile.value.copy()
+            _uiState.update {
+                it.copy(
+                    editProfile = true,
+                    localProfilePicUri = savedStateHandle[PROFILE_IMAGE_KEY]
+                )
+            }
+            _accountProfile.update {
+                it.copy(
+                    email = savedStateHandle[EMAIL_KEY] ?: it.email,
+                    phoneNumber = savedStateHandle[PHONE_KEY] ?: it.phoneNumber,
+                    nickname = savedStateHandle[NICKNAME_KEY] ?: it.nickname
+                )
+            }
+        }
+    }
+
+    private fun updateSavedState() {
+        val uiState = _uiState.value
+        val accountProfile = _accountProfile.value
+
+        savedStateHandle[EDIT_PROFILE_KEY] = uiState.editProfile
+        savedStateHandle[EMAIL_KEY] = accountProfile.email
+        savedStateHandle[PHONE_KEY] = accountProfile.phoneNumber
+        savedStateHandle[NICKNAME_KEY] = accountProfile.nickname
+        savedStateHandle[PROFILE_IMAGE_KEY] = uiState.localProfilePicUri
+    }
+
     companion object {
         const val FILE_SIZE_LIMIT: Long = 20 * 1024 * 1024 // 20 megabytes
+
+        private val EDIT_PROFILE_KEY = "editProfile"
+        private val EMAIL_KEY = "email"
+        private val PHONE_KEY = "phoneNumber"
+        private val NICKNAME_KEY = "nickName"
+        private val PROFILE_IMAGE_KEY = "profileImage"
     }
 }

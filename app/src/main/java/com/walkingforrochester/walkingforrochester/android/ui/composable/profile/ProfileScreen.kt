@@ -110,12 +110,12 @@ fun ProfileScreenContent(
     onDeleteAccount: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
-    var openAlertDialog by remember { mutableStateOf(false) }
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
 
-    if (openAlertDialog) {
+    if (showDeleteAccountDialog) {
         DeleteAccountDialog(
             hasCommunityService = accountProfile.communityService,
-            onDismissRequest = { openAlertDialog = false },
+            onDismissRequest = { showDeleteAccountDialog = false },
             onConfirmed = onDeleteAccount
         )
     }
@@ -131,9 +131,9 @@ fun ProfileScreenContent(
     ) {
         Spacer(modifier = Modifier.height(8.dp))
         ProfileCard(
-            modifier = Modifier.padding(horizontal = 8.dp),
             uiState = uiState,
             accountProfile = accountProfile,
+            modifier = Modifier.padding(horizontal = 8.dp),
             onEdit = onEdit,
             onShare = onShare,
             onProfileChange = onProfileChange,
@@ -158,7 +158,7 @@ fun ProfileScreenContent(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 WFROutlinedButton(
-                    onClick = { openAlertDialog = true },
+                    onClick = { showDeleteAccountDialog = true },
                     label = R.string.delete_account,
                     modifier = Modifier.widthIn(min = 200.dp)
                 )

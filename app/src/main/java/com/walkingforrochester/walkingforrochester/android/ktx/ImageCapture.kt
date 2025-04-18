@@ -11,7 +11,7 @@ import kotlin.coroutines.suspendCoroutine
 
 suspend fun ImageCapture.takePicture(context: Context, fileName: String): File {
 
-    val photoFile = File(context.filesDir, fileName)
+    val photoFile = File(context.cacheDir, fileName)
 
     return suspendCoroutine { continuation ->
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()

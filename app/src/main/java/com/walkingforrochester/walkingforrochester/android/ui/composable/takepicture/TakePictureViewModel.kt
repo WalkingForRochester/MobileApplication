@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture
 
+import android.content.Context
 import android.net.Uri
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -33,8 +34,8 @@ class TakePictureViewModel @Inject constructor(
         savedStateHandle[IMAGE_URI_KEY] = imageFile.toUri()
     }
 
-    fun confirmImage(filesDir: File) = viewModelScope.launch {
-        val confirmFile = File(filesDir, CONFIRM_FILE_NAME)
+    fun confirmImage(context: Context) = viewModelScope.launch {
+        val confirmFile = File(context.cacheDir, CONFIRM_FILE_NAME)
         if (renameFile(confirmFile)) {
             walkRepository.updateImageUri(confirmFile.toUri())
         } else {

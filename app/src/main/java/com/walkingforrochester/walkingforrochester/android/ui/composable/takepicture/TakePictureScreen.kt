@@ -62,7 +62,7 @@ fun TakePictureScreen(
         onNavigateBack = onCompletion,
         onCaptureImage = { takePictureViewModel.captureImageFile(it) },
         onConfirmImage = {
-            takePictureViewModel.confirmImage(context.filesDir)
+            takePictureViewModel.confirmImage(context = context)
             onCompletion()
         }
     )

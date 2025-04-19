@@ -1,6 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture
 
-import android.view.Surface
 import android.view.ViewGroup
 import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
@@ -14,7 +13,6 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.doOnAttach
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @Composable
@@ -22,9 +20,8 @@ fun PreviewImage(
     modifier: Modifier = Modifier,
     scaleType: PreviewView.ScaleType = PreviewView.ScaleType.FILL_CENTER,
     onUpdateUseCases: (
-        surfaceProvider: Preview.SurfaceProvider,
-        rotation: Int
-    ) -> Unit = { sp, r -> }
+        surfaceProvider: Preview.SurfaceProvider?
+    ) -> Unit = { sp -> }
 ) {
     // Unable to show android view in preview, so drop in a placeholder
     if (LocalInspectionMode.current) {
@@ -40,13 +37,15 @@ fun PreviewImage(
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
                 }
-                previewView.doOnAttach {
-                    onUpdateUseCases(
-                        previewView.surfaceProvider,
-                        previewView.display?.rotation ?: Surface.ROTATION_0
-                    )
-                }
+
+                onUpdateUseCases(previewView.surfaceProvider)
+
                 previewView
+            },
+            onRelease = { view ->
+                // Ensure the surface provider is removed from use cases when removed
+                // from composition to prevent leaks
+                onUpdateUseCases(null)
             }
         )
     }

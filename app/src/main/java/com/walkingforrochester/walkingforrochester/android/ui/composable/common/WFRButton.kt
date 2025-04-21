@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
@@ -123,7 +123,7 @@ object WFRButtonDefaults {
     )
 }
 
-@Preview
+@PreviewDynamicColors
 @Composable
 fun WFRButtonPreview() {
     WalkingForRochesterTheme {
@@ -135,7 +135,7 @@ fun WFRButtonPreview() {
                 contentAlignment = Alignment.Center
             ) {
                 WFRButton(
-                    onClick = { /*TODO*/ },
+                    onClick = { },
                     label = R.string.sign_in,
                     loading = false
                 )
@@ -144,7 +144,7 @@ fun WFRButtonPreview() {
     }
 }
 
-@Preview
+@PreviewDynamicColors
 @Composable
 fun WFROutlinedButtonPreview() {
     WalkingForRochesterTheme {

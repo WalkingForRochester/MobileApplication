@@ -94,6 +94,10 @@
     <string name="view_safety_guidelines">View Safety Guidelines</string>
     <string name="view_waiver">View Waiver</string>
 
+    <!-- Start/stop walk button -->
+    <string name="start_button">Start</string>
+    <string name="stop_button">Stop</string>
+
     <!-- Stop walk dialog -->
     <string name="stop_walk_title">Stop your walk?</string>
     <string name="stop_walk_message">Are you sure you want to end your walk and start the submission process?</string>
@@ -115,6 +119,7 @@
     <string name="increase_value">Increase value</string>
     <string name="decrease_value">Decrease value</string>
 
+    <!-- Submit Walk Screen -->
     <string name="photo_required">A photo is required in order to submit your walk.</string>
     <string name="discard_walk_title">Discard walk</string>
     <string name="discard_walk_confirmation">Are you sure you do not want to submit your walk?</string>
@@ -122,6 +127,7 @@
     <string name="distance_label">Distance:</string>
     <string name="duration_label">Duration:</string>
     <string name="retake_button">Retake</string>
+    <string name="submission_error">An unexpected error occurred while submitting the walk. Please try again or contact support.</string>
 
     <string name="discard_image_desc">Discard image</string>
     <string name="confirm_image_desc">Confirm image</string>

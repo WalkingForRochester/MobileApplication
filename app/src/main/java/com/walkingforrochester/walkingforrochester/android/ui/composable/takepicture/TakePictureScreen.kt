@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture
 
+import android.Manifest
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -34,38 +35,53 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun TakePictureScreen(
     windowSizeClass: WindowSizeClass,
     modifier: Modifier = Modifier,
-    onCompletion: () -> Unit = {},
+    onNavigateBack: () -> Unit = {},
     takePictureViewModel: TakePictureViewModel = hiltViewModel()
 ) {
     BackHandler(
         onBack = {
             takePictureViewModel.removeImage()
-            onCompletion()
+            onNavigateBack()
         }
     )
 
     val context = LocalContext.current
     val imageUri by takePictureViewModel.imageUri.collectAsStateWithLifecycle()
 
-    TakePictureContent(
-        imageUri = imageUri,
-        windowSizeClass = windowSizeClass,
-        modifier = modifier,
-        onNavigateBack = onCompletion,
-        onCaptureImage = { takePictureViewModel.captureImageFile(it) },
-        onConfirmImage = {
-            takePictureViewModel.confirmImage(context = context)
-            onCompletion()
-        }
-    )
+    val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
+
+    // Ensure camera permission is still granted. If user used
+    // one time permission and app was closed too long, we will loose
+    // permission and no longer be able to use camera. In that
+    // case we will invoke onCompletion() to trigger navigation back
+    // to our caller.
+    if (cameraPermission.status == PermissionStatus.Granted) {
+        TakePictureContent(
+            imageUri = imageUri,
+            windowSizeClass = windowSizeClass,
+            modifier = modifier,
+            onNavigateBack = onNavigateBack,
+            onCaptureImage = { takePictureViewModel.captureImageFile(it) },
+            onConfirmImage = {
+                takePictureViewModel.confirmImage(context = context)
+                onNavigateBack()
+            }
+        )
+    } else {
+        takePictureViewModel.removeImage()
+        onNavigateBack()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

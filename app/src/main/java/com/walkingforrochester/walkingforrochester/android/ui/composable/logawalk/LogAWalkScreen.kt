@@ -3,6 +3,8 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.logawa
 import android.Manifest
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,11 +46,11 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.model.LocationData
 import com.walkingforrochester.walkingforrochester.android.model.WalkData
 import com.walkingforrochester.walkingforrochester.android.model.WalkData.WalkState
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ShowLocationRational
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ShowNotificationRational
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.checkOrRequestPermission
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.rememberOnOpenSettings
 import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
@@ -66,6 +68,7 @@ fun LogAWalkScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        Timber.d("Collecting events...")
         logAWalkViewModel.eventFlow.collect { event ->
             when (event) {
                 LogAWalkEvent.StartWalking -> {
@@ -105,8 +108,9 @@ fun LogAWalkScreen(
 
     var showLocationRational by remember { mutableStateOf(false) }
 
-    val uiState by logAWalkViewModel.uiState.collectAsStateWithLifecycle()
     val permissionPreferences by logAWalkViewModel.permissionPreferences.collectAsStateWithLifecycle()
+    val currentLocation by logAWalkViewModel.currentLocation.collectAsStateWithLifecycle()
+    val currentWalk by logAWalkViewModel.currentWalk.collectAsStateWithLifecycle()
 
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -127,12 +131,16 @@ fun LogAWalkScreen(
     )
 
     LifecycleStartEffect(context) {
+        Timber.d("started...")
         logAWalkViewModel.recoverWalkingState()
         locationPermissionState.checkOrRequestPermission(
             rationalShown = permissionPreferences.locationRationalShown,
             onShowRational = { showLocationRational = true },
+            onPermissionsGranted = {
+                logAWalkViewModel.onUpdateLocationRationalShown(false)
+                showLocationRational = false
+            }
         )
-        Timber.d("started...")
         onStopOrDispose {
             when (lifecycle.currentState) {
                 Lifecycle.State.CREATED -> Timber.d("stopped...")
@@ -140,11 +148,6 @@ fun LogAWalkScreen(
             }
         }
     }
-
-    LoadingOverlay(uiState.loading)
-
-    val currentLocation by logAWalkViewModel.currentLocation.collectAsStateWithLifecycle()
-    val currentWalk by logAWalkViewModel.currentWalk.collectAsStateWithLifecycle()
 
     LogAWalkContent(
         currentLocation = currentLocation,
@@ -159,8 +162,13 @@ fun LogAWalkScreen(
         contentPadding = contentPadding
     )
 
-    if (locationPermissionState.allPermissionsGranted) {
-        logAWalkViewModel.onUpdateLocationRationalShown(false)
+    // Must be remembered outside of the if show rational block so that the
+    // dialog can be closed when settings is launched and the result
+    // lambda is properly invoked
+    val onOpenSettings = rememberOnOpenSettings { result ->
+        Timber.d("requesting location permissions after activity result %s", result)
+        locationPermissionState.launchMultiplePermissionRequest()
+        showLocationRational = false
     }
 
     if (showLocationRational) {
@@ -170,13 +178,14 @@ fun LogAWalkScreen(
             permissionPreferences.locationRationalShown || locationPermissionState.permissions.any { it.status.shouldShowRationale }
 
         ShowLocationRational(
-            permissionState = locationPermissionState,
+            locationPermissionState = locationPermissionState,
             rationalShown = permissionPreferences.locationRationalShown,
             onRequestPermissions = {
                 logAWalkViewModel.onUpdateLocationRationalShown(rationalRequired)
                 showLocationRational = false
             },
-            onDismissRequest = { showLocationRational = false }
+            onDismissRequest = { showLocationRational = false },
+            onOpenSettings = onOpenSettings
         )
     }
 }
@@ -225,9 +234,13 @@ fun LogAWalkContent(
 
         AnimatedVisibility(
             visible = locationPermissionGranted,
-            modifier.align(alignment = Alignment.BottomCenter)
+            modifier = modifier.align(alignment = Alignment.BottomCenter),
+            enter = fadeIn(),
+            exit = fadeOut(),
         ) {
-            val isWalking = currentWalk.state == WalkState.IN_PROGRESS
+            val isWalking = currentWalk.state == WalkState.IN_PROGRESS ||
+                currentWalk.state == WalkState.COMPLETE
+
             StartStopWalkButton(
                 walking = isWalking,
                 onClick = {

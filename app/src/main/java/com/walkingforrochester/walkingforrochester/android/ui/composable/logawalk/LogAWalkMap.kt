@@ -55,7 +55,6 @@ fun LogAWalkMap(
     var lastLocation by rememberSaveable { mutableStateOf(LocationData.DEFAULT.latLng) }
     var followCamera by rememberSaveable { mutableStateOf(true) }
 
-
     if (cameraPositionState.isMoving &&
         cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
     ) {

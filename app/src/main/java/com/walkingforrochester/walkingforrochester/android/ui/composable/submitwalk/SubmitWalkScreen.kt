@@ -29,6 +29,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -53,9 +55,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -68,6 +72,7 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.compose.GoogleMap
@@ -80,39 +85,99 @@ import com.walkingforrochester.walkingforrochester.android.formatMetersToMiles
 import com.walkingforrochester.walkingforrochester.android.ktx.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.model.WalkData
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.HorizontalNumberPicker
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ShowCameraRational
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.checkOrRequestPermission
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.rememberOnOpenSettings
 import com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk.RenderWalkDataOnMap
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
-import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun SubmitWalkScreen(
     modifier: Modifier = Modifier,
-    onCompletion: () -> Unit = {},
+    onNavigateBack: () -> Unit = {},
     onTakePicture: () -> Unit = {},
     windowSizeClass: WindowSizeClass = WindowSizeClass.compute(410.dp.value, 800.dp.value),
-    logAWalkViewModel: LogAWalkViewModel = hiltViewModel()
+    submitWalkViewModel: SubmitWalkViewModel = hiltViewModel()
 ) {
-    val walkData by logAWalkViewModel.currentWalk.collectAsStateWithLifecycle()
-    val permissionPreferences by logAWalkViewModel.permissionPreferences.collectAsStateWithLifecycle()
+    val walkData by submitWalkViewModel.currentWalk.collectAsStateWithLifecycle()
+    val cameraRationalShown by submitWalkViewModel.cameraRationalShown.collectAsStateWithLifecycle()
 
-    SubmitWalkContent(
-        walkData = walkData,
-        cameraRationalShown = permissionPreferences.cameraRationalShown,
-        windowSizeClass = windowSizeClass,
-        modifier = modifier,
-        onDiscardWalk = {
-            logAWalkViewModel.onDiscardWalking()
-            onCompletion()
-        },
-        onLitterChange = logAWalkViewModel::onBagsCollectedChange,
-        onTakePicture = onTakePicture,
-        onSubmitWalk = logAWalkViewModel::onSubmitWalking
+    val context = LocalContext.current
+    val locationPermissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
     )
+
+    var submissionInProgress by remember { mutableStateOf(false) }
+
+    val snackbarHostState = LocalSnackbarHostState.current
+
+    LaunchedEffect(Unit) {
+        Timber.d("Collecting walk events...")
+        submitWalkViewModel.walkEvent.collect { event ->
+            Timber.d("Event received: %s", event)
+            when (event) {
+                SubmitWalkEvent.SubmissionInProgress -> {
+                    submissionInProgress = true
+                }
+
+                SubmitWalkEvent.WalkSubmitted -> {
+                    submissionInProgress = false
+                    onNavigateBack()
+                }
+
+                SubmitWalkEvent.WalkDiscarded -> {
+                    submissionInProgress = false
+                    onNavigateBack()
+                }
+
+                SubmitWalkEvent.UnexpectedError -> {
+                    submissionInProgress = false
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.submission_error)
+                    )
+                }
+            }
+        }
+    }
+
+    // Using launched effect so that this is sent after we are monitoring events
+    // order matters so
+    LaunchedEffect(Unit) {
+        submitWalkViewModel.checkWalk()
+    }
+
+    // Ensure location permissions are still granted. If user used
+    // one time permission and app was closed too long, we will loose
+    // permission and no longer be able to display map.  In that
+    // case we will invoke onComplete() to trigger navigation back
+    // to our caller.
+    if (locationPermissionState.allPermissionsGranted) {
+
+        SubmitWalkContent(
+            walkData = walkData,
+            cameraRationalShown = cameraRationalShown,
+            windowSizeClass = windowSizeClass,
+            modifier = modifier,
+            submissionInProgress = submissionInProgress,
+            onDiscardWalk = { submitWalkViewModel.discardWalk() },
+            onLitterChange = { submitWalkViewModel.updateBagsOfLitter(it) },
+            onTakePicture = onTakePicture,
+            onSubmitWalk = { submitWalkViewModel.submitWalk() },
+            onUpdateCameraRationalShown = { submitWalkViewModel.updateCameraRationalShown(it) }
+        )
+
+    } else {
+        Timber.d("Location permission lost, return to caller")
+        onNavigateBack()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -122,6 +187,7 @@ fun SubmitWalkContent(
     cameraRationalShown: Boolean,
     windowSizeClass: WindowSizeClass,
     modifier: Modifier = Modifier,
+    submissionInProgress: Boolean = false,
     onDiscardWalk: () -> Unit = {},
     onLitterChange: (Int) -> Unit = {},
     onTakePicture: () -> Unit = {},
@@ -160,7 +226,18 @@ fun SubmitWalkContent(
                 },
                 actions = {
                     TextButton(onClick = submitWalk) {
-                        Text(stringResource(R.string.submit))
+                        Box(contentAlignment = Alignment.Center) {
+                            if (submissionInProgress) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                                )
+                            }
+                            val alpha = if (submissionInProgress) 0f else 1f
+                            Text(
+                                text = stringResource(R.string.submit),
+                                modifier = Modifier.alpha(alpha)
+                            )
+                        }
                     }
                 },
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
@@ -176,7 +253,10 @@ fun SubmitWalkContent(
         if (showDiscardWalkDialog) {
             ConfirmDiscardWalkDialog(
                 onDismiss = { showDiscardWalkDialog = false },
-                onDiscardWalk = onDiscardWalk
+                onDiscardWalk = {
+                    showDiscardWalkDialog = false
+                    onDiscardWalk()
+                }
             )
         }
 
@@ -352,6 +432,15 @@ fun SubmitWalkDetails(
         }
     )
 
+    // Must be remembered outside of the if show rational block so that the
+    // dialog can be closed when settings is launched and the result
+    // lambda is properly invoked
+    val onOpenSettings = rememberOnOpenSettings { result ->
+        Timber.d("requesting camera permission after activity result %s", result)
+        showCameraPermissionRational = false
+        cameraPermission.launchPermissionRequest()
+    }
+
     if (showCameraPermissionRational) {
         ShowCameraRational(
             cameraPermissionState = cameraPermission,
@@ -361,6 +450,7 @@ fun SubmitWalkDetails(
                 showCameraPermissionRational = false
             },
             onDismissRequest = { showCameraPermissionRational = false },
+            onOpenSettings = onOpenSettings
         )
     }
 
@@ -522,7 +612,8 @@ fun SubmitWalkContentPreview() {
                     bagsOfLitter = 1
                 ),
                 cameraRationalShown = false,
-                windowSizeClass = info.windowSizeClass
+                windowSizeClass = info.windowSizeClass,
+                submissionInProgress = false
             )
         }
     }

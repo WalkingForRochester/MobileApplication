@@ -25,13 +25,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.facebook.CallbackManager
 import com.walkingforrochester.walkingforrochester.android.service.ForegroundLocationService
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ConnectionState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.NoConnectionOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WalkingForRochesterAppScreen
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.connectivityState
+import com.walkingforrochester.walkingforrochester.android.ui.composable.common.observeConnectivityAsFlow
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -89,6 +92,21 @@ class MainActivity : ComponentActivity() {
 
             val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
 
+            // Use launched effect so the connectivity observation isn't destroyed
+            // via a recompose causing overlay to blink.
+            val owner = LocalLifecycleOwner.current
+            val context = LocalContext.current
+            var state by remember { mutableStateOf(ConnectionState.Available) }
+            LaunchedEffect(owner) {
+                owner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    context.observeConnectivityAsFlow().collect {
+                        if (state != it) {
+                            state = it
+                        }
+                    }
+                }
+            }
+
             if (initialized) {
                 val darkMode = uiState.darkMode
 
@@ -116,8 +134,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        val connection by connectivityState()
-                        if (connection == ConnectionState.Unavailable) {
+                        if (state == ConnectionState.Unavailable) {
                             NoConnectionOverlay()
                         }
                     }

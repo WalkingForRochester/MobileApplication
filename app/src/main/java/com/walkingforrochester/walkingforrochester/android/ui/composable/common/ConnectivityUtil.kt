@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkRequest
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,17 +15,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.core.content.getSystemService
+import com.walkingforrochester.walkingforrochester.android.R
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import timber.log.Timber
 
 
 /**
@@ -37,88 +39,94 @@ enum class ConnectionState {
     Unavailable
 }
 
-val Context.currentConnectivityState: ConnectionState
-    get() {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return determineCurrentConnectivityState(connectivityManager)
-    }
-
 private fun determineCurrentConnectivityState(
-    connectivityManager: ConnectivityManager
+    connectivityManager: ConnectivityManager?
 ): ConnectionState {
+    if (connectivityManager == null) return ConnectionState.Unavailable
+    if (!connectivityManager.isDefaultNetworkActive) return ConnectionState.Unavailable
     val activeNetwork = connectivityManager.activeNetwork
     val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-    val hasInternet =
-        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
-    val validated =
-        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ?: false
+    return determineCurrentConnectivityState(networkCapabilities)
+}
 
-    return if (hasInternet && validated) ConnectionState.Available else ConnectionState.Unavailable
+private fun determineCurrentConnectivityState(
+    networkCapabilities: NetworkCapabilities?
+): ConnectionState {
+    val hasInternet =
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    val validated =
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+
+    // Verifies a mobile network isn't temporarily disconnected...
+    val notSuspended = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED) == true
+    } else {
+        true // Assume true on older platforms
+    }
+
+    return when {
+        hasInternet && validated && notSuspended -> ConnectionState.Available
+        else -> ConnectionState.Unavailable
+    }
 }
 
 fun Context.observeConnectivityAsFlow() = callbackFlow {
-    val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val connectivityManager: ConnectivityManager? = applicationContext.getSystemService()
 
-    val callback = networkCallback {
-        trySend(determineCurrentConnectivityState(connectivityManager))
+    // Start off with an initial value
+    trySend(determineCurrentConnectivityState(connectivityManager))
+
+    val callback = networkCallback { state ->
+        trySend(state)
     }
 
-    val networkRequest = NetworkRequest.Builder()
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        .build()
-
-    connectivityManager.registerNetworkCallback(networkRequest, callback)
+    connectivityManager?.registerDefaultNetworkCallback(callback)
 
     // Remove callback when not used
     awaitClose {
         // Remove listeners
-        connectivityManager.unregisterNetworkCallback(callback)
+        connectivityManager?.unregisterNetworkCallback(callback)
     }
 }
 
 
-fun networkCallback(callback: () -> Unit): ConnectivityManager.NetworkCallback {
+fun networkCallback(callback: (ConnectionState) -> Unit): ConnectivityManager.NetworkCallback {
     return object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            callback()
+            // Have a new network, so report available
+            callback(ConnectionState.Available)
         }
 
         override fun onLost(network: Network) {
-            callback()
+            // All networks lost, so report unavailable
+            callback(ConnectionState.Unavailable)
         }
 
         override fun onCapabilitiesChanged(
             network: Network,
             networkCapabilities: NetworkCapabilities
         ) {
-            callback()
+            // Verify default network still valid...
+            callback(determineCurrentConnectivityState(networkCapabilities))
         }
     }
 }
 
 @Composable
-fun connectivityState(): State<ConnectionState> {
-    val context = LocalContext.current
-
-    // only monitor connectivity between start/stop lifecycle
-    return context.observeConnectivityAsFlow().collectAsStateWithLifecycle(
-        initialValue = context.currentConnectivityState
-    )
-}
-
-@Composable
 fun NoConnectionOverlay() {
-    Surface(modifier = Modifier.zIndex(Float.MAX_VALUE), color = Color.Black.copy(alpha = 0.5f)) {
+    Surface(
+        modifier = Modifier.zIndex(Float.MAX_VALUE),
+        color = Color.Black.copy(alpha = 0.5f)
+    ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "No Internet connection. Make sure Wi-Fi or cellular data is turned on.",
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.White),
+                text = stringResource(R.string.connectivity_loss),
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall.copy(lineBreak = LineBreak.Heading),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.size(24.dp))

@@ -119,6 +119,8 @@
     <string name="increase_value">Increase value</string>
     <string name="decrease_value">Decrease value</string>
 
+    <string name="connectivity_loss">No Internet connection. Make sure Wi-Fi or cellular data is turned on.</string>
+
     <!-- Submit Walk Screen -->
     <string name="photo_required">A photo is required in order to submit your walk.</string>
     <string name="discard_walk_title">Discard walk</string>

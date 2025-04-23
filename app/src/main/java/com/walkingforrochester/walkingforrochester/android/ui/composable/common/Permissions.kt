@@ -17,15 +17,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.PermissionState
@@ -36,34 +32,27 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ShowLocationRational(
-    permissionState: MultiplePermissionsState,
+    locationPermissionState: MultiplePermissionsState,
     rationalShown: Boolean,
     modifier: Modifier = Modifier,
     onRequestPermissions: () -> Unit = {},
-    onDismissRequest: () -> Unit = {}
+    onDismissRequest: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        Timber.d("requesting permissions after location result")
-        permissionState.launchMultiplePermissionRequest()
-    }
-
     val activity = LocalActivity.current
 
     DisplayRationalDialog(
         title = stringResource(R.string.location_title),
         rational = stringResource(R.string.location_permission_rationale),
         rationalShown = rationalShown,
-        launchPermissionRequest = { permissionState.launchMultiplePermissionRequest() },
+        launchPermissionRequest = { locationPermissionState.launchMultiplePermissionRequest() },
         onRequestPermissions = onRequestPermissions,
-        onOpenSettings = { openSettings(launcher) },
+        onOpenSettings = onOpenSettings,
         onDismissRequest = {
             Timber.d("JSR dismiss.... %s", activity?.isTaskRoot)
             if (activity is ComponentActivity) {
@@ -106,54 +95,6 @@ fun ShowNotificationRational(
     }
 }
 
-/*@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun RequestNotificationPermissionsScreen(
-    permissionState: MultiplePermissionsState,
-    rationalShown: Boolean,
-    onUpdateRationalShown: (Boolean) -> Unit = {},
-    onDismissRequest: () -> Unit = {}
-) {
-    // If rational shown, proceed as any notifications are not shown to the user,
-    // but doesn't impact the ability to launch the foreground service.
-    if (rationalShown) {
-        onDismissRequest()
-    } else {
-        DisplayRationalDialog(
-            permissionState = permissionState,
-            title = stringResource(R.string.notification_permission_title),
-            rational = stringResource(R.string.notification_permission_rationale),
-            rationalShown = false,
-            onOpenSettings = { onDismissRequest() },
-            onDismissRequest = onDismissRequest,
-            dismissButtonLabel = stringResource(R.string.skip_label),
-            onRequestPermissions = {
-                // Update rational shown only if was last chance to show rational.
-                // TODO verify this...
-                onUpdateRationalShown(permissionState.shouldShowRationale)
-            }
-        )
-    }
-}*/
-
-/*@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun RequestCameraPermissionsScreen(
-    permissionState: MultiplePermissionsState,
-    rationalShown: Boolean,
-    onUpdateRationalShown: (Boolean) -> Unit = {},
-    onDismissRequest: () -> Unit = {}
-) {
-    RequestPermissions(
-        permissionState = permissionState,
-        rationalShown = rationalShown,
-        rationalTitle = stringResource(R.string.camera_title),
-        rationalText = stringResource(R.string.camera_permission_rationale),
-        onUpdateRationalShown = onUpdateRationalShown,
-        onDismissRequest = onDismissRequest
-    )
-}*/
-
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ShowCameraRational(
@@ -161,22 +102,16 @@ fun ShowCameraRational(
     rationalShown: Boolean,
     modifier: Modifier = Modifier,
     onRequestPermissions: () -> Unit = {},
-    onDismissRequest: () -> Unit = {}
+    onDismissRequest: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        Timber.d("requesting permissions after activity result")
-        cameraPermissionState.launchPermissionRequest()
-    }
-
     DisplayRationalDialog(
         title = stringResource(R.string.camera_title),
         rational = stringResource(R.string.camera_permission_rationale),
         rationalShown = rationalShown,
         launchPermissionRequest = { cameraPermissionState.launchPermissionRequest() },
         onRequestPermissions = onRequestPermissions,
-        onOpenSettings = { openSettings(launcher) },
+        onOpenSettings = onOpenSettings,
         onDismissRequest = onDismissRequest,
         dismissButtonLabel = stringResource(R.string.cancel),
         modifier = modifier
@@ -215,75 +150,6 @@ fun MultiplePermissionsState.checkOrRequestPermission(
             Timber.d("requesting permissions")
             launchMultiplePermissionRequest()
             onRequestPermission()
-        }
-    }
-}
-
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-private fun RequestPermissions(
-    permissionState: MultiplePermissionsState,
-    rationalShown: Boolean,
-    rationalTitle: String,
-    rationalText: String,
-    onUpdateRationalShown: (Boolean) -> Unit,
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier,
-    dismissButtonLabel: String = stringResource(R.string.cancel)
-) {
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        Timber.d("requesting permissions after activity result")
-        permissionState.launchMultiplePermissionRequest()
-    }
-
-    when {
-        // Display nothing if invoked but all permissions granted
-        permissionState.allPermissionsGranted -> {}
-
-        // Display rational if needed
-        rationalShown || permissionState.permissions.any { it.status.shouldShowRationale } -> {
-            Timber.d("showing rationale")
-
-            DisplayRationalDialog(
-                title = rationalTitle,
-                rational = rationalText,
-                rationalShown = rationalShown,
-                launchPermissionRequest = { permissionState.launchMultiplePermissionRequest() },
-                onRequestPermissions = { onUpdateRationalShown(true) },
-                onOpenSettings = { openSettings(launcher) },
-                modifier = modifier,
-                onDismissRequest = onDismissRequest,
-                dismissButtonLabel = dismissButtonLabel
-            )
-        }
-    }
-
-    // Request permissions
-    val owner = LocalLifecycleOwner.current
-    LaunchedEffect(Unit) {
-        // Request permissions every time UI is resumed and permissions needed. This helps
-        // if user closes OS permission dialog without responding to show it again.
-        // Using RESUMED because the app is visible while OS dialog showing so it only goes
-        // to PAUSED state
-        owner.lifecycleScope.launch {
-            owner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                Timber.d(
-                    "lifecycle %s",
-                    owner.lifecycle.currentState
-                )
-                when {
-                    // Do nothing if all permissions granted
-                    permissionState.allPermissionsGranted -> {}
-                    // Do nothing if need to show rational. Let the rational dialog handle
-                    rationalShown || permissionState.permissions.any { it.status.shouldShowRationale } -> {}
-                    else -> {
-                        Timber.d("requesting permissions")
-                        permissionState.launchMultiplePermissionRequest()
-                    }
-                }
-            }
         }
     }
 }
@@ -347,8 +213,8 @@ private fun PreviewShowLocationRational() {
 
     WalkingForRochesterTheme {
         ShowLocationRational(
-            permissionState = permissionState,
-            rationalShown = false
+            locationPermissionState = permissionState,
+            rationalShown = false,
         )
     }
 }
@@ -383,6 +249,19 @@ private fun PreviewShowCameraRational() {
     }
 }
 
+@Composable
+fun rememberOnOpenSettings(
+    onResult: (ActivityResult) -> Unit
+): () -> Unit {
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        onResult(it)
+    }
+
+    return remember { { openSettings(launcher) } }
+}
+
 private fun openSettings(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
     val intent = Intent().apply {
         action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
@@ -390,6 +269,7 @@ private fun openSettings(launcher: ManagedActivityResultLauncher<Intent, Activit
     }
 
     try {
+        Timber.d("showing settings...")
         launcher.launch(intent)
     } catch (e: ActivityNotFoundException) {
         Timber.w("Failed to open settings: %s", e.message)

@@ -1,9 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.navigation
 
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
@@ -114,14 +110,8 @@ fun NavigationHost(
             )
         }
 
-        composable(
-            route = LogAWalk.route,
-            exitTransition = { fadeOut() },
-            popEnterTransition = { fadeIn() }
-        ) {
+        composable(route = LogAWalk.route) {
             LogAWalkScreen(
-                //o//nStartWalking = { },
-                //onStopWalking = { },
                 onNavigateToSubmitWalk = {
                     navController.navigate(SubmitWalk.route) {
                         launchSingleTop = true
@@ -151,14 +141,10 @@ fun NavigationHost(
             )
         }
 
-        composable(
-            route = SubmitWalk.route,
-            enterTransition = { fadeIn() + slideInHorizontally(initialOffsetX = { it }) },
-            exitTransition = { fadeOut() + scaleOut() }
-        ) {
+        composable(route = SubmitWalk.route) {
             SubmitWalkScreen(
-                onCompletion = {
-                    navController.popBackStack()
+                onNavigateBack = {
+                    navController.popBackStack(route = LogAWalk.route, inclusive = false)
                 },
                 onTakePicture = {
                     navController.navigate(route = TakePicture.route) {
@@ -169,15 +155,11 @@ fun NavigationHost(
             )
         }
 
-        composable(
-            route = TakePicture.route,
-            enterTransition = { fadeIn() }, //+ slideInHorizontally(initialOffsetX = { it }) },
-            exitTransition = { fadeOut() + scaleOut() }
-        ) {
+        composable(route = TakePicture.route) {
             TakePictureScreen(
                 windowSizeClass = windowAdaptiveInfo.windowSizeClass,
-                onCompletion = {
-                    navController.popBackStack()
+                onNavigateBack = {
+                    navController.popBackStack(route = SubmitWalk.route, inclusive = false)
                 },
             )
         }

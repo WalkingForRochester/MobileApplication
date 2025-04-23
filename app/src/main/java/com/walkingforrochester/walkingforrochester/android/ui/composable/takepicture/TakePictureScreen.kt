@@ -148,7 +148,6 @@ fun TakePictureContent(
                     modifier = modifier.fillMaxSize(),
                     onConfirmImage = {
                         onConfirmImage()
-                        captureImage = true
                     },
                     onDiscardImage = {
                         captureImage = true

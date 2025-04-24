@@ -44,7 +44,6 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.FacebookLoginCallback
 import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LoadingOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButtonDefaults
@@ -185,8 +184,6 @@ fun LoginScreenContent(
         contentDescription = "background_image",
         contentScale = ContentScale.Crop
     )
-
-    LoadingOverlay(uiState.socialLoading)
 
     Column(
         modifier = modifier

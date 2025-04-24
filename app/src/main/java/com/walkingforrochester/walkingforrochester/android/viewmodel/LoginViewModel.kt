@@ -60,7 +60,7 @@ class LoginViewModel @Inject constructor(
         }
 
         _uiState.update {
-            it.copy(loading = false, socialLoading = false)
+            it.copy(loading = false)
         }
     }
 
@@ -114,7 +114,7 @@ class LoginViewModel @Inject constructor(
         lastName: String,
         facebookId: String = ""
     ) {
-        _uiState.update { it.copy(socialLoading = true) }
+        _uiState.update { it.copy(loading = true) }
         val accountId = networkRepository.fetchAccountId(email = email)
 
         if (accountId != AccountProfile.NO_ACCOUNT) {
@@ -140,7 +140,7 @@ class LoginViewModel @Inject constructor(
             }
             _eventFlow.emit(LoginScreenEvent.NeedsRegistration)
         }
-        _uiState.update { it.copy(socialLoading = false) }
+        _uiState.update { it.copy(loading = false) }
     }
 
     fun onLogin(

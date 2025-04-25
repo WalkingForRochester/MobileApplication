@@ -58,7 +58,9 @@ class ForegroundLocationService : LifecycleService() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 walkRepository.walkData.collect {
-                    if (it.state == WalkState.IN_PROGRESS) {
+                    // Keep service active during submission as temp permissions will kill process
+                    // TODO Better solution would be saving to persistent storage
+                    if (it.state == WalkState.IN_PROGRESS || it.state == WalkState.COMPLETE) {
                         startService()
                     } else {
                         stopService()
@@ -158,8 +160,6 @@ class ForegroundLocationService : LifecycleService() {
     }
 
     companion object {
-
-        const val EXTRA_STOP_WALKING = "${BuildConfig.APPLICATION_ID}.extra.STOP_WALKING"
 
         const val NOTIFICATION_ID = 1983743982
 

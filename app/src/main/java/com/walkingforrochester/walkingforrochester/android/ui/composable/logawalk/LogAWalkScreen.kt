@@ -51,7 +51,6 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.ShowNotificationRational
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.checkOrRequestPermission
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.rememberOnOpenSettings
-import com.walkingforrochester.walkingforrochester.android.ui.state.LogAWalkEvent
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LogAWalkViewModel
 import timber.log.Timber
@@ -71,33 +70,9 @@ fun LogAWalkScreen(
         Timber.d("Collecting events...")
         logAWalkViewModel.eventFlow.collect { event ->
             when (event) {
-                LogAWalkEvent.StartWalking -> {
-                    //onStartWalking()
-                }
-
-                LogAWalkEvent.StopWalking -> {
-                    //onNavigateToSubmitWalk()
-                }
-
                 LogAWalkEvent.WalkCompleted -> {
                     onNavigateToSubmitWalk()
                 }
-
-                LogAWalkEvent.MockLocationDetected -> {
-                    //  onStopWalking()
-                }
-
-                LogAWalkEvent.MovingTooFast -> {
-                    // onStopWalking()
-                }
-
-                LogAWalkEvent.Submitted -> snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.submission_complete_message)
-                )
-
-                LogAWalkEvent.CameraRationalError -> snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.camera_permission_rationale)
-                )
 
                 LogAWalkEvent.UnexpectedError -> snackbarHostState.showSnackbar(
                     message = context.getString(R.string.unexpected_error)
@@ -248,7 +223,6 @@ fun LogAWalkContent(
                         showStopWalkDialog = true
                     } else {
                         if (notificationPermissionState.status.isGranted) {
-                            Timber.d("JSR notification granted...")
                             onUpdateNotificationRationalShown(false)
                             notificationRationalShownOnce = false
                             showGuidelinesDialog = true
@@ -301,7 +275,6 @@ fun LogAWalkContent(
                     notificationPermissionState = notificationPermissionState,
                     rationalShown = notificationRationalShown,
                     onRequestPermissions = {
-                        Timber.d("JSR show permissions")
                         // If requested to see permissions, mark that
                         // the rational was shown when this is at least the 2nd time
                         // showing the rational
@@ -313,7 +286,6 @@ fun LogAWalkContent(
                         showNotificationRational = false
                     },
                     onDismissRequest = {
-                        Timber.d("JSR dismiss rational")
                         notificationRationalShownOnce = true
                         showNotificationRational = false
 

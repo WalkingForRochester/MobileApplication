@@ -44,6 +44,8 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ktx.getCameraProvider
 import com.walkingforrochester.walkingforrochester.android.ktx.takePicture
+import com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture.TakePictureViewModel.Companion.PHOTO_HEIGHT
+import com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture.TakePictureViewModel.Companion.PHOTO_WIDTH
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -73,13 +75,12 @@ fun CaptureImage(
     val imageCaptureUseCase = remember {
         ImageCapture.Builder()
             .setCaptureMode(CAPTURE_MODE_MINIMIZE_LATENCY)
-            .setJpegQuality(75)
             .setResolutionSelector(
                 ResolutionSelector.Builder()
                     .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
                     .setResolutionStrategy(
                         ResolutionStrategy(
-                            Size(768, 1024),
+                            Size(PHOTO_WIDTH, PHOTO_HEIGHT),
                             ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
                         )
                     ).build()

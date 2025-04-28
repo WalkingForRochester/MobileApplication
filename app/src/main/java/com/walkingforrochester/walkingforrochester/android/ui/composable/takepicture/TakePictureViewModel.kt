@@ -8,12 +8,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
+import com.walkingforrochester.walkingforrochester.android.ktx.compressImage
 import com.walkingforrochester.walkingforrochester.android.repository.WalkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -36,20 +34,27 @@ class TakePictureViewModel @Inject constructor(
 
     fun confirmImage(context: Context) = viewModelScope.launch {
         val confirmFile = File(context.cacheDir, CONFIRM_FILE_NAME)
-        if (renameFile(confirmFile)) {
+        if (compressImage(confirmFile)) {
             walkRepository.updateImageUri(confirmFile.toUri())
         } else {
             walkRepository.updateImageUri(Uri.EMPTY)
         }
     }
 
-    private suspend fun renameFile(targetFile: File): Boolean = withContext(ioDispatcher) {
+    fun removeImage() {
+        walkRepository.updateImageUri(Uri.EMPTY)
+    }
+
+    private suspend fun compressImage(targetFile: File): Boolean = withContext(ioDispatcher) {
         try {
             val imageUri: Uri? = savedStateHandle[IMAGE_URI_KEY]
-            if (imageUri != null) {
+            if (imageUri != null && imageUri != Uri.EMPTY) {
                 val imageFile = imageUri.toFile()
-                imageFile.renameTo(targetFile)
-                true
+                imageFile.compressImage(
+                    targetFile = targetFile,
+                    targetWidth = PHOTO_WIDTH,
+                    targetHeight = PHOTO_HEIGHT
+                )
             } else {
                 Timber.w("Image uri is null")
                 false
@@ -60,14 +65,13 @@ class TakePictureViewModel @Inject constructor(
         }
     }
 
-    fun removeImage() {
-        walkRepository.updateImageUri(Uri.EMPTY)
-    }
-
     companion object {
         const val CAPTURE_FILE_NAME = "wfr_walk_capture.jpg"
         const val CONFIRM_FILE_NAME = "wfr_walk_confirm.jpg"
 
-        private val IMAGE_URI_KEY = "imageUri"
+        const val PHOTO_WIDTH = 768
+        const val PHOTO_HEIGHT = 1024
+
+        private const val IMAGE_URI_KEY = "imageUri"
     }
 }

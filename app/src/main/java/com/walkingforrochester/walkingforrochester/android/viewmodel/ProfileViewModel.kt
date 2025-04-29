@@ -1,13 +1,10 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.util.Patterns
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -32,11 +29,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import javax.inject.Inject
 
 
@@ -167,7 +161,7 @@ class ProfileViewModel @Inject constructor(
         with(_accountProfile.value) {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
-                type = "image/jpeg"
+                type = "image/png"
                 putExtra(
                     Intent.EXTRA_STREAM, getLogo(context)
                 )
@@ -269,29 +263,13 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun getLogo(context: Context): Uri? {
-        val drawable =
-            AppCompatResources.getDrawable(context, R.drawable.wfr_logo) as? BitmapDrawable
-        val bitmap = drawable?.bitmap ?: return null
-        return runBlocking(ioDispatcher) {
-            try {
-                val file = File(
-                    context.cacheDir,
-                    "wfr.jpeg"
-                )
-                FileOutputStream(file).use { out ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-                }
-
-                FileProvider.getUriForFile(
-                    context,
-                    context.packageName,
-                    file
-                )
-            } catch (e: IOException) {
-                Timber.e("unable to write logo file: %s", e.message)
-                null
-            }
-        }
+        val resources = context.resources
+        return Uri.Builder()
+            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+            .authority(context.packageName)
+            .appendPath(resources.getResourceTypeName(R.drawable.wfr_logo))
+            .appendPath(resources.getResourceEntryName(R.drawable.wfr_logo))
+            .build()
     }
 
     private fun recoverSavedState() {

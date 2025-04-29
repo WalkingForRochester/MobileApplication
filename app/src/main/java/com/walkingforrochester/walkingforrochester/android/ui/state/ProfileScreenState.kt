@@ -8,7 +8,6 @@ data class ProfileScreenState(
     @StringRes val phoneValidationMessageId: Int = 0,
     val localProfilePicUri: Uri? = null,
     val editProfile: Boolean = false,
-    val tooLargeImage: Boolean = false,
     val profileDataLoading: Boolean = false,
     val profileDataSaving: Boolean = false,
 )

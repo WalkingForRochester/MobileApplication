@@ -258,7 +258,6 @@ fun EditProfile(
         EditProfilePic(
             currentImageUrl = accountProfile.imageUrl,
             localImageUri = uiState.localProfilePicUri,
-            imageTooLarge = uiState.tooLargeImage,
             modifier = Modifier,
             onChoosePhoto = onChoosePhoto
         )
@@ -314,7 +313,6 @@ fun ProfilePic(
 fun EditProfilePic(
     currentImageUrl: String,
     localImageUri: Uri?,
-    imageTooLarge: Boolean,
     modifier: Modifier = Modifier,
     onChoosePhoto: (Uri?) -> Unit
 ) {
@@ -363,15 +361,6 @@ fun EditProfilePic(
                         .clip(CircleShape)
                 )
             }
-        }
-
-        if (imageTooLarge) {
-            Text(
-                text = stringResource(R.string.too_large_image),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.Center
-            )
         }
 
         WFROutlinedButton(

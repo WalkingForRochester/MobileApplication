@@ -8,6 +8,7 @@ import android.net.Uri
 import android.util.Patterns
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,7 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
 import com.walkingforrochester.walkingforrochester.android.formatDouble
 import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
+import com.walkingforrochester.walkingforrochester.android.ktx.compressImage
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
@@ -134,7 +136,7 @@ class ProfileViewModel @Inject constructor(
             }
 
             Timber.d("Updating profile")
-            networkRepository.updateProfile(_accountProfile.value)
+            networkRepository.updateProfile(profile)
             Timber.d("Refresh profile")
             refreshProfile()
 
@@ -185,18 +187,40 @@ class ProfileViewModel @Inject constructor(
     fun onChoosePhoto(
         uri: Uri?
     ) = viewModelScope.launch(context = ioDispatcher + exceptionHandler) {
-        var tooLarge = false
-        uri?.let {
-            context.contentResolver.openAssetFileDescriptor(it, "r").use { fd ->
-                fd?.let { fileDescriptor ->
-                    if (fileDescriptor.length > FILE_SIZE_LIMIT) {
-                        tooLarge = true
-                    }
+
+        val profileUri = when (uri) {
+            null -> null
+            else -> compressFile(uri)
+        }
+
+        _uiState.update { it.copy(localProfilePicUri = profileUri) }
+        updateSavedState()
+    }
+
+    private fun compressFile(uri: Uri): Uri? {
+        val choiceFile = File(context.cacheDir, CHOICE_FILE_NAME)
+        var copied = false
+        context.contentResolver.openInputStream(uri).use { ios ->
+            ios?.let {
+                choiceFile.outputStream().use { os ->
+                    ios.copyTo(os)
+                    copied = true
                 }
             }
         }
-        _uiState.update { it.copy(localProfilePicUri = uri, tooLargeImage = tooLarge) }
-        updateSavedState()
+
+        if (!copied) return null
+
+        val confirmFile = File(context.cacheDir, CONFIRM_FILE_NAME)
+
+        val compressed = choiceFile.compressImage(
+            targetFile = confirmFile,
+            targetWidth = TARGET_DIMENSION,
+            targetHeight = TARGET_DIMENSION
+        )
+
+        choiceFile.delete()
+        return if (compressed) confirmFile.toUri() else null
     }
 
     fun onLogout() = viewModelScope.launch(context = exceptionHandler) {
@@ -302,12 +326,15 @@ class ProfileViewModel @Inject constructor(
     }
 
     companion object {
-        const val FILE_SIZE_LIMIT: Long = 20 * 1024 * 1024 // 20 megabytes
+        private const val EDIT_PROFILE_KEY = "editProfile"
+        private const val EMAIL_KEY = "email"
+        private const val PHONE_KEY = "phoneNumber"
+        private const val NICKNAME_KEY = "nickName"
+        private const val PROFILE_IMAGE_KEY = "profileImage"
 
-        private val EDIT_PROFILE_KEY = "editProfile"
-        private val EMAIL_KEY = "email"
-        private val PHONE_KEY = "phoneNumber"
-        private val NICKNAME_KEY = "nickName"
-        private val PROFILE_IMAGE_KEY = "profileImage"
+        private const val CHOICE_FILE_NAME = "wfr_profile_choice.jpg"
+        private const val CONFIRM_FILE_NAME = "wfr_profile_compress.jpg"
+
+        private const val TARGET_DIMENSION = 500
     }
 }

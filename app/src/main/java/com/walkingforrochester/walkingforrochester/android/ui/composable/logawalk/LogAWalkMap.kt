@@ -13,9 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -39,7 +41,6 @@ import com.walkingforrochester.walkingforrochester.android.model.WalkData
 import com.walkingforrochester.walkingforrochester.android.model.WalkData.WalkState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.MapPathBlue
 import timber.log.Timber
-import kotlin.math.roundToInt
 
 
 @SuppressLint("MissingPermission")
@@ -123,43 +124,57 @@ fun RenderWalkDataOnMap(currentWalk: WalkData) {
         currentWalk.state == WalkState.COMPLETE
     ) {
         startingMarkerState.position = currentWalk.startPosition
+        val width = with(LocalDensity.current) { 6.dp.toPx() }
 
         Marker(
             state = startingMarkerState,
-            icon = remember(R.drawable.ic_walk) {
+            anchor = Offset(0.5f, 0.5f),
+            icon = remember(R.drawable.trip_origin) {
                 getMarkerIconFromDrawable(
                     drawable = AppCompatResources.getDrawable(
                         context,
-                        R.drawable.ic_walk
+                        R.drawable.trip_origin
                     )
                 )
-            }
+            },
+            zIndex = 10f
         )
 
         Polyline(
             points = currentWalk.path,
             color = MapPathBlue,
-            width = 20f,
+            width = width,
             startCap = RoundCap(),
-            endCap = RoundCap()
+            endCap = RoundCap(),
+
         )
     }
 
+    val finishingCapMarkerState = rememberUpdatedMarkerState()
     val finishingMarkerState = rememberUpdatedMarkerState()
 
     if (currentWalk.endPosition != LocationData.DEFAULT.latLng) {
+        finishingCapMarkerState.position = currentWalk.endPosition
         finishingMarkerState.position = currentWalk.endPosition
 
         Marker(
-            state = finishingMarkerState,
-            icon = remember(R.drawable.ic_finish) {
+            state = finishingCapMarkerState,
+            anchor = Offset(0.5f, 0.5f),
+            icon = remember(R.drawable.trip_destination_cap) {
                 getMarkerIconFromDrawable(
                     drawable = AppCompatResources.getDrawable(
                         context,
-                        R.drawable.ic_finish
+                        R.drawable.trip_destination_cap
                     )
                 )
-            }
+            },
+            zIndex = 11f
+        )
+
+        Marker(
+            state = finishingMarkerState,
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
+            zIndex = 12f
         )
     }
 }
@@ -170,13 +185,13 @@ private fun getMarkerIconFromDrawable(
 ): BitmapDescriptor {
     if (drawable == null) return BitmapDescriptorFactory.defaultMarker()
     val canvas = Canvas()
-    val width = (drawable.intrinsicWidth * 1.5).roundToInt()
-    val height = (drawable.intrinsicHeight * 1.5).roundToInt()
+    val width = drawable.intrinsicWidth//(drawable.intrinsicWidth * 1.5).roundToInt()
+    val height = drawable.intrinsicHeight//(drawable.intrinsicHeight * 1.5).roundToInt()
     val bitmap = createBitmap(width = width, height = height)
     canvas.setBitmap(bitmap)
     drawable.setBounds(0, 0, width, height)
 
-    drawable.setTint(color.toArgb())
+    //drawable.setTint(color.toArgb())
     //drawable.colorFilter = PorterDuffColorFilter(color.hashCode(), PorterDuff.Mode.MULTIPLY)
     drawable.draw(canvas)
     return BitmapDescriptorFactory.fromBitmap(bitmap)

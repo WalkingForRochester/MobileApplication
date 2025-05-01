@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -84,6 +85,7 @@ fun LoginScreen(
         }
     }
 
+    val autofillManager = LocalAutofillManager.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = LocalSnackbarHostState.current
 
@@ -93,16 +95,24 @@ fun LoginScreen(
                 when (event) {
                     LoginScreenEvent.LoginComplete -> {
                         LoginManager.getInstance().unregisterCallback(callbackManager)
+                        // Commit the autofill session, as nothing in theory should happen
+                        autofillManager?.commit()
                         onLoginComplete()
                     }
 
                     LoginScreenEvent.LoginCompleteManual -> {
                         LoginManager.getInstance().unregisterCallback(callbackManager)
+
                         PasswordCredentialUtil.savePasswordCredential(
                             context = context,
                             email = uiState.emailAddress,
                             password = uiState.password
                         )
+
+                        // Cancel autofill here as we already prompted saving the credential
+                        // and no need to do it twice
+                        autofillManager?.cancel()
+
                         onLoginComplete()
                     }
 
@@ -126,7 +136,7 @@ fun LoginScreen(
             PasswordCredentialUtil.performPasswordSignIn(
                 context = context,
                 performLogin = { newEmail, newPassword ->
-                    loginViewModel.onLogin(
+                    loginViewModel.onCredentialLogin(
                         newEmail,
                         newPassword
                     )
@@ -160,7 +170,7 @@ fun LoginScreen(
         },
         onEmailChanged = { loginViewModel.onEmailAddressValueChange(it) },
         onPasswordChanged = { loginViewModel.onPasswordValueChange(it) },
-        onLoginClicked = { loginViewModel.onLoginClicked(autofillData = it) }
+        onLoginClicked = { loginViewModel.onLoginClicked() }
     )
 }
 
@@ -175,7 +185,7 @@ fun LoginScreenContent(
     onContinueWithFacebook: () -> Unit = {},
     onEmailChanged: (String) -> Unit = {},
     onPasswordChanged: (String) -> Unit = {},
-    onLoginClicked: (Boolean) -> Unit = {}
+    onLoginClicked: () -> Unit = {}
 ) {
     // Manually add background here
     Image(
@@ -220,7 +230,9 @@ fun LoginScreenContent(
         )
         Spacer(modifier = Modifier.height(24.dp))
         WFRButton(
-            onClick = { onLoginClicked(autofillEmail && autofillPassword) },
+            onClick = {
+                onLoginClicked()
+            },
             label = R.string.sign_in,
             testTag = "login_button",
             loading = uiState.loading,

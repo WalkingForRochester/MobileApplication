@@ -86,7 +86,7 @@ object GoogleCredentialUtil {
                             GoogleIdTokenCredential.createFrom(credential.data)
                         processCredential(googleIdTokenCredential)
                     } catch (e: GoogleIdTokenParsingException) {
-                        Timber.e("Received an invalid google id token response", e)
+                        Timber.e(e, "Received an invalid google id token response")
                     }
                 } else {
                     // Catch any unrecognized credential type here.

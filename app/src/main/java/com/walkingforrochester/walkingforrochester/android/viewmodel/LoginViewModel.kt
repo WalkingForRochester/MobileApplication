@@ -64,10 +64,8 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun onLoginClicked(
-        autofillData: Boolean = true
-    ) = viewModelScope.launch(context = exceptionHandler) {
-        performLogin(manualLogin = !autofillData)
+    fun onLoginClicked() = viewModelScope.launch(context = exceptionHandler) {
+        performLogin(manualLogin = true)
     }
 
     fun continueWithGoogle(
@@ -143,7 +141,7 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(loading = false) }
     }
 
-    fun onLogin(
+    fun onCredentialLogin(
         newEmailAddress: String,
         newPassword: String
     ) = viewModelScope.launch(context = exceptionHandler) {

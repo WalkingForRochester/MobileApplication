@@ -36,7 +36,7 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import coil.compose.AsyncImage
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.ktx.backgroundInPreview
+import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @OptIn(ExperimentalMaterial3Api::class)

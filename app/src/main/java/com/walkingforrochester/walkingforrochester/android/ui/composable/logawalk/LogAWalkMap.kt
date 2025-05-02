@@ -35,7 +35,7 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.ktx.backgroundInPreview
+import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.model.LocationData
 import com.walkingforrochester.walkingforrochester.android.model.WalkData
 import com.walkingforrochester.walkingforrochester.android.model.WalkData.WalkState
@@ -180,19 +180,16 @@ fun RenderWalkDataOnMap(currentWalk: WalkData) {
 }
 
 private fun getMarkerIconFromDrawable(
-    drawable: Drawable?,
-    color: Color = Color.Black
+    drawable: Drawable?
 ): BitmapDescriptor {
     if (drawable == null) return BitmapDescriptorFactory.defaultMarker()
     val canvas = Canvas()
-    val width = drawable.intrinsicWidth//(drawable.intrinsicWidth * 1.5).roundToInt()
-    val height = drawable.intrinsicHeight//(drawable.intrinsicHeight * 1.5).roundToInt()
+    val width = drawable.intrinsicWidth
+    val height = drawable.intrinsicHeight
     val bitmap = createBitmap(width = width, height = height)
     canvas.setBitmap(bitmap)
     drawable.setBounds(0, 0, width, height)
 
-    //drawable.setTint(color.toArgb())
-    //drawable.colorFilter = PorterDuffColorFilter(color.hashCode(), PorterDuff.Mode.MULTIPLY)
     drawable.draw(canvas)
     return BitmapDescriptorFactory.fromBitmap(bitmap)
 }

@@ -82,7 +82,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
 import com.walkingforrochester.walkingforrochester.android.formatMetersToMiles
-import com.walkingforrochester.walkingforrochester.android.ktx.backgroundInPreview
+import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.model.WalkData
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.HorizontalNumberPicker
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState

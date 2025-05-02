@@ -1,4 +1,4 @@
-package com.walkingforrochester.walkingforrochester.android.ktx
+package com.walkingforrochester.walkingforrochester.android.ui.modifier
 
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 @Composable
 fun Modifier.backgroundInPreview(color: Color): Modifier {
     return if (LocalInspectionMode.current) {
-        this then Modifier.background(color)
+        this then Modifier.Companion.background(color)
     } else {
         this
     }

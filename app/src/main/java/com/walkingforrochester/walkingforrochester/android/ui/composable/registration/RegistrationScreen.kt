@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +55,7 @@ fun RegistrationScreen(
     val context = LocalContext.current
     val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
     val registrationProfile by registrationViewModel.registrationProfile.collectAsStateWithLifecycle()
+    val autofillManager = LocalAutofillManager.current
 
     LaunchedEffect(lifecycleOwner, registrationViewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -65,6 +67,9 @@ fun RegistrationScreen(
                             email = registrationProfile.email,
                             password = uiState.password
                         )
+
+                        // Cancel autofill as we are saving via credential manager
+                        autofillManager?.cancel()
                         onRegistrationComplete()
                     }
 

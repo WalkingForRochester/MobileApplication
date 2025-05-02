@@ -13,9 +13,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,11 +29,9 @@ import com.walkingforrochester.walkingforrochester.android.ui.PhoneNumberVisualT
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRPasswordField
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRTextField
-import com.walkingforrochester.walkingforrochester.android.ui.modifier.autofill
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RegistrationForm(
     uiState: RegistrationScreenState,
@@ -57,10 +57,7 @@ fun RegistrationForm(
             labelRes = R.string.first_name,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .autofill(
-                    autofillTypes = listOf(AutofillType.PersonFirstName),
-                    onFill = { onProfileChange(registrationProfile.copy(firstName = it)) }
-                ),
+                .semantics { contentType = ContentType.PersonFirstName },
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
                 keyboardType = KeyboardType.Text,
@@ -75,10 +72,7 @@ fun RegistrationForm(
             labelRes = R.string.last_name,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .autofill(
-                    autofillTypes = listOf(AutofillType.PersonLastName),
-                    onFill = { onProfileChange(registrationProfile.copy(lastName = it)) }
-                ),
+                .semantics { contentType = ContentType.PersonLastName },
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
                 keyboardType = KeyboardType.Text,
@@ -93,10 +87,7 @@ fun RegistrationForm(
             labelRes = R.string.email_address,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .autofill(
-                    autofillTypes = listOf(AutofillType.EmailAddress),
-                    onFill = { onProfileChange(registrationProfile.copy(email = it)) }
-                ),
+                .semantics { contentType = ContentType.EmailAddress },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -110,10 +101,7 @@ fun RegistrationForm(
             labelRes = R.string.phone_number,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .autofill(
-                    autofillTypes = listOf(AutofillType.PhoneNumber),
-                    onFill = { onProfileChange(registrationProfile.copy(phoneNumber = it)) }
-                ),
+                .semantics { contentType = ContentType.PhoneNumber },
             visualTransformation = PhoneNumberVisualTransformation(LocalContext.current),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Phone,
@@ -140,10 +128,7 @@ fun RegistrationForm(
             labelRes = R.string.password,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .autofill(
-                    autofillTypes = listOf(AutofillType.NewPassword),
-                    onFill = onPasswordChange
-                ),
+                .semantics { contentType = ContentType.NewPassword },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Next
@@ -157,10 +142,7 @@ fun RegistrationForm(
             labelRes = R.string.confirm_password,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .autofill(
-                    autofillTypes = listOf(AutofillType.NewPassword),
-                    onFill = onPasswordConfirmationChange
-                ),
+                .semantics { contentType = ContentType.NewPassword },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done

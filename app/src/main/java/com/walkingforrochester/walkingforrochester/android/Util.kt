@@ -42,7 +42,7 @@ fun showNotification(
         .setBigContentTitle(title)
 
     val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_notification)
         .setStyle(bigTextStyle)
         .setContentTitle(title)
         .setContentText(message)

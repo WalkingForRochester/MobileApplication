@@ -116,7 +116,7 @@ class ForegroundLocationService : LifecycleService() {
             .setContentTitle(titleText)
             .setContentText(mainNotificationText)
             .setContentIntent(activityPendingIntent)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)

@@ -24,7 +24,7 @@ fun File.compressImage(
         BitmapFactory.decodeStream(input, null, bitmapOptions)
     }
 
-    Timber.d("JSR old dimensions %dw x %dh", bitmapOptions.outWidth, bitmapOptions.outHeight)
+    //Timber.d("old dimensions %dw x %dh", bitmapOptions.outWidth, bitmapOptions.outHeight)
 
     if (bitmapOptions.outWidth == 0 || bitmapOptions.outHeight == 0) {
         Timber.w("Failed to decode bitmap %s", this.absolutePath)
@@ -49,13 +49,6 @@ fun File.compressImage(
     bitmapOptions.inTargetDensity =
         bitmapOptions.inSampleSize * if (landscapePhoto) targetWidth else targetHeight
 
-    Timber.d(
-        "JSR ss %d, id: %d, td %d",
-        bitmapOptions.inSampleSize,
-        bitmapOptions.inDensity,
-        bitmapOptions.inTargetDensity
-    )
-
     var decodedBitmap: Bitmap? = this.inputStream().use { input ->
         BitmapFactory.decodeStream(input, null, bitmapOptions)
     }
@@ -69,7 +62,7 @@ fun File.compressImage(
         decodedBitmap.compress(Bitmap.CompressFormat.JPEG, targetJPegQuality, os)
     }
 
-    Timber.d("JSR new dimensions %dw x %dh", decodedBitmap.width, decodedBitmap.height)
+    //Timber.d("New dimensions %dw x %dh", decodedBitmap.width, decodedBitmap.height)
 
     val exifTarget = readExifData(targetFile)
     exifTarget?.apply {

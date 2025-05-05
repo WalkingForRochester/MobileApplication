@@ -54,7 +54,6 @@ fun ShowLocationRational(
         onRequestPermissions = onRequestPermissions,
         onOpenSettings = onOpenSettings,
         onDismissRequest = {
-            Timber.d("JSR dismiss.... %s", activity?.isTaskRoot)
             if (activity is ComponentActivity) {
                 activity.onBackPressedDispatcher.onBackPressed()
             } else {

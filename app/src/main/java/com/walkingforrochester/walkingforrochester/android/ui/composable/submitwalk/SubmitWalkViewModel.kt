@@ -13,7 +13,6 @@ import com.walkingforrochester.walkingforrochester.android.repository.WalkReposi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
@@ -85,7 +84,7 @@ class SubmitWalkViewModel @Inject constructor(
     }
 
     private suspend fun submitWalkToServer() = withContext(defaultDispatcher) {
-       /* with(walkRepository.walkData.value) {
+        with(walkRepository.walkData.value) {
             val file = uploadImage(imageUri)
             if (file.isNotBlank()) {
                 networkRepository.submitWalk(
@@ -99,11 +98,7 @@ class SubmitWalkViewModel @Inject constructor(
                 walkRepository.clearWalk()
                 _walkEvent.emit(SubmitWalkEvent.WalkSubmitted)
             }
-        }*/
-        // TODO temp simulation of submission
-        delay(2000)
-        walkRepository.clearWalk()
-        _walkEvent.emit(SubmitWalkEvent.WalkSubmitted)
+        }
     }
 
     private suspend fun uploadImage(uri: Uri?): String {

@@ -21,14 +21,14 @@ object PasswordCredentialUtil {
     }
 
     suspend fun performPasswordSignIn(
-        context: Context,
+        activityContext: Context,
         performLogin: (String, String) -> Unit
     ) {
-        val credentialManager = CredentialManager.create(context.applicationContext)
+        val credentialManager = CredentialManager.create(activityContext.applicationContext)
         try {
             val result = credentialManager.getCredential(
                 request = buildPasswordCredentialRequest(),
-                context = context,
+                context = activityContext,
             )
             handlePasswordResponse(result, performLogin)
         } catch (e: GetCredentialException) {
@@ -57,14 +57,14 @@ object PasswordCredentialUtil {
     }
 
     suspend fun savePasswordCredential(
-        context: Context,
+        activityContext: Context,
         email: String,
         password: String
     ) {
-        val credentialManager = CredentialManager.create(context)
+        val credentialManager = CredentialManager.create(activityContext.applicationContext)
         try {
             credentialManager.createCredential(
-                context = context,
+                context = activityContext,
                 request = CreatePasswordRequest(
                     id = email,
                     password = password

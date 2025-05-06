@@ -1,6 +1,7 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.forgotpassword
 
 import android.content.res.Configuration
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -66,6 +67,7 @@ fun ForgotPasswordScreen(
     val snackbarHostState = LocalSnackbarHostState.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val autofillManager = LocalAutofillManager.current
+    val activityContext = LocalActivity.current ?: context
 
     LaunchedEffect(lifecycleOwner, context) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -73,7 +75,7 @@ fun ForgotPasswordScreen(
                 when (event) {
                     ForgotPasswordScreenEvent.PasswordReset -> {
                         PasswordCredentialUtil.savePasswordCredential(
-                            context = context,
+                            activityContext = activityContext,
                             email = uiState.email,
                             password = uiState.password
                         )

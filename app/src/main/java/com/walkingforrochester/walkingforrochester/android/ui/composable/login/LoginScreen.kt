@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.login
 
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -88,6 +89,7 @@ fun LoginScreen(
     val autofillManager = LocalAutofillManager.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = LocalSnackbarHostState.current
+    val activityContext = LocalActivity.current ?: context
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -104,7 +106,7 @@ fun LoginScreen(
                         LoginManager.getInstance().unregisterCallback(callbackManager)
 
                         PasswordCredentialUtil.savePasswordCredential(
-                            context = context,
+                            activityContext = activityContext,
                             email = uiState.emailAddress,
                             password = uiState.password
                         )
@@ -129,12 +131,12 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(context, lifecycleOwner) {
+    LaunchedEffect(activityContext, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
             // small delay before showing password manager
             delay(250L)
             PasswordCredentialUtil.performPasswordSignIn(
-                context = context,
+                activityContext = activityContext,
                 performLogin = { newEmail, newPassword ->
                     loginViewModel.onCredentialLogin(
                         newEmail,
@@ -156,8 +158,8 @@ fun LoginScreen(
         onContinueWithGoogle = {
             coroutineScope.launch {
                 GoogleCredentialUtil.performSignIn(
-                    context,
-                    loginViewModel::continueWithGoogle
+                    activityContext = activityContext,
+                    processCredential = loginViewModel::continueWithGoogle
                 )
             }
         },

@@ -1,6 +1,7 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.registration
 
 import android.content.res.Configuration
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -56,6 +57,7 @@ fun RegistrationScreen(
     val uiState by registrationViewModel.uiState.collectAsStateWithLifecycle()
     val registrationProfile by registrationViewModel.registrationProfile.collectAsStateWithLifecycle()
     val autofillManager = LocalAutofillManager.current
+    val activityContext = LocalActivity.current ?: context
 
     LaunchedEffect(lifecycleOwner, registrationViewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -63,7 +65,7 @@ fun RegistrationScreen(
                 when (event) {
                     RegistrationScreenEvent.RegistrationComplete -> {
                         PasswordCredentialUtil.savePasswordCredential(
-                            context = context,
+                            activityContext = activityContext,
                             email = registrationProfile.email,
                             password = uiState.password
                         )

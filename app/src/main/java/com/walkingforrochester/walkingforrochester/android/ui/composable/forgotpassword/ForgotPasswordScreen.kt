@@ -1,6 +1,7 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.forgotpassword
 
 import android.content.res.Configuration
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -25,11 +26,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,7 +48,6 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRPasswordField
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRTextField
-import com.walkingforrochester.walkingforrochester.android.ui.modifier.autofill
 import com.walkingforrochester.walkingforrochester.android.ui.state.ForgotPasswordScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ForgotPasswordScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
@@ -64,6 +66,8 @@ fun ForgotPasswordScreen(
 
     val snackbarHostState = LocalSnackbarHostState.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val autofillManager = LocalAutofillManager.current
+    val activityContext = LocalActivity.current ?: context
 
     LaunchedEffect(lifecycleOwner, context) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -71,7 +75,7 @@ fun ForgotPasswordScreen(
                 when (event) {
                     ForgotPasswordScreenEvent.PasswordReset -> {
                         PasswordCredentialUtil.savePasswordCredential(
-                            context = context,
+                            activityContext = activityContext,
                             email = uiState.email,
                             password = uiState.password
                         )
@@ -81,6 +85,10 @@ fun ForgotPasswordScreen(
                                 message = context.getString(R.string.password_reset_done)
                             )
                         }
+
+                        // Cancel autofill as credential manager used to save passwords
+                        // and don't want user to be prompted twice
+                        autofillManager?.cancel()
                         onPasswordResetComplete()
                     }
 
@@ -154,6 +162,7 @@ private fun ColumnScope.RequestCode(
         value = uiState.email,
         onValueChange = onEmailChange,
         labelRes = R.string.email_address,
+        modifier = Modifier.semantics { contentType = ContentType.EmailAddress },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email, imeAction = ImeAction.Done
         ),
@@ -275,7 +284,6 @@ private fun VerifyCodePreview() {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ColumnScope.ChangePassword(
     uiState: ForgotPasswordScreenState,
@@ -293,10 +301,7 @@ private fun ColumnScope.ChangePassword(
         value = uiState.password,
         onValueChange = onPasswordChange,
         labelRes = R.string.password,
-        modifier = Modifier.autofill(
-            autofillTypes = listOf(AutofillType.NewPassword),
-            onFill = onPasswordChange
-        ),
+        modifier = Modifier.semantics { contentType = ContentType.NewPassword },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password, imeAction = ImeAction.Next
         ),
@@ -307,10 +312,7 @@ private fun ColumnScope.ChangePassword(
         value = uiState.confirmPassword,
         onValueChange = onConfirmPasswordChange,
         labelRes = R.string.confirm_password,
-        modifier = Modifier.autofill(
-            autofillTypes = listOf(AutofillType.NewPassword),
-            onFill = onPasswordChange
-        ),
+        modifier = Modifier.semantics { contentType = ContentType.NewPassword },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
         ),

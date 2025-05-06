@@ -1,17 +1,12 @@
 package com.walkingforrochester.walkingforrochester.android.di
 
-import android.content.Context
-import android.content.SharedPreferences
 import com.squareup.moshi.Moshi
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
-import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.network.BASE_URL
 import com.walkingforrochester.walkingforrochester.android.network.RestApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -30,24 +25,12 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
-        context.getSharedPreferences(
-            context.getString(R.string.wfr_preferences),
-            Context.MODE_PRIVATE
-        )
-
-    @Provides
-    fun provideBaseUrl() = BASE_URL
-
-    @Singleton
-    @Provides
     fun provideOkHttpClient(): OkHttpClient {
         val securityInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()
                 .addHeader("WFR-Auth-Token", BuildConfig.wfrAuthToken).build()
             chain.proceed(request)
         }
-
 
         return OkHttpClient.Builder().apply {
             addInterceptor(securityInterceptor)
@@ -69,30 +52,40 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideMoshi(): Moshi = Moshi.Builder()
-        .add(LocalDateAdapter())
-        .build()
-
-    @Singleton
-    @Provides
-    fun provideRetrofit(moshi: Moshi, okHttpClient: OkHttpClient, BASE_URL: String): Retrofit {
-        return Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder()
+            .add(LocalDateAdapter())
             .build()
     }
 
     @Singleton
     @Provides
-    fun provideApiService(retrofit: Retrofit): RestApiService =
-        retrofit.create(RestApiService::class.java)
+    fun provideRestApiService(moshi: Moshi, okHttpClient: OkHttpClient): RestApiService {
+        return Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .baseUrl(RestApiService.BASE_URL)
+            .client(okHttpClient)
+            .build()
+            .create(RestApiService::class.java)
+    }
 
     @DefaultDispatcher
     @Provides
     fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+
+    @IODispatcher
+    @Provides
+    fun provideIODispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    companion object {
+        const val PREFERENCE_FILE = "walking_for_rochester_preferences"
+    }
 }
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class DefaultDispatcher
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class IODispatcher

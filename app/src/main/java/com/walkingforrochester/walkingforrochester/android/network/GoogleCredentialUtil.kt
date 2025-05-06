@@ -45,14 +45,15 @@ object GoogleCredentialUtil {
     }
 
     suspend fun performSignIn(
-        context: Context,
+        activityContext: Context,
         processCredential: (GoogleIdTokenCredential) -> Unit
     ) {
-        val credentialManager = CredentialManager.create(context)
+        // Avoid leaks by using application context here
+        val credentialManager = CredentialManager.create(activityContext.applicationContext)
         try {
             val result = credentialManager.getCredential(
                 request = buildGoogleCredentialRequest(),
-                context = context,
+                context = activityContext,
             )
             handleGoogleSignInResponse(result, processCredential)
         } catch (e: GetCredentialException) {
@@ -61,7 +62,7 @@ object GoogleCredentialUtil {
     }
 
     suspend fun performSignOut(context: Context) {
-        val credentialManager = CredentialManager.create(context)
+        val credentialManager = CredentialManager.create(context.applicationContext)
 
         try {
             val request = ClearCredentialStateRequest()
@@ -86,7 +87,7 @@ object GoogleCredentialUtil {
                             GoogleIdTokenCredential.createFrom(credential.data)
                         processCredential(googleIdTokenCredential)
                     } catch (e: GoogleIdTokenParsingException) {
-                        Timber.e("Received an invalid google id token response", e)
+                        Timber.e(e, "Received an invalid google id token response")
                     }
                 } else {
                     // Catch any unrecognized credential type here.

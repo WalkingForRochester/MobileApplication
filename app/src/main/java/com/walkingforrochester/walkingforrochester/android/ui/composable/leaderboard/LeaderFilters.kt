@@ -15,17 +15,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.walkingforrochester.walkingforrochester.android.ui.state.LeaderboardFiltersState
-import com.walkingforrochester.walkingforrochester.android.ui.state.PeriodFilter
-import com.walkingforrochester.walkingforrochester.android.ui.state.TypeFilter
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardPeriod
+import com.walkingforrochester.walkingforrochester.android.model.LeaderboardType
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @Composable
 fun LeaderFilters(
     modifier: Modifier = Modifier,
-    filterState: LeaderboardFiltersState = LeaderboardFiltersState(),
-    onTypeFilterChange: (TypeFilter) -> Unit = {},
-    onPeriodFilterChange: (PeriodFilter) -> Unit = {}
+    currentType: LeaderboardType,
+    currentPeriod: LeaderboardPeriod,
+    onTypeFilterChange: (LeaderboardType) -> Unit = {},
+    onPeriodFilterChange: (LeaderboardPeriod) -> Unit = {}
 ) {
     Column(
         modifier = modifier.padding(horizontal = 16.dp),
@@ -45,13 +45,13 @@ fun LeaderFilters(
         )
 
         SingleChoiceSegmentedButtonRow {
-            TypeFilter.entries.forEach { entry ->
+            LeaderboardType.entries.forEach { entry ->
                 SegmentedButton(
-                    selected = filterState.type == entry,
+                    selected = currentType == entry,
                     onClick = { onTypeFilterChange(entry) },
                     shape = SegmentedButtonDefaults.itemShape(
                         index = entry.ordinal,
-                        count = TypeFilter.entries.size
+                        count = LeaderboardType.entries.size
                     ),
                     colors = colors
                 ) {
@@ -61,13 +61,13 @@ fun LeaderFilters(
         }
 
         SingleChoiceSegmentedButtonRow {
-            PeriodFilter.entries.forEach { entry ->
+            LeaderboardPeriod.entries.forEach { entry ->
                 SegmentedButton(
-                    selected = filterState.period == entry,
+                    selected = currentPeriod == entry,
                     onClick = { onPeriodFilterChange(entry) },
                     shape = SegmentedButtonDefaults.itemShape(
                         index = entry.ordinal,
-                        count = PeriodFilter.entries.size
+                        count = LeaderboardPeriod.entries.size
                     ),
                     colors = colors
                 ) {
@@ -84,7 +84,10 @@ fun LeaderFilters(
 fun PreviewLeaderFilters() {
     WalkingForRochesterTheme {
         Surface {
-            LeaderFilters()
+            LeaderFilters(
+                currentType = LeaderboardType.Collection,
+                currentPeriod = LeaderboardPeriod.Week
+            )
         }
     }
 }

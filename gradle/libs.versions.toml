@@ -1,31 +1,31 @@
 [versions]
 
-androidx-activity = "1.9.2"
-androidx-annotation = "1.8.2"
+androidx-activity = "1.10.1"
+androidx-annotation = "1.9.1"
 androidx-browser = "1.8.0"
-androidx-camera = "1.3.4"
-androidx-core = "1.13.1"
+androidx-camera = "1.4.2"
+androidx-core = "1.16.0"
 androidx-core-splashscreen = "1.0.1"
-androidx-compose-bom = "2024.09.02"
-androidx-credentials = "1.2.2"
+androidx-compose-bom = "2025.04.01"
+androidx-credentials = "1.5.0"
+androidx-datastore = "1.1.4"
+androidx-exifinterface = "1.4.1"
 androidx-hilt-navigation-compose = "1.2.0"
-androidx-lifecycle = "2.8.6"
+androidx-lifecycle = "2.8.7"
 androidx-material = "1.12.0"
-androidx-navigation = "2.8.1"
+androidx-navigation = "2.8.9"
 androidx-test-espresso = "3.6.1"
 androidx-test-junit = "1.2.1"
 androidx-test-uiautomator = "2.3.0"
+androidx-webkit = "1.13.0"
 
-accompanist = "0.34.0"
+accompanist = "0.37.0"
 junit = "4.13.2"
 
-# hilt
-hilt = "2.51.1"
-
 # kotlin
-kotlin = "2.0.20"
-kotlinx-coroutines-bom = "1.9.0"
-ksp = "2.0.20-1.0.24"
+kotlin = "2.1.20"
+kotlinx-coroutines-bom = "1.10.2"
+ksp = "2.1.20-1.0.32"
 
 # square
 leakcanary = "2.14"
@@ -35,24 +35,23 @@ okhttp-bom = "4.12.0"
 retrofit-bom = "2.11.0"
 
 # google services
-play-services-auth = "21.2.0"
 play-services-location = "21.3.0"
-play-services-maps = "19.0.0"
-google-android-maps-compose = "6.1.0"
-google-android-maps-utils = "3.5.2"
+play-services-maps = "19.2.0"
+google-android-maps-compose = "6.5.3"
+google-android-maps-utils = "3.13.0"
 google-libphonenumber = "8.13.41"
 google-googleid = "1.1.1"
 
 # dagger/hilt
-dagger-hilt = "2.51.1"
+dagger-hilt = "2.56.2"
 
-coil-bom = "2.6.0"
+coil-bom = "2.7.0"
 eventbus = "3.3.1"
-facebook = "17.0.0"
+facebook = "18.0.3"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "8.5.2"
+androidGradlePlugin = "8.9.2"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]
@@ -64,13 +63,18 @@ androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", versi
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidx-camera" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
+androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "androidx-exifinterface" }
+
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 androidx-compose-material3-window-size = { module = "androidx.compose.material3:material3-window-size-class" }
+
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
@@ -82,9 +86,10 @@ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-mani
 
 androidx-browser = { module = "androidx.browser:browser", version.ref = "androidx-browser" }
 
-#noinspection CredentialDependency
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
+
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidx-hilt-navigation-compose" }
 androidx-material = { module = "com.google.android.material:material", version.ref = "androidx-material" }
@@ -95,8 +100,9 @@ androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core",
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-junit" }
 androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidx-test-uiautomator" }
 
+androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidx-webkit" }
+
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
-accompanist-webview = { module = "com.google.accompanist:accompanist-webview", version.ref = "accompanist" }
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger-hilt" }
 dagger-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "dagger-hilt" }
 dagger-hilt-compilier = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger-hilt" }
@@ -120,12 +126,13 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp-bom" }
 okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor" }
+okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver" }
+okhttp-tls = { module = "com.squareup.okhttp3:okhttp-tls" }
 retrofit-bom = { module = "com.squareup.retrofit2:retrofit-bom", version.ref = "retrofit-bom" }
 retrofit = { module = "com.squareup.retrofit2:retrofit" }
 retrofit-converter-moshi = { module = "com.squareup.retrofit2:converter-moshi" }
 
 # Google Services
-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
 google-android-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "google-android-maps-compose" }
@@ -150,6 +157,6 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger-hilt" }
 
 maps-secrets-plugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "mapsSecretsPlugin" }

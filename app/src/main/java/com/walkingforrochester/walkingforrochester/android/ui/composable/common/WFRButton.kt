@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
@@ -38,25 +38,22 @@ fun WFRButton(
     @StringRes label: Int,
     modifier: Modifier = Modifier,
     testTag: String = "",
-    buttonColor: Color = MaterialTheme.colorScheme.inverseSurface,
-    labelColor: Color = MaterialTheme.colorScheme.inverseOnSurface,
     enabled: Boolean = true,
-    loading: Boolean = false
+    loading: Boolean = false,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding
 ) {
     Button(
         onClick = { if (!loading) onClick() },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = buttonColor,
-            contentColor = labelColor
-        ),
-        enabled = enabled,
         modifier = modifier.semantics {
             if (testTag.isNotBlank()) {
                 testTagsAsResourceId = true
                 this.testTag = testTag
             }
         },
-        contentPadding = WFRButtonDefaults.ContentPadding
+        enabled = enabled,
+        colors = colors,
+        contentPadding = contentPadding
 
     ) {
         if (loading) {
@@ -85,19 +82,17 @@ fun WFROutlinedButton(
     onClick: () -> Unit,
     @StringRes label: Int,
     modifier: Modifier = Modifier,
-    labelColor: Color = MaterialTheme.colorScheme.onSurface,
     enabled: Boolean = true,
-    loading: Boolean = false
+    loading: Boolean = false,
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding
 ) {
     OutlinedButton(
         onClick = { if (!loading) onClick() },
-        colors = ButtonDefaults.outlinedButtonColors(
-            //containerColor = buttonColor,
-            contentColor = labelColor
-        ),
         enabled = enabled,
         modifier = modifier,
-        contentPadding = WFRButtonDefaults.ContentPadding
+        colors = colors,
+        contentPadding = contentPadding
 
     ) {
         if (loading) {
@@ -122,15 +117,13 @@ fun WFROutlinedButton(
 }
 
 object WFRButtonDefaults {
-    val ContentPadding = PaddingValues(
+    val wideContentPadding = PaddingValues(
         start = ButtonDefaults.ContentPadding.calculateStartPadding(LayoutDirection.Ltr) + 12.dp,
-        top = ButtonDefaults.ContentPadding.calculateTopPadding() + 4.dp,
         end = ButtonDefaults.ContentPadding.calculateEndPadding(LayoutDirection.Ltr) + 12.dp,
-        bottom = ButtonDefaults.ContentPadding.calculateBottomPadding() + 4.dp
     )
 }
 
-@Preview
+@PreviewDynamicColors
 @Composable
 fun WFRButtonPreview() {
     WalkingForRochesterTheme {
@@ -142,7 +135,7 @@ fun WFRButtonPreview() {
                 contentAlignment = Alignment.Center
             ) {
                 WFRButton(
-                    onClick = { /*TODO*/ },
+                    onClick = { },
                     label = R.string.sign_in,
                     loading = false
                 )
@@ -151,7 +144,7 @@ fun WFRButtonPreview() {
     }
 }
 
-@Preview
+@PreviewDynamicColors
 @Composable
 fun WFROutlinedButtonPreview() {
     WalkingForRochesterTheme {

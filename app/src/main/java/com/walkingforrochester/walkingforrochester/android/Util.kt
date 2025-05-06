@@ -1,27 +1,32 @@
 package com.walkingforrochester.walkingforrochester.android
 
-import android.annotation.SuppressLint
-import android.app.Activity
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
-import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.icu.text.NumberFormat
+import androidx.annotation.StringRes
+import androidx.compose.ui.text.intl.Locale
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import com.walkingforrochester.walkingforrochester.android.service.ForegroundLocationService.Companion.NOTIFICATION_CHANNEL_ID
 import com.walkingforrochester.walkingforrochester.android.service.ForegroundLocationService.Companion.NOTIFICATION_ID
+import timber.log.Timber
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
-@SuppressLint("MissingPermission")
-fun showNotification(context: Context, text: String) {
+fun showNotification(
+    context: Context,
+    @StringRes messageResId: Int
+) {
     val launchActivityIntent = Intent(context, MainActivity::class.java)
     val activityPendingIntent = PendingIntent.getActivity(
         context,
@@ -29,63 +34,67 @@ fun showNotification(context: Context, text: String) {
         launchActivityIntent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
+    val title = context.getString(R.string.app_name)
+    val message = context.getString(messageResId)
+
+    val bigTextStyle = NotificationCompat.BigTextStyle()
+        .bigText(message)
+        .setBigContentTitle(title)
+
     val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-        .setSmallIcon(R.mipmap.ic_launcher)
-        .setContentTitle(context.getString(R.string.app_name))
-        .setContentText(text)
+        .setSmallIcon(R.drawable.ic_notification)
+        .setStyle(bigTextStyle)
+        .setContentTitle(title)
+        .setContentText(message)
         .setContentIntent(activityPendingIntent)
         .setDefaults(NotificationCompat.DEFAULT_ALL)
         .setAutoCancel(true)
 
-    with(NotificationManagerCompat.from(context)) {
-        notify(NOTIFICATION_ID, builder.build())
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+        == PackageManager.PERMISSION_GRANTED
+    ) {
+        with(NotificationManagerCompat.from(context)) {
+            notify(NOTIFICATION_ID, builder.build())
+        }
+    } else {
+        Timber.d("Skipping notification as permission not granted")
     }
 }
 
-fun getAccountId(context: Context): Long =
-    getPreference(context, context.getString(R.string.wfr_account_id), 0L) as Long
+fun Double.metersToMiles(): Double = this / 1609.344
 
-fun getSharedPreferences(context: Context): SharedPreferences = context.getSharedPreferences(
-    context.getString(R.string.wfr_preferences),
-    Context.MODE_PRIVATE
-)
+private var LAST_LOCALE = Locale.current
+private var NUMBER_FORMAT = buildNumberFormat(LAST_LOCALE)
 
-fun savePreference(context: Context, key: String, value: Any) =
-    with(getSharedPreferences(context).edit()) {
-        when (value) {
-            is Boolean -> putBoolean(key, value)
-            is Int -> putInt(key, value)
-            is Long -> putLong(key, value)
-            is Float -> putFloat(key, value)
-            is String -> putString(key, value)
-            else -> error("Cannot save preference of type ${value.javaClass}, try using SharedPreferences SDK methods")
-        }
-        apply()
+private fun buildNumberFormat(locale: Locale): NumberFormat {
+    return NumberFormat.getNumberInstance(locale.platformLocale).apply {
+        minimumFractionDigits = 2
+        maximumFractionDigits = 2
     }
-
-fun getPreference(context: Context, key: String, defaultValue: Any): Any? =
-    with(getSharedPreferences(context)) {
-        when (defaultValue) {
-            is Boolean -> getBoolean(key, defaultValue)
-            is Int -> getInt(key, defaultValue)
-            is Long -> getLong(key, defaultValue)
-            is Float -> getFloat(key, defaultValue)
-            is String -> getString(key, defaultValue)
-            else -> error("Cannot get preference of type ${defaultValue.javaClass}, try using SharedPreferences SDK methods")
-        }
-    }
-
-fun removePreference(context: Context, key: String) = with(getSharedPreferences(context).edit()) {
-    remove(key).apply()
 }
 
-fun roundDouble(d: Double?): Double = ((d ?: 0.0) * 100.0).roundToInt() / 100.0
+fun Double.formatDouble(locale: Locale = Locale.current): String {
+    if (LAST_LOCALE != locale) {
+        LAST_LOCALE = locale
+        NUMBER_FORMAT = buildNumberFormat(LAST_LOCALE)
+    }
+    return NUMBER_FORMAT.format(this)
+}
 
-fun metersToMiles(d: Double?): Double = (d ?: 0.0) * 0.000621371192
+fun Double.formatMetersToMiles(locale: Locale = Locale.current): String {
+    return "${this.metersToMiles().formatDouble(locale)} mi"
+}
 
-tailrec fun Context.activity(): Activity? = when (this) {
-    is Activity -> this
-    else -> (this as? ContextWrapper)?.baseContext?.activity()
+private const val twoDigit = "%02d"
+fun Long.formatElapsedMilli(): String {
+    return this.milliseconds.toComponents { hours, minutes, seconds, nanoseconds ->
+        val minSec = "${twoDigit.format(minutes)}:${twoDigit.format(seconds)}"
+        if (hours > 0) {
+            "$hours:$minSec"
+        } else {
+            minSec
+        }
+    }
 }
 
 fun md5(input: String): String {
@@ -104,7 +113,7 @@ class LocalDateAdapter {
         formatters.forEach { formatter ->
             try {
                 return LocalDate.parse(value, formatter)
-            } catch (dtpe: DateTimeParseException) {
+            } catch (_: DateTimeParseException) {
                 //
             }
         }

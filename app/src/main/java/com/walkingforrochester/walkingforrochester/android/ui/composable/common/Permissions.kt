@@ -1,150 +1,276 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
-import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.MultiplePermissionsState
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.savePreference
+import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import timber.log.Timber
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun RequestPermissions(
-    permissionState: MultiplePermissionsState,
-    @StringRes askedOncePrefKey: Int,
-    @StringRes dontAskAgainPrefKey: Int,
-    rationaleContent: @Composable () -> Unit,
-    askManualGrantContent: @Composable () -> Unit
+fun ShowLocationRational(
+    locationPermissionState: MultiplePermissionsState,
+    rationalShown: Boolean,
+    modifier: Modifier = Modifier,
+    onRequestPermissions: () -> Unit = {},
+    onDismissRequest: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val askedOnce by booleanPreferenceState(
-        key = stringResource(askedOncePrefKey),
-        defaultValue = false
-    )
-    val dontAskAgain by booleanPreferenceState(
-        key = stringResource(dontAskAgainPrefKey),
-        defaultValue = false
-    )
+    val activity = LocalActivity.current
 
-    LaunchedEffect(Unit) {
-        if (!askedOnce) {
-            Timber.d("requesting permissions for the first time")
-            permissionState.launchMultiplePermissionRequest()
+    DisplayRationalDialog(
+        title = stringResource(R.string.location_title),
+        rational = stringResource(R.string.location_permission_rationale),
+        rationalShown = rationalShown,
+        launchPermissionRequest = { locationPermissionState.launchMultiplePermissionRequest() },
+        onRequestPermissions = onRequestPermissions,
+        onOpenSettings = onOpenSettings,
+        onDismissRequest = {
+            if (activity is ComponentActivity) {
+                activity.onBackPressedDispatcher.onBackPressed()
+            } else {
+                activity?.moveTaskToBack(false)
+            }
+            onDismissRequest()
+        },
+        dismissButtonLabel = stringResource(R.string.close_app_label),
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun ShowNotificationRational(
+    notificationPermissionState: PermissionState,
+    rationalShown: Boolean,
+    modifier: Modifier = Modifier,
+    onRequestPermissions: () -> Unit = {},
+    onDismissRequest: () -> Unit = {}
+) {
+    // If rational shown, proceed as any notifications are not shown to the user,
+    // but doesn't impact the ability to launch the foreground service.
+    if (rationalShown) {
+        onDismissRequest()
+    } else {
+        DisplayRationalDialog(
+            title = stringResource(R.string.notification_permission_title),
+            rational = stringResource(R.string.notification_permission_rationale),
+            rationalShown = false,
+            launchPermissionRequest = { notificationPermissionState.launchPermissionRequest() },
+            onOpenSettings = onDismissRequest,
+            onDismissRequest = onDismissRequest,
+            dismissButtonLabel = stringResource(R.string.skip_label),
+            onRequestPermissions = onRequestPermissions,
+            modifier = modifier
+        )
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun ShowCameraRational(
+    cameraPermissionState: PermissionState,
+    rationalShown: Boolean,
+    modifier: Modifier = Modifier,
+    onRequestPermissions: () -> Unit = {},
+    onDismissRequest: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
+) {
+    DisplayRationalDialog(
+        title = stringResource(R.string.camera_title),
+        rational = stringResource(R.string.camera_permission_rationale),
+        rationalShown = rationalShown,
+        launchPermissionRequest = { cameraPermissionState.launchPermissionRequest() },
+        onRequestPermissions = onRequestPermissions,
+        onOpenSettings = onOpenSettings,
+        onDismissRequest = onDismissRequest,
+        dismissButtonLabel = stringResource(R.string.cancel),
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+fun PermissionState.checkOrRequestPermission(
+    rationalShown: Boolean,
+    onShowRational: () -> Unit,
+    onPermissionsGranted: () -> Unit = {},
+    onRequestPermission: () -> Unit = {}
+) {
+    when {
+        status.isGranted -> onPermissionsGranted()
+        rationalShown || status.shouldShowRationale -> onShowRational()
+        else -> {
+            Timber.d("requesting permissions")
+            launchPermissionRequest()
+            onRequestPermission()
         }
     }
+}
 
+@OptIn(ExperimentalPermissionsApi::class)
+fun MultiplePermissionsState.checkOrRequestPermission(
+    rationalShown: Boolean,
+    onShowRational: () -> Unit,
+    onPermissionsGranted: () -> Unit = {},
+    onRequestPermission: () -> Unit = {}
+) {
     when {
-        dontAskAgain -> {
-            Timber.d("asking to grant permissions manually")
-            askManualGrantContent()
-        }
-
-        permissionState.shouldShowRationale -> {
-            Timber.d("showing rationale")
-            LaunchedEffect(Unit) {
-                savePreference(
-                    context,
-                    context.getString(askedOncePrefKey),
-                    true
-                )
-            }
-            rationaleContent()
-        }
-
-        !askedOnce -> {
-            LaunchedEffect(Unit) {
-                Timber.d("requesting permissions for the first time")
-                permissionState.launchMultiplePermissionRequest()
-            }
-        }
-
-        !permissionState.allPermissionsGranted && !permissionState.shouldShowRationale -> {
-            Timber.d("setting don't ask again preference")
-            LaunchedEffect(Unit) {
-                savePreference(
-                    context,
-                    context.getString(dontAskAgainPrefKey),
-                    true
-                )
-            }
+        allPermissionsGranted -> onPermissionsGranted()
+        rationalShown || permissions.any { it.status.shouldShowRationale } -> onShowRational()
+        else -> {
+            Timber.d("requesting permissions")
+            launchMultiplePermissionRequest()
+            onRequestPermission()
         }
     }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun RequestLocationPermissionsScreen(permissionState: MultiplePermissionsState) {
-    RequestPermissions(
-        permissionState = permissionState,
-        askedOncePrefKey = R.string.wfr_asked_location_permission_once,
-        dontAskAgainPrefKey = R.string.wfr_dont_ask_location_permissions,
-        rationaleContent = { RequestLocationPermissionsContent(onRequestPermissions = permissionState::launchMultiplePermissionRequest) },
-        askManualGrantContent = { RequestLocationPermissionsContent(dontAskAgain = true) }
+private fun DisplayRationalDialog(
+    title: String,
+    rational: String,
+    rationalShown: Boolean,
+    launchPermissionRequest: () -> Unit,
+    onRequestPermissions: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onDismissRequest: () -> Unit,
+    dismissButtonLabel: String,
+    modifier: Modifier = Modifier
+
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            val resId =
+                if (rationalShown) R.string.open_app_settings else R.string.continue_button
+            TextButton(onClick = {
+                if (rationalShown) {
+                    onOpenSettings()
+                } else {
+                    Timber.d("Requesting permission after rational")
+                    launchPermissionRequest()
+                }
+                onRequestPermissions()
+            }) {
+                Text(text = stringResource(resId))
+            }
+        },
+        modifier = modifier,
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = dismissButtonLabel)
+            }
+        },
+        title = { Text(text = title) },
+        text = {
+            Column {
+                Text(text = rational)
+                if (rationalShown) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = stringResource(R.string.please_open_settings_to_grant_permissions))
+                }
+            }
+        }
     )
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
+@PreviewLightDark
 @Composable
-private fun RequestLocationPermissionsContent(
-    dontAskAgain: Boolean = false,
-    onRequestPermissions: () -> Unit = {}
-) {
-    val context = LocalContext.current
-    val isAtLeastAndroidR = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-    val textToShow =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            stringResource(R.string.location_permission_rationale)
-        } else {
-            stringResource(R.string.location_permission_rationale_before_tiramisu)
-        }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+private fun PreviewShowLocationRational() {
+    // Fake permissions... always granted in preview
+    val permissionState = rememberMultiplePermissionsState(permissions = emptyList())
+
+    WalkingForRochesterTheme {
+        ShowLocationRational(
+            locationPermissionState = permissionState,
+            rationalShown = false,
+        )
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@PreviewLightDark
+@Composable
+private fun PreviewShowNotificationRational() {
+    // Fake permissions... always granted in preview
+    val permissionState = rememberPermissionState("notification")
+
+    WalkingForRochesterTheme {
+        ShowNotificationRational(
+            notificationPermissionState = permissionState,
+            rationalShown = false
+        )
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@PreviewLightDark
+@Composable
+private fun PreviewShowCameraRational() {
+    // Fake permissions... always granted in preview
+    val permissionState = rememberPermissionState("camera")
+
+    WalkingForRochesterTheme {
+        ShowCameraRational(
+            cameraPermissionState = permissionState,
+            rationalShown = true
+        )
+    }
+}
+
+@Composable
+fun rememberOnOpenSettings(
+    onResult: (ActivityResult) -> Unit
+): () -> Unit {
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
     ) {
-        Text(
-            text = textToShow,
-            style = MaterialTheme.typography.headlineSmall.copy(color = Color.Black),
-            textAlign = TextAlign.Center
-        )
-        if (dontAskAgain && isAtLeastAndroidR) {
-            Spacer(modifier = Modifier.size(24.dp))
-            Text(
-                text = stringResource(R.string.please_open_settings_to_grant_permissions),
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Black),
-                textAlign = TextAlign.Center
-            )
-        }
-        Spacer(modifier = Modifier.size(24.dp))
-        WFRButton(
-            label = if (dontAskAgain) R.string.open_app_settings else R.string.grant_permissions,
-            onClick = {
-                if (dontAskAgain && isAtLeastAndroidR) {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                    ContextCompat.startActivity(context, intent, null)
-                } else {
-                    onRequestPermissions()
-                }
-            }
-        )
+        onResult(it)
+    }
+
+    return remember { { openSettings(launcher) } }
+}
+
+private fun openSettings(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
+    val intent = Intent().apply {
+        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+    }
+
+    try {
+        Timber.d("showing settings...")
+        launcher.launch(intent)
+    } catch (e: ActivityNotFoundException) {
+        Timber.w("Failed to open settings: %s", e.message)
     }
 }

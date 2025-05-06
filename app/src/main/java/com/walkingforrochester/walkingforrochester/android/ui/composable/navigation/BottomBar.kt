@@ -1,5 +1,11 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.navigation
 
+import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
@@ -14,12 +20,16 @@ import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRo
 
 @Composable
 fun BottomBar(
-    modifier: Modifier = Modifier,
     menuItems: List<Destination>,
     currentScreen: Destination,
-    onScreenSelected: (Destination) -> Unit,
+    modifier: Modifier = Modifier,
+    onScreenSelected: (Destination) -> Unit = {},
 ) {
-    if (currentScreen.showBottomBar) {
+    AnimatedVisibility(
+        currentScreen.showBottomBar,
+        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+    ) {
         NavigationBar(modifier = modifier) {
             menuItems.forEach {
                 NavigationBarItem(
@@ -31,7 +41,11 @@ fun BottomBar(
                     },
                     label = { Text(text = stringResource(id = it.title)) },
                     selected = currentScreen == it,
-                    onClick = { onScreenSelected(it) }
+                    onClick = {
+                        if (currentScreen != it) {
+                            onScreenSelected(it)
+                        }
+                    }
                 )
             }
         }
@@ -39,9 +53,13 @@ fun BottomBar(
 }
 
 @Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewBottomBar() {
     WalkingForRochesterTheme {
-        //BottomBar()
+        BottomBar(
+            menuItems = bottomBarDestinations,
+            currentScreen = LogAWalk
+        )
     }
 }

@@ -1,5 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.profile
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,13 +24,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedButton
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
+import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.ProfileViewModel
 
@@ -62,14 +67,52 @@ fun ProfileScreen(
         }
     }
 
-    val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
-    var openAlertDialog by remember { mutableStateOf(false) }
+    LifecycleStartEffect(Unit) {
+        profileViewModel.loadProfile()
+        onStopOrDispose {}
+    }
 
-    if (openAlertDialog) {
+    val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
+    val accountProfile by profileViewModel.accountProfile.collectAsStateWithLifecycle()
+
+    ProfileScreenContent(
+        uiState = uiState,
+        accountProfile = accountProfile,
+        contentPadding = contentPadding,
+        modifier = modifier,
+        onEdit = { profileViewModel.onEdit() },
+        onShare = { context.safeStartActivity(profileViewModel.onShare(context)) },
+        onProfileChange = { profileViewModel.onProfileChange(it) },
+        onChoosePhoto = { profileViewModel.onChoosePhoto(it) },
+        onSaveProfile = { profileViewModel.onSave() },
+        onCancelEdits = { profileViewModel.onCancel() },
+        onDeleteAccount = { profileViewModel.onDeleteAccount() },
+        onLogout = { profileViewModel.onLogout() }
+    )
+}
+
+@Composable
+fun ProfileScreenContent(
+    uiState: ProfileScreenState,
+    accountProfile: AccountProfile,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    onEdit: () -> Unit = {},
+    onShare: () -> Unit = {},
+    onProfileChange: (AccountProfile) -> Unit = {},
+    onChoosePhoto: (Uri?) -> Unit = {},
+    onSaveProfile: () -> Unit = {},
+    onCancelEdits: () -> Unit = {},
+    onDeleteAccount: () -> Unit = {},
+    onLogout: () -> Unit = {}
+) {
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteAccountDialog) {
         DeleteAccountDialog(
-            hasCommunityService = uiState.communityService,
-            onDismissRequest = { openAlertDialog = false },
-            onConfirmed = { profileViewModel.onDeleteAccount() }
+            hasCommunityService = accountProfile.communityService,
+            onDismissRequest = { showDeleteAccountDialog = false },
+            onConfirmed = onDeleteAccount
         )
     }
 
@@ -82,39 +125,81 @@ fun ProfileScreen(
             .padding(contentPadding)
             .imePadding()
     ) {
-        Spacer(Modifier)
+        Spacer(modifier = Modifier.height(8.dp))
         ProfileCard(
-            modifier = Modifier.padding(horizontal = 8.dp),
             uiState = uiState,
-            profileViewModel = profileViewModel
+            accountProfile = accountProfile,
+            modifier = Modifier.padding(horizontal = 8.dp),
+            onEdit = onEdit,
+            onShare = onShare,
+            onProfileChange = onProfileChange,
+            onChoosePhoto = onChoosePhoto,
+            onSaveProfile = onSaveProfile,
+            onCancelEdits = onCancelEdits
         )
-        if (uiState.editProfile) {
-            Spacer(modifier = Modifier.height(8.dp))
-        } else {
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            WFROutlinedButton(
-                onClick = { openAlertDialog = true },
-                label = R.string.delete_account,
-                modifier = Modifier.widthIn(min = 200.dp)
-            )
-            Spacer(Modifier.height(12.dp))
-            WFRButton(
-                onClick = profileViewModel::onLogout,
-                label = R.string.logout,
-                modifier = Modifier.widthIn(min = 200.dp)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
+        when {
+            uiState.editProfile -> {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            accountProfile.accountId == AccountProfile.NO_ACCOUNT -> {
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+            }
+
+            else -> {
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                WFROutlinedButton(
+                    onClick = { showDeleteAccountDialog = true },
+                    label = R.string.delete_account,
+                    modifier = Modifier.widthIn(min = 200.dp)
+                )
+                Spacer(Modifier.height(12.dp))
+                WFRButton(
+                    onClick = onLogout,
+                    label = R.string.logout,
+                    modifier = Modifier.widthIn(min = 200.dp)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
+    }
+}
+
+@Preview(showBackground = true, apiLevel = 34)
+@Composable
+fun PreviewProfileScreen() {
+    WalkingForRochesterTheme {
+        ProfileScreenContent(
+            uiState = ProfileScreenState(),
+            accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
+                accountId = 1234L,
+                email = "test@email.com",
+                phoneNumber = "5551234567",
+                nickname = "Bob",
+                communityService = false,
+            )
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewProfileScreen() {
+fun PreviewEditProfileScreen() {
     WalkingForRochesterTheme {
-        ProfileScreen()
+        ProfileScreenContent(
+            uiState = ProfileScreenState(editProfile = true),
+            accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
+                accountId = 1234L,
+                email = "test@email.com",
+                phoneNumber = "5551234567",
+                nickname = "Bob",
+                communityService = false,
+            )
+        )
     }
 }

@@ -84,6 +84,22 @@ val ProfileDestination = Destination(
     showBackButton = true,
 )
 
+val SubmitWalk = Destination(
+    route = "submitWalk",
+    title = R.string.submit_walk,
+    showBottomBar = false,
+    showTopBar = false,
+    showProfileButton = false,
+)
+
+val TakePicture = Destination(
+    route = "takePicture",
+    title = R.string.take_picture,
+    showBottomBar = false,
+    showTopBar = false,
+    showProfileButton = false
+)
+
 val SafetyGuidelines = Destination(
     route = "safetyGuidelines",
     title = R.string.safety_guidelines,
@@ -119,6 +135,8 @@ val Destinations = listOf(
     Leaderboard,
     NewsFeed,
     ProfileDestination,
+    SubmitWalk,
+    TakePicture,
     SafetyGuidelines,
     Waiver,
     OurStory,

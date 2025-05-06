@@ -1,55 +1,47 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
+import com.walkingforrochester.walkingforrochester.android.repository.WalkRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val sharedPreferences: SharedPreferences,
-    @ApplicationContext private val context: Context
+    private val preferenceRepository: PreferenceRepository
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<MainUiState>
-    val uiState: StateFlow<MainUiState>
-
-    init {
-        val state = MainUiState(
-            darkMode = sharedPreferences.getBoolean(
-                context.getString(R.string.wfr_dark_mode_enabled),
-                false
-            ),
-            loggedIn = sharedPreferences.getLong(
-                context.getString(R.string.wfr_account_id),
-                0L
-            ) != 0L
-        )
-
-        _uiState = MutableStateFlow(state)
-        uiState = _uiState.asStateFlow()
+    private var _initialized = false
+    val initialized = flow {
+        while (!_initialized) {
+            delay(10)
+        }
+        emit(true)
     }
 
-    fun onToggleDarkMode(darkMode: Boolean) = viewModelScope.launch {
-        _uiState.update { it.copy(darkMode = darkMode) }
+    val uiState = preferenceRepository.userPreferences.map {
+        _initialized = true
+        MainUiState(
+            darkMode = it.isDarkMode,
+            loggedIn = it.accountId != AccountProfile.NO_ACCOUNT
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainUiState()
+    )
 
-        try {
-            sharedPreferences.edit()
-                .putBoolean(context.getString(R.string.wfr_dark_mode_enabled), darkMode).apply()
-        } catch (t: Throwable) {
-            Timber.w(t, "Unable to toggle dark mode")
-        }
+    fun onToggleDarkMode(darkMode: Boolean) = viewModelScope.launch {
+        preferenceRepository.updateDarkMode(darkMode)
     }
 }

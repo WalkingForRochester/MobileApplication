@@ -1,18 +1,16 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.network.RestApiService
-import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
-import com.walkingforrochester.walkingforrochester.android.network.request.RegisterRequest
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
+import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -20,105 +18,101 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(
-    private val restApiService: RestApiService,
-    @ApplicationContext private val context: Context,
-    private val sharedPreferences: SharedPreferences,
+    private val networkRepository: NetworkRepository,
+    private val preferenceRepository: PreferenceRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegistrationScreenState())
     val uiState = _uiState.asStateFlow()
 
+    private val _registrationProfile = MutableStateFlow(AccountProfile.DEFAULT_PROFILE)
+    val registrationProfile = _registrationProfile.asStateFlow()
+
     private val _eventFlow = MutableSharedFlow<RegistrationScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun prefill(initState: RegistrationScreenState) = _uiState.update { initState }
+    fun prefill(profile: AccountProfile) = _registrationProfile.update { profile }
 
-    fun onEmailChange(newEmail: String) =
-        _uiState.update { it.copy(email = newEmail, emailValidationMessageId = 0) }
+    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+        Timber.e(throwable, "Unexpected error registering account")
 
-    fun onFirstNameChange(newFirstName: String) =
-        _uiState.update { state ->
-            state.copy(
-                firstName = newFirstName.filter { it != '\n' },
-                firstNameValidationMessageId = 0
-            )
+        if (!_eventFlow.tryEmit(RegistrationScreenEvent.UnexpectedError)) {
+            Timber.w("Failed to report error due to no listener")
         }
 
-    fun onLastNameChange(newLastName: String) =
-        _uiState.update { state ->
-            state.copy(
-                lastName = newLastName.filter { it != '\n' },
-                lastNameValidationMessageId = 0
-            )
+        _uiState.update { it.copy(loading = false) }
+    }
+
+    fun onProfileChange(profile: AccountProfile) {
+        val currentProfile = _registrationProfile.value
+
+        if (profile.email != currentProfile.email) {
+            _uiState.update {
+                it.copy(emailValidationMessageId = 0)
+            }
         }
 
-    fun onPhoneChange(newPhone: String) =
-        _uiState.update { state ->
-            state.copy(
-                phone = newPhone.filter { it.isDigit() },
-                phoneValidationMessageId = 0
-            )
+        if (profile.firstName != currentProfile.firstName) {
+            _uiState.update { it.copy(firstNameValidationMessageId = 0) }
         }
 
-    fun onNicknameChange(newNickname: String) =
-        _uiState.update { state -> state.copy(nickname = newNickname.filter { it != '\n' }) }
+        if (profile.lastName != currentProfile.lastName) {
+            _uiState.update { it.copy(lastNameValidationMessageId = 0) }
+        }
 
-    fun onPasswordChange(newPassword: String) =
+        if (profile.phoneNumber != currentProfile.phoneNumber) {
+            _uiState.update { it.copy(phoneValidationMessageId = 0) }
+        }
+
+        _registrationProfile.update {
+            it.copy(
+                email = profile.email.trim(),
+                firstName = profile.firstName.filter { it != '\n' },
+                lastName = profile.lastName.filter { it != '\n' },
+                phoneNumber = profile.phoneNumber.filter { it.isDigit() },
+                nickname = profile.nickname.filter { it != '\n' },
+                communityService = profile.communityService
+            )
+        }
+    }
+
+    fun onPasswordChange(newPassword: String) {
         _uiState.update { state ->
             state.copy(
-                password = newPassword.filter { it != '\n' },
+                password = newPassword.filterNot { it.isWhitespace() },
                 passwordValidationMessageId = 0
             )
         }
+    }
 
-    fun onPasswordConfirmationChange(newConfirmPassword: String) =
+    fun onPasswordConfirmationChange(newConfirmPassword: String) {
         _uiState.update { state ->
             state.copy(
-                confirmPassword = newConfirmPassword.filter { it != '\n' },
+                confirmPassword = newConfirmPassword.filterNot { it.isWhitespace() },
                 confirmPasswordValidationMessageId = 0
             )
         }
+    }
 
-    fun onCommunityServiceChange(newCommunityService: Boolean) =
-        _uiState.update { it.copy(communityService = newCommunityService) }
-
-    fun onSignUp() = viewModelScope.launch {
+    fun onSignUp() = viewModelScope.launch(context = exceptionHandler) {
         _uiState.update { it.copy(loading = true) }
-        try {
-            if (validateForm()) {
-                with(_uiState.value) {
-                    val result = restApiService.registerAccount(
-                        RegisterRequest(
-                            firstName = firstName,
-                            lastName = lastName,
-                            email = email,
-                            phone = phone,
-                            nickname = nickname,
-                            dateOfBirth = LocalDate.now(),
-                            password = password,
-                            communityService = communityService,
-                            facebookId = facebookId
-                        )
-                    )
 
-                    if (result.accountId != null) {
-                        completeRegistration(result.accountId)
-                    } else {
-                        throw RuntimeException(result.error)
-                    }
-                }
+        if (validateForm()) {
+            val profile = _registrationProfile.value
+            val password = _uiState.value.password
+
+            val accountId = networkRepository.registerAccount(profile, password)
+
+            if (accountId != AccountProfile.NO_ACCOUNT) {
+                completeRegistration(accountId)
             }
-        } catch (t: Throwable) {
-            Timber.e(t, "Sign up request failed")
-            _eventFlow.emit(RegistrationScreenEvent.UnexpectedError)
-        } finally {
-            _uiState.update { it.copy(loading = false) }
         }
+
+        _uiState.update { it.copy(loading = false) }
     }
 
     private suspend fun validateForm(): Boolean {
@@ -131,8 +125,9 @@ class RegistrationViewModel @Inject constructor(
         var confirmPasswordValidationMessageId = 0
 
         val localState = _uiState.value
+        val profile = _registrationProfile.value
 
-        with(localState) {
+        with(profile) {
             if (firstName.isEmpty()) {
                 firstNameValidationMessageId = R.string.invalid_field_empty
                 isValid = false
@@ -144,14 +139,17 @@ class RegistrationViewModel @Inject constructor(
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 emailValidationMessageId = R.string.invalid_email
                 isValid = false
-            } else if (restApiService.accountByEmail(EmailAddressRequest(email = email)).accountId != null) {
+            } else if (networkRepository.isEmailInUse(email)) {
                 emailValidationMessageId = R.string.email_already_registered
                 isValid = false
             }
-            if (phone.length != 10) {
+            if (phoneNumber.length != 10) {
                 phoneValidationMessageId = R.string.invalid_phone
                 isValid = false
             }
+        }
+
+        with(localState) {
             if (password.length < 8) {
                 passwordValidationMessageId = R.string.invalid_password
                 isValid = false
@@ -176,8 +174,7 @@ class RegistrationViewModel @Inject constructor(
     }
 
     private fun completeRegistration(accountId: Long) = viewModelScope.launch {
-        sharedPreferences.edit().putLong(context.getString(R.string.wfr_account_id), accountId)
-            .apply()
+        preferenceRepository.updateAccountId(accountId)
         _eventFlow.emit(RegistrationScreenEvent.RegistrationComplete)
     }
 

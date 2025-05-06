@@ -9,7 +9,6 @@ data class LoginScreenState(
     val authenticationErrorMessage: String = "",
     val authenticationErrorMessageId: Int = 0,
     val loading: Boolean = false,
-    val socialLoading: Boolean = false,
     val firstName: String = "",
     val lastName: String = "",
     val facebookId: String = "",

@@ -2,9 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.maps.secrets.plugin)
 }
 
@@ -16,8 +15,8 @@ android {
         applicationId = "com.walkingforrochester.walkingforrochester.android"
         minSdk = 26
         targetSdk = 35
-        versionCode = 24
-        versionName = "2.0.7"
+        versionCode = 25
+        versionName = "2.1.0"
 
         // For now only supporting English, so stripping out other languages
         // Will strip pseudoLocales en-rXA or ar-rXB as well if testing.
@@ -44,11 +43,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -83,10 +82,15 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.exifinterface)
 
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.webkit)
+
     implementation(libs.google.googleid)
 
     // Compose
@@ -96,6 +100,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material3.adaptive)
     implementation(libs.androidx.compose.material3.window.size)
     implementation(libs.androidx.compose.material.icons.extended)
 
@@ -118,7 +123,6 @@ dependencies {
     androidTestImplementation(libs.androidx.test.uiautomator)
 
     implementation(libs.accompanist.permissions)
-    implementation(libs.accompanist.webview)
 
     // Kotlin
     val kotlinBom = platform(libs.kotlin.bom)
@@ -142,6 +146,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     androidTestImplementation(okHttpBom)
+    androidTestImplementation(libs.okhttp.mockwebserver)
+    androidTestImplementation(libs.okhttp.tls)
 
     // retrofit
     val retrofitBom = platform(libs.retrofit.bom)
@@ -160,16 +166,15 @@ dependencies {
     // Dagger/Hilt
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.dagger.hilt.android)
-    kapt(libs.dagger.hilt.compilier)
+    ksp(libs.dagger.hilt.compilier)
 
     androidTestImplementation(libs.dagger.hilt.android.testing)
-    kaptAndroidTest(libs.dagger.hilt.compilier)
+    kspAndroidTest(libs.dagger.hilt.compilier)
 
     testImplementation(libs.dagger.hilt.android.testing)
-    kaptTest(libs.dagger.hilt.compilier)
+    kspTest(libs.dagger.hilt.compilier)
 
     // google service
-    implementation(libs.play.services.auth)
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
     implementation(libs.google.android.maps.compose)
@@ -202,8 +207,4 @@ secrets {
     defaultPropertiesFileName = "secrets.defaults.properties"
 
     // See https://github.com/google/secrets-gradle-plugin/tree/main for full options
-}
-
-kapt {
-    correctErrorTypes = true
 }

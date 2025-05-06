@@ -1,187 +1,164 @@
 package com.walkingforrochester.walkingforrochester.android.viewmodel
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.text.format.DateUtils
 import android.util.Patterns
-import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.net.toUri
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
-import com.walkingforrochester.walkingforrochester.android.md5
-import com.walkingforrochester.walkingforrochester.android.network.RestApiService
-import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
-import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
-import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
-import com.walkingforrochester.walkingforrochester.android.roundDouble
+import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
+import com.walkingforrochester.walkingforrochester.android.formatDouble
+import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
+import com.walkingforrochester.walkingforrochester.android.ktx.compressImage
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
+import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
+import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.time.LocalDate
 import javax.inject.Inject
 
-const val FILE_SIZE_LIMIT: Long = 20 * 1024 * 1024 // 20 megabytes
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val restApiService: RestApiService,
     @ApplicationContext private val context: Context,
-    private val sharedPreferences: SharedPreferences
+    private val networkRepository: NetworkRepository,
+    private val preferenceRepository: PreferenceRepository,
+    @IODispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val _accountProfile = MutableStateFlow<AccountProfile>(AccountProfile.DEFAULT_PROFILE)
+    val accountProfile = _accountProfile.asStateFlow()
 
     private val _uiState = MutableStateFlow(ProfileScreenState())
     val uiState = _uiState.asStateFlow()
 
-    private val _eventFlow = MutableSharedFlow<ProfileScreenEvent>()
+    // Because the network error may occur BEF
+    private val _eventFlow = MutableSharedFlow<ProfileScreenEvent>(
+        extraBufferCapacity = 1,
+        //onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val eventFlow = _eventFlow.asSharedFlow()
 
-    private var previousState = ProfileScreenState()
+    private var previousProfile = AccountProfile.DEFAULT_PROFILE
 
-    init {
-        viewModelScope.launch {
-            _uiState.update { it.copy(profileDataLoading = true) }
-            try {
-                val accountId =
-                    sharedPreferences.getLong(context.getString(R.string.wfr_account_id), 0)
+    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+        Timber.e(throwable, "Unexpected error processing profile")
 
-                val result = restApiService.userProfile(AccountIdRequest(accountId))
+        if (!_eventFlow.tryEmit(ProfileScreenEvent.UnexpectedError)) {
+            Timber.w("Failed to report error due to no listener")
+        }
 
-                if (result.error == null) {
-                    _uiState.update {
-                        it.copy(
-                            accountId = accountId,
-                            email = result.email ?: "",
-                            phone = result.phoneNumber ?: "",
-                            nickname = result.nickname ?: "",
-                            communityService = result.communityService ?: false,
-                            profilePic = result.imgUrl ?: "",
-                            distanceToday = result.distance ?: 0.0,
-                            distanceOverall = result.totalDistance ?: 0.0,
-                            durationToday = result.duration ?: 0L,
-                            durationOverall = result.totalDuration ?: 0L,
-                            facebookId = result.facebookId,
-                            profileDataLoading = false
-                        )
-                    }
-                } else {
-                    throw RuntimeException("Couldn't get profile data: ${result.error}")
-                }
-            } catch (t: Throwable) {
-                Timber.e(t, "Unable to initialize ProfileViewModel")
-                _eventFlow.emit(ProfileScreenEvent.UnexpectedError)
-                _uiState.update { it.copy(profileDataLoading = false) }
-            }
+        _uiState.update {
+            it.copy(
+                profileDataLoading = false,
+                profileDataSaving = false
+            )
         }
     }
 
-    fun onEmailChange(newEmail: String) =
-        _uiState.update { state ->
-            state.copy(
-                email = newEmail.trim(),
-                emailValidationMessageId = 0
+    fun loadProfile() = viewModelScope.launch(context = exceptionHandler) {
+        _uiState.update { it.copy(profileDataLoading = true) }
+        refreshProfile()
+        recoverSavedState()
+        _uiState.update { it.copy(profileDataLoading = false) }
+    }
+
+    private suspend fun refreshProfile() {
+        val accountId = preferenceRepository.fetchAccountId()
+        val profile = if (accountId != AccountProfile.NO_ACCOUNT) {
+            networkRepository.fetchProfile(accountId)
+        } else {
+            AccountProfile.DEFAULT_PROFILE
+        }
+        _accountProfile.update { profile }
+    }
+
+    fun onProfileChange(accountProfile: AccountProfile) {
+        val oldProfile = _accountProfile.value
+
+        if (accountProfile.email != oldProfile.email) {
+            _uiState.update { it.copy(emailValidationMessageId = 0) }
+        }
+        if (accountProfile.phoneNumber != oldProfile.phoneNumber) {
+            _uiState.update { it.copy(phoneValidationMessageId = 0) }
+        }
+        _accountProfile.update {
+            it.copy(
+                email = accountProfile.email.trim(),
+                phoneNumber = accountProfile.phoneNumber.filter { it.isDigit() },
+                nickname = accountProfile.nickname.filter { it != '\n' },
+                communityService = accountProfile.communityService
             )
         }
 
-    fun onPhoneChange(newPhone: String) =
-        _uiState.update { state ->
-            state.copy(
-                phone = newPhone.filter { it.isDigit() },
-                phoneValidationMessageId = 0
-            )
-        }
+        updateSavedState()
+    }
 
-    fun onNicknameChange(newNickname: String) =
-        _uiState.update { state -> state.copy(nickname = newNickname.filter { it != '\n' }) }
-
-    fun onCommunityServiceChange(newCommunityService: Boolean) =
-        _uiState.update { it.copy(communityService = newCommunityService) }
-
-    fun onEdit() = viewModelScope.launch {
-        previousState = _uiState.value.copy()
+    fun onEdit() {
+        previousProfile = _accountProfile.value.copy()
         _uiState.update { it.copy(editProfile = true) }
+        updateSavedState()
     }
 
-    fun onSave() = viewModelScope.launch {
+    fun onSave() = viewModelScope.launch(context = exceptionHandler) {
         if (validateForm()) {
             _uiState.update { it.copy(profileDataSaving = true) }
-            try {
-                with(_uiState.value) {
-                    var fileName: String?
-                    localProfilePicUri?.let {
-                        fileName = "IMG_PROFILE_${
-                            LocalDate.now().format(WFRDateFormatter.formatter)
-                        }_${md5(accountId.toString())}"
-                        if (it.path != null) {
-                            context.contentResolver.openInputStream(it)?.use { inputStream ->
-                                val body: MultipartBody.Part =
-                                    MultipartBody.Part.createFormData(
-                                        "file",
-                                        fileName,
-                                        inputStream.readBytes()
-                                            .toRequestBody("form-data".toMediaTypeOrNull())
-                                    )
-                                restApiService.uploadImage(body)
-                                _uiState.update { state ->
-                                    state.copy(
-                                        profilePic =
-                                        "https://walkingforrochester.com/images/profile/$fileName.jpg"
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    restApiService.updateProfile(
-                        UpdateProfileRequest(
-                            accountId = accountId,
-                            email = email,
-                            phone = phone,
-                            nickname = nickname,
-                            communityService = communityService,
-                            imgUrl = profilePic,
-                            facebookId = facebookId
-                        )
-                    )
-                    _uiState.update {
-                        it.copy(
-                            localProfilePicUri = null,
-                            editProfile = false,
-                            profileDataSaving = false
-                        )
-                    }
+
+            var profile = _accountProfile.value
+            _uiState.value.localProfilePicUri?.let {
+                val profilePic = networkRepository.uploadProfileImage(profile.accountId, it)
+                if (profilePic.isNotBlank()) {
+                    profile = profile.copy(imageUrl = profilePic)
                 }
-            } catch (t: Throwable) {
-                Timber.e(t, "Unable to save user profile")
-                _eventFlow.emit(ProfileScreenEvent.UnexpectedError)
-                _uiState.update { it.copy(profileDataSaving = false) }
             }
+
+            Timber.d("Updating profile")
+            networkRepository.updateProfile(profile)
+            Timber.d("Refresh profile")
+            refreshProfile()
+
+            _uiState.update {
+                it.copy(
+                    localProfilePicUri = null,
+                    editProfile = false,
+                    profileDataSaving = false
+                )
+            }
+
+            updateSavedState()
         }
     }
 
-    fun onCancel() = viewModelScope.launch {
-        _uiState.update { previousState.copy(editProfile = false) }
+    fun onCancel() = viewModelScope.launch(context = exceptionHandler) {
+        _accountProfile.update { previousProfile }
+        _uiState.update {
+            it.copy(
+                localProfilePicUri = null,
+                editProfile = false
+            )
+        }
+        updateSavedState()
     }
 
     fun onShare(context: Context): Intent {
-        with(_uiState.value) {
+        with(_accountProfile.value) {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
                 type = "image/png"
@@ -191,74 +168,86 @@ class ProfileViewModel @Inject constructor(
                 putExtra(
                     Intent.EXTRA_TEXT,
                     "Check out my stats with Walking For Rochester!\nDistance, last walk: ${
-                        roundDouble(
-                            distanceToday
-                        )
-                    } mi. overall: ${roundDouble(distanceOverall)} mi\nDuration, last walk: ${
-                        DateUtils.formatElapsedTime(durationToday / 1000)
-                    }. overall: ${DateUtils.formatElapsedTime(durationOverall / 1000)}"
+                        distanceToday.formatDouble()
+                    } mi. overall: ${totalDistance.formatDouble()} mi\nDuration, last walk: ${
+                        durationToday.formatElapsedMilli()
+                    }. overall: ${totalDuration.formatElapsedMilli()}"
                 )
             }
             return Intent.createChooser(sendIntent, "Share statistics")
         }
     }
 
-    fun setLocalPhotoUri(uri: Uri?) = viewModelScope.launch {
-        uri?.let {
-            context.contentResolver.openAssetFileDescriptor(it, "r").use { fd ->
-                fd?.let { fileDescriptor ->
-                    if (fileDescriptor.length > FILE_SIZE_LIMIT) {
-                        _uiState.update { state -> state.copy(tooLargeImage = true) }
-                        return@launch
-                    }
+    fun onChoosePhoto(
+        uri: Uri?
+    ) = viewModelScope.launch(context = ioDispatcher + exceptionHandler) {
+
+        val profileUri = when (uri) {
+            null -> null
+            else -> compressFile(uri)
+        }
+
+        _uiState.update { it.copy(localProfilePicUri = profileUri) }
+        updateSavedState()
+    }
+
+    private fun compressFile(uri: Uri): Uri? {
+        val choiceFile = File(context.cacheDir, CHOICE_FILE_NAME)
+        var copied = false
+        context.contentResolver.openInputStream(uri).use { ios ->
+            ios?.let {
+                choiceFile.outputStream().use { os ->
+                    ios.copyTo(os)
+                    copied = true
                 }
             }
         }
-        _uiState.update { it.copy(localProfilePicUri = uri, tooLargeImage = false) }
+
+        if (!copied) return null
+
+        val confirmFile = File(context.cacheDir, CONFIRM_FILE_NAME)
+
+        val compressed = choiceFile.compressImage(
+            targetFile = confirmFile,
+            targetWidth = TARGET_DIMENSION,
+            targetHeight = TARGET_DIMENSION
+        )
+
+        choiceFile.delete()
+        return if (compressed) confirmFile.toUri() else null
     }
 
-    fun onLogout() = viewModelScope.launch {
-        removeAccountFromPreferences()
+    fun onLogout() = viewModelScope.launch(context = exceptionHandler) {
+        preferenceRepository.removeAccountInfo()
         _eventFlow.emit(ProfileScreenEvent.Logout)
     }
 
-    fun onDeleteAccount() = viewModelScope.launch {
-        val accountId = _uiState.value.accountId
-        try {
-            restApiService.deleteUser(AccountIdRequest(accountId = accountId))
-            // If no errors, treat as a logout...
-            removeAccountFromPreferences()
-            _eventFlow.emit(ProfileScreenEvent.AccountDeleted)
-        } catch (e: Throwable) {
-            Timber.w(e, "Failed to delete account")
-            _eventFlow.emit(ProfileScreenEvent.UnexpectedError)
-        }
+    fun onDeleteAccount() = viewModelScope.launch(context = exceptionHandler) {
+        Timber.d("Deleting account...")
+        val accountId = _accountProfile.value.accountId
+        networkRepository.deleteUser(accountId)
+        // If no errors, treat as a logout...
+        preferenceRepository.removeAccountInfo()
+        _eventFlow.emit(ProfileScreenEvent.AccountDeleted)
     }
 
-    private fun removeAccountFromPreferences() {
-        sharedPreferences.edit()
-            .remove(context.getString(R.string.wfr_account_id))
-            .remove(context.getString(R.string.wfr_dark_mode_enabled))
-            .apply()
-    }
 
     private suspend fun validateForm(): Boolean {
         var isValid = true
         var emailValidationMessageId = 0
         var phoneValidationMessageId = 0
 
-        with(_uiState.value) {
+        with(_accountProfile.value) {
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 emailValidationMessageId = R.string.invalid_email
                 isValid = false
             } else if (
-                email != previousState.email &&
-                restApiService.accountByEmail(EmailAddressRequest(email = email)).accountId != null
+                email != previousProfile.email && networkRepository.isEmailInUse(email)
             ) {
                 emailValidationMessageId = R.string.email_in_use
                 isValid = false
             }
-            if (phone.length != 10) {
+            if (phoneNumber.length != 10) {
                 phoneValidationMessageId = R.string.invalid_phone
                 isValid = false
             }
@@ -274,24 +263,56 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun getLogo(context: Context): Uri? {
-        val drawable =
-            AppCompatResources.getDrawable(context, R.drawable.wfr_logo) as? BitmapDrawable
-        val bitmap = drawable?.bitmap ?: return null
-        var bmpUri: Uri? = null
-        try {
-            val file = File(
-                context.cacheDir,
-                "wfr.png"
-            )
-            FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 90, out)
-            }
-            bmpUri =
-                androidx.core.content.FileProvider.getUriForFile(context, context.packageName, file)
-        } catch (e: IOException) {
-            Timber.e("unable to write logo file")
-        }
-        return bmpUri
+        val resources = context.resources
+        return Uri.Builder()
+            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+            .authority(context.packageName)
+            .appendPath(resources.getResourceTypeName(R.drawable.wfr_logo))
+            .appendPath(resources.getResourceEntryName(R.drawable.wfr_logo))
+            .build()
     }
 
+    private fun recoverSavedState() {
+        val editProfile: Boolean = true == savedStateHandle[EDIT_PROFILE_KEY]
+        if (editProfile) {
+            previousProfile = _accountProfile.value.copy()
+            _uiState.update {
+                it.copy(
+                    editProfile = true,
+                    localProfilePicUri = savedStateHandle[PROFILE_IMAGE_KEY]
+                )
+            }
+            _accountProfile.update {
+                it.copy(
+                    email = savedStateHandle[EMAIL_KEY] ?: it.email,
+                    phoneNumber = savedStateHandle[PHONE_KEY] ?: it.phoneNumber,
+                    nickname = savedStateHandle[NICKNAME_KEY] ?: it.nickname
+                )
+            }
+        }
+    }
+
+    private fun updateSavedState() {
+        val uiState = _uiState.value
+        val accountProfile = _accountProfile.value
+
+        savedStateHandle[EDIT_PROFILE_KEY] = uiState.editProfile
+        savedStateHandle[EMAIL_KEY] = accountProfile.email
+        savedStateHandle[PHONE_KEY] = accountProfile.phoneNumber
+        savedStateHandle[NICKNAME_KEY] = accountProfile.nickname
+        savedStateHandle[PROFILE_IMAGE_KEY] = uiState.localProfilePicUri
+    }
+
+    companion object {
+        private const val EDIT_PROFILE_KEY = "editProfile"
+        private const val EMAIL_KEY = "email"
+        private const val PHONE_KEY = "phoneNumber"
+        private const val NICKNAME_KEY = "nickName"
+        private const val PROFILE_IMAGE_KEY = "profileImage"
+
+        private const val CHOICE_FILE_NAME = "wfr_profile_choice.jpg"
+        private const val CONFIRM_FILE_NAME = "wfr_profile_compress.jpg"
+
+        private const val TARGET_DIMENSION = 500
+    }
 }

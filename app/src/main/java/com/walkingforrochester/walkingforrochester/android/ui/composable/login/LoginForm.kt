@@ -6,20 +6,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRPasswordField
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRTextField
-import com.walkingforrochester.walkingforrochester.android.ui.modifier.autofill
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenState
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginForm(
     modifier: Modifier = Modifier,
@@ -35,10 +34,7 @@ fun LoginForm(
             value = loginScreenState.emailAddress,
             onValueChange = { email -> onEmailAddressValueChange(email, false) },
             labelRes = R.string.email_address,
-            modifier = Modifier.autofill(
-                autofillTypes = listOf(AutofillType.EmailAddress),
-                onFill = { email -> onEmailAddressValueChange(email, true) }
-            ),
+            modifier = Modifier.semantics { contentType = ContentType.EmailAddress },
             testTag = "login_email",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
@@ -50,11 +46,7 @@ fun LoginForm(
             value = loginScreenState.password,
             onValueChange = { password -> onPasswordValueChange(password, false) },
             labelRes = R.string.password,
-            modifier = Modifier
-                .autofill(
-                    autofillTypes = listOf(AutofillType.Password),
-                    onFill = { password -> onPasswordValueChange(password, true) }
-                ),
+            modifier = Modifier.semantics { contentType = ContentType.Password },
             testTag = "login_password",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,

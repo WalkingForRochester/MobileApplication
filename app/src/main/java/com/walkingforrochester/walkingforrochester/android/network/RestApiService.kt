@@ -1,6 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.network
 
-import com.walkingforrochester.walkingforrochester.android.model.Leader
 import com.walkingforrochester.walkingforrochester.android.network.request.AccountIdRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.EmailAddressRequest
 import com.walkingforrochester.walkingforrochester.android.network.request.LeaderboardRequest
@@ -10,25 +9,25 @@ import com.walkingforrochester.walkingforrochester.android.network.request.Regis
 import com.walkingforrochester.walkingforrochester.android.network.request.UpdateProfileRequest
 import com.walkingforrochester.walkingforrochester.android.network.response.AccountResponse
 import com.walkingforrochester.walkingforrochester.android.network.response.CodeResponse
+import com.walkingforrochester.walkingforrochester.android.network.response.LeaderResponse
+import com.walkingforrochester.walkingforrochester.android.network.response.LoginResponse
 import okhttp3.MultipartBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 
-const val BASE_URL =
-    "https://walkingforrochester.com/php/v2/"
-
 interface RestApiService {
 
     @POST("login.php")
-    suspend fun login(@Body loginRequest: LoginRequest): AccountResponse
+    suspend fun login(@Body loginRequest: LoginRequest): LoginResponse
 
     @POST("accountByEmail.php")
-    suspend fun accountByEmail(@Body emailAddressRequest: EmailAddressRequest): AccountResponse
+    suspend fun accountByEmail(@Body emailAddressRequest: EmailAddressRequest): LoginResponse
 
     @POST("registerAccount.php")
-    suspend fun registerAccount(@Body registerRequest: RegisterRequest): AccountResponse
+    suspend fun registerAccount(@Body registerRequest: RegisterRequest): LoginResponse
 
     @POST("forgotPassword.php")
     suspend fun forgotPassword(@Body emailAddressRequest: EmailAddressRequest): CodeResponse
@@ -47,12 +46,15 @@ interface RestApiService {
 
     @Multipart
     @POST("uploadImage.php")
-    suspend fun uploadImage(@Part file: MultipartBody.Part)
+    suspend fun uploadImage(@Part file: MultipartBody.Part): Response<Void>
 
     @POST("leaderboard.php")
-    suspend fun leaderboard(@Body leaderboardRequest: LeaderboardRequest): List<Leader>
+    suspend fun leaderboard(@Body leaderboardRequest: LeaderboardRequest): List<LeaderResponse>
 
     @POST("logAWalk.php")
     suspend fun logAWalk(@Body logAWalkRequest: LogAWalkRequest)
 
+    companion object {
+        const val BASE_URL = "https://walkingforrochester.com/php/v2/"
+    }
 }

@@ -15,7 +15,7 @@ android {
         applicationId = "com.walkingforrochester.walkingforrochester.android"
         minSdk = 26
         targetSdk = 35
-        versionCode = 25
+        versionCode = 26
         versionName = "2.1.0"
 
         // For now only supporting English, so stripping out other languages

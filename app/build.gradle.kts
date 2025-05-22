@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.webkit)
+    implementation(libs.androidx.window)
 
     implementation(libs.google.googleid)
 

@@ -185,6 +185,7 @@ dependencies {
     val coilBom = platform(libs.coil.bom)
     implementation(coilBom)
     implementation(libs.coil.compose)
+    implementation(libs.coil.okhttp)
 
     // logging
     implementation(libs.timber)

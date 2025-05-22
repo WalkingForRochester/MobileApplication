@@ -47,8 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.formatDouble
 import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
@@ -329,10 +328,7 @@ fun EditProfilePic(
         when {
             localImageUri != null -> {
                 AsyncImage(
-                    model = ImageRequest
-                        .Builder(LocalContext.current)
-                        .data(data = localImageUri)
-                        .build(),
+                    model = localImageUri,
                     contentDescription = stringResource(R.string.profile_pic),
                     contentScale = ContentScale.Crop,
                     error = rememberVectorPainter(image = Icons.Filled.AccountCircle),

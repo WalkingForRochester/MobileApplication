@@ -46,7 +46,7 @@ google-googleid = "1.1.1"
 # dagger/hilt
 dagger-hilt = "2.56.2"
 
-coil-bom = "2.7.0"
+coil-bom = "3.2.0"
 eventbus = "3.3.1"
 facebook = "18.0.3"
 timber = "5.0.1"
@@ -142,8 +142,9 @@ google-android-maps-utils = { module = "com.google.maps.android:android-maps-uti
 google-libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "google-libphonenumber" }
 google-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "google-googleid" }
 
-coil-bom = { module = "io.coil-kt:coil-bom", version.ref = "coil-bom" }
-coil-compose = { module = "io.coil-kt:coil-compose" }
+coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil-bom" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
+coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp" }
 eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 

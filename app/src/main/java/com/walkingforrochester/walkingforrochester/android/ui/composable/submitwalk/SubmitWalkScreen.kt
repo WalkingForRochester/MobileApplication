@@ -67,9 +67,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.computeWindowSizeClass
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -82,7 +81,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
 import com.walkingforrochester.walkingforrochester.android.formatMetersToMiles
-import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.model.WalkData
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.HorizontalNumberPicker
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
@@ -91,6 +89,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.checkOrRequestPermission
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.rememberOnOpenSettings
 import com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk.RenderWalkDataOnMap
+import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -101,7 +100,7 @@ fun SubmitWalkScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit = {},
     onTakePicture: () -> Unit = {},
-    windowSizeClass: WindowSizeClass = WindowSizeClass.compute(410.dp.value, 800.dp.value),
+    windowSizeClass: WindowSizeClass = WindowSizeClass.BREAKPOINTS_V1.computeWindowSizeClass(widthDp = 410.dp.value, heightDp = 800.dp.value),
     submitWalkViewModel: SubmitWalkViewModel = hiltViewModel()
 ) {
     val walkData by submitWalkViewModel.currentWalk.collectAsStateWithLifecycle()
@@ -268,8 +267,9 @@ fun SubmitWalkContent(
 
         val dividerColor = DividerDefaults.color.copy(alpha = 0.3f)
 
-        val portrait = windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT &&
-            windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.EXPANDED
+        val portrait =
+            windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+                && !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
 
         if (portrait) {
             Column(
@@ -281,9 +281,9 @@ fun SubmitWalkContent(
 
                 // To not allow map to dominate on tablets, use a bigger
                 // ratio vs phones
-                val ratio = when (windowSizeClass.windowWidthSizeClass) {
-                    WindowWidthSizeClass.COMPACT -> 1.4f
-                    else -> 2f
+                val ratio = when {
+                    windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) -> 2f
+                    else -> 1.4f
                 }
                 Box(
                     modifier = Modifier

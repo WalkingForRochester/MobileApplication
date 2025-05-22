@@ -31,9 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
 import coil.compose.AsyncImage
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
@@ -49,8 +47,9 @@ fun ConfirmImage(
     onDiscardImage: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues()
 ) {
-    val portrait = windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT &&
-        windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.EXPANDED
+    val portrait =
+        windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+            && !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
 
     Box(modifier = modifier) {
         AsyncImage(

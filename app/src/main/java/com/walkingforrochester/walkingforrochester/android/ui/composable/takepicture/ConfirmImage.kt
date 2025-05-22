@@ -32,7 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme

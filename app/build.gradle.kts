@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.walkingforrochester.walkingforrochester.android"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.walkingforrochester.walkingforrochester.android"

@@ -85,6 +85,7 @@ class MainActivity : ComponentActivity() {
 
             var initialized by remember { mutableStateOf(false) }
             LaunchedEffect(mainViewModel) {
+                mainViewModel.initializeApp()
                 // Wait until state is available to before removing splash screen
                 initialized = mainViewModel.initialized.first()
                 keepSplashScreenOn = false

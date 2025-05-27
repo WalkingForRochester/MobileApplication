@@ -1,5 +1,10 @@
 package com.walkingforrochester.walkingforrochester.android.di
 
+import android.content.Context
+import coil3.ImageLoader
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.util.DebugLogger
+import coil3.util.Logger
 import com.squareup.moshi.Moshi
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
@@ -7,6 +12,7 @@ import com.walkingforrochester.walkingforrochester.android.network.RestApiServic
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +52,35 @@ class AppModule {
                         level = HttpLoggingInterceptor.Level.BASIC
                     }
                 )
+            }
+        }.build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideImageLoader(
+        @ApplicationContext context: Context,
+        okHttpClient: OkHttpClient,
+        @IODispatcher ioDispatcher: CoroutineDispatcher
+    ): ImageLoader {
+        return ImageLoader.Builder(context).apply {
+            interceptorCoroutineContext(ioDispatcher)
+            components {
+                add(
+                    OkHttpNetworkFetcherFactory(
+                        callFactory = {
+                            // Coil has a cache, so don't double
+                            // cache images
+                            okHttpClient.newBuilder()
+                                .cache(null)
+                                .build()
+                        }
+                    )
+                )
+            }
+
+            if (BuildConfig.DEBUG) {
+                logger(DebugLogger(Logger.Level.Verbose))
             }
         }.build()
     }

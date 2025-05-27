@@ -20,7 +20,6 @@ androidx-test-uiautomator = "2.3.0"
 androidx-webkit = "1.13.0"
 androidx-window = "1.4.0"
 
-accompanist = "0.37.0"
 junit = "4.13.2"
 
 # kotlin
@@ -46,6 +45,7 @@ google-googleid = "1.1.1"
 # dagger/hilt
 dagger-hilt = "2.56.2"
 
+accompanist = "0.37.3"
 coil-bom = "3.2.0"
 facebook = "18.0.3"
 timber = "5.0.1"

@@ -31,9 +31,9 @@ ksp = "2.1.21-2.0.1"
 # square
 leakcanary = "2.14"
 moshi = "1.15.2"
-okio = "3.11.0"
+okio = "3.12.0"
 okhttp-bom = "4.12.0"
-retrofit-bom = "2.11.0"
+retrofit-bom = "3.0.0"
 
 # google services
 play-services-location = "21.3.0"

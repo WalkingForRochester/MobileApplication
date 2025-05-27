@@ -190,9 +190,6 @@ dependencies {
     // logging
     implementation(libs.timber)
 
-    // event bus
-    implementation(libs.eventbus)
-
     // facebook
     implementation(libs.facebook.login)
 

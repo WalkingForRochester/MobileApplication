@@ -47,7 +47,6 @@ google-googleid = "1.1.1"
 dagger-hilt = "2.56.2"
 
 coil-bom = "3.2.0"
-eventbus = "3.3.1"
 facebook = "18.0.3"
 timber = "5.0.1"
 
@@ -145,7 +144,6 @@ google-googleid = { module = "com.google.android.libraries.identity.googleid:goo
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil-bom" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp" }
-eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook" }

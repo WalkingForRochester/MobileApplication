@@ -46,9 +46,7 @@ fun NavigationHost(
         composable(route = LoginDestination.route) {
             LoginScreen(
                 onForgotPassword = {
-                    navController.navigate(route = ForgotPassword.route) {
-                        launchSingleTop = true
-                    }
+                    navController.navigate(route = ForgotPassword.route)
                 },
                 onRegister = { email, firstName, lastName, facebookId ->
                     navController.navigate(
@@ -58,8 +56,9 @@ fun NavigationHost(
                             "&lname=$lastName" +
                             "&fbid=$facebookId"
                     ) {
-                        popUpTo(LoginDestination.route)
-                        launchSingleTop = true
+                        popUpTo(LoginDestination.route) {
+                            inclusive = false
+                        }
                     }
                 },
                 onLoginComplete = {
@@ -113,9 +112,7 @@ fun NavigationHost(
         composable(route = LogAWalk.route) {
             LogAWalkScreen(
                 onNavigateToSubmitWalk = {
-                    navController.navigate(SubmitWalk.route) {
-                        launchSingleTop = true
-                    }
+                    navController.navigate(SubmitWalk.route)
                 },
                 contentPadding = contentPadding
             )
@@ -147,9 +144,7 @@ fun NavigationHost(
                     navController.popBackStack(route = LogAWalk.route, inclusive = false)
                 },
                 onTakePicture = {
-                    navController.navigate(route = TakePicture.route) {
-                        launchSingleTop = true
-                    }
+                    navController.navigate(route = TakePicture.route)
                 },
                 windowSizeClass = windowAdaptiveInfo.windowSizeClass
             )
@@ -173,8 +168,19 @@ fun NavigationHost(
 fun NavHostController.navigateAndClearBackStack(
     route: String,
     clearToRoot: Boolean = false
-) = this.navigate(route) {
-    // Use popUpTo(0) to fully clear the top to prevent backing to last destination
-    if (clearToRoot) popUpTo(0) else popUpTo(LogAWalk.route)
-    launchSingleTop = true
+) {
+    when {
+        clearToRoot -> this.navigate(route) {
+            popUpTo(0)
+            launchSingleTop = true
+        }
+
+        route == LogAWalk.route -> popBackStack(route, inclusive = false)
+
+        else -> navigate(route) {
+            popUpTo(LogAWalk.route) {
+                inclusive = false
+            }
+        }
+    }
 }

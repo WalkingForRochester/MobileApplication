@@ -27,6 +27,7 @@ import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
+import androidx.core.net.toUri
 
 @Composable
 fun ContactUsScreen(
@@ -85,8 +86,7 @@ fun ContactUsScreen(
         Text(
             text = stringResource(
                 id = R.string.app_version,
-                BuildConfig.VERSION_NAME,
-                BuildConfig.VERSION_CODE
+                BuildConfig.VERSION_NAME
             ),
             modifier = Modifier
                 .fillMaxWidth(),
@@ -98,7 +98,7 @@ fun ContactUsScreen(
 
 fun callOffice(context: Context) {
     val intent = Intent(Intent.ACTION_DIAL).apply {
-        data = Uri.parse("tel:+15853586888")
+        data = "tel:+15853586888".toUri()
         flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 
@@ -120,7 +120,7 @@ private fun buildUri(context: Context): Uri {
         "?subject=" +
         Uri.encode(context.getString(R.string.email_subject))
 
-    return Uri.parse(uriString)
+    return uriString.toUri()
 }
 
 @Preview

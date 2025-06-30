@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId = "com.walkingforrochester.walkingforrochester.android"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 26
         versionName = "2.1.0"
 

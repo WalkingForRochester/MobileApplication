@@ -21,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TakePictureViewModel @Inject constructor(
     private val walkRepository: WalkRepository,
-    @IODispatcher val ioDispatcher: CoroutineDispatcher,
+    @param:IODispatcher val ioDispatcher: CoroutineDispatcher,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 

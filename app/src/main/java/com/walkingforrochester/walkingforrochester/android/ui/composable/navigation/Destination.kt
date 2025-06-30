@@ -14,7 +14,7 @@ import com.walkingforrochester.walkingforrochester.android.R
 
 data class Destination(
     val route: String,
-    @StringRes val title: Int,
+    @param:StringRes val title: Int,
     val icon: ImageVector? = null,
     val showBottomBar: Boolean = true,
     val showTopBar: Boolean = true,
@@ -23,7 +23,7 @@ data class Destination(
     val arguments: List<NamedNavArgument> = listOf(),
     val routeWithArgs: String = "",
     val enableDrawerGestures: Boolean = false,
-    @StringRes val uriTarget: Int = 0
+    @param:StringRes val uriTarget: Int = 0
 )
 
 val LoginDestination = Destination(

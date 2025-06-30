@@ -23,7 +23,7 @@ import javax.inject.Inject
 class LogAWalkViewModel @Inject constructor(
     private val preferenceRepository: PreferenceRepository,
     private val walkRepository: WalkRepository,
-    @DefaultDispatcher val defaultDispatcher: CoroutineDispatcher
+    @param:DefaultDispatcher val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _eventFlow = MutableSharedFlow<LogAWalkEvent>()

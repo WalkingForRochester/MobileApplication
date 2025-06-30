@@ -6,40 +6,40 @@ androidx-browser = "1.8.0"
 androidx-camera = "1.4.2"
 androidx-core = "1.16.0"
 androidx-core-splashscreen = "1.0.1"
-androidx-compose-bom = "2025.05.01"
+androidx-compose-bom = "2025.06.01"
 androidx-credentials = "1.5.0"
 androidx-datastore = "1.1.7"
 androidx-exifinterface = "1.4.1"
 androidx-hilt-navigation-compose = "1.2.0"
-androidx-lifecycle = "2.9.0"
+androidx-lifecycle = "2.9.1"
 androidx-material = "1.12.0"
 androidx-navigation = "2.9.0"
 androidx-test-espresso = "3.6.1"
 androidx-test-junit = "1.2.1"
 androidx-test-uiautomator = "2.3.0"
-androidx-webkit = "1.13.0"
+androidx-webkit = "1.14.0"
 androidx-window = "1.4.0"
 
 junit = "4.13.2"
 
 # kotlin
-kotlin = "2.1.21"
+kotlin = "2.2.0"
 kotlinx-coroutines-bom = "1.10.2"
-ksp = "2.1.21-2.0.1"
+ksp = "2.2.0-2.0.2"
 
 # square
 leakcanary = "2.14"
 moshi = "1.15.2"
-okio = "3.12.0"
+okio = "3.14.0"
 okhttp-bom = "4.12.0"
 retrofit-bom = "3.0.0"
 
 # google services
 play-services-location = "21.3.0"
 play-services-maps = "19.2.0"
-google-android-maps-compose = "6.5.3"
-google-android-maps-utils = "3.13.0"
-google-libphonenumber = "8.13.41"
+google-android-maps-compose = "6.6.0"
+google-android-maps-utils = "3.14.0"
+google-libphonenumber = "9.0.8"
 google-googleid = "1.1.1"
 
 # dagger/hilt
@@ -51,7 +51,7 @@ facebook = "18.0.3"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "8.10.0"
+androidGradlePlugin = "8.11.0"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]

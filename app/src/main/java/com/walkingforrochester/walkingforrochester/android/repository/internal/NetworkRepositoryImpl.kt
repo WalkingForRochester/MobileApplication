@@ -34,9 +34,9 @@ import javax.inject.Singleton
 
 @Singleton
 class NetworkRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val restApiService: RestApiService,
-    @IODispatcher private val ioDispatcher: CoroutineDispatcher
+    @param:IODispatcher private val ioDispatcher: CoroutineDispatcher
 ) : NetworkRepository {
 
     override suspend fun fetchProfile(accountId: Long): AccountProfile {

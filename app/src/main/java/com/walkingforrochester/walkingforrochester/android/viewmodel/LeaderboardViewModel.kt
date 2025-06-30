@@ -31,7 +31,7 @@ import kotlin.math.max
 @HiltViewModel
 class LeaderboardViewModel @Inject constructor(
     private val networkRepository: NetworkRepository,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    @param:DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
     val leaderboardFilters = _leaderboardFilters.asStateFlow()
 

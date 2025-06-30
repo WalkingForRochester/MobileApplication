@@ -28,7 +28,7 @@ class SubmitWalkViewModel @Inject constructor(
     private val walkRepository: WalkRepository,
     private val preferenceRepository: PreferenceRepository,
     private val networkRepository: NetworkRepository,
-    @DefaultDispatcher val defaultDispatcher: CoroutineDispatcher
+    @param:DefaultDispatcher val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _walkEvent = MutableSharedFlow<SubmitWalkEvent>()

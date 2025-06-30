@@ -29,8 +29,8 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class WalkRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    @param:ApplicationContext private val context: Context,
+    @param:DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : WalkRepository {
 
     private var lastLocation: Location? = null

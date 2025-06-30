@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
-import coil3.disk.DiskCache
-import coil3.request.addLastModifiedToFileCacheKey
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
@@ -26,9 +24,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val preferenceRepository: PreferenceRepository,
-    @IODispatcher private val ioDispatcher: CoroutineDispatcher,
+    @param:IODispatcher private val ioDispatcher: CoroutineDispatcher,
     private val imageLoader: ImageLoader
 ) : ViewModel() {
 

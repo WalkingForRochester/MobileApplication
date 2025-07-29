@@ -3,8 +3,6 @@ package com.walkingforrochester.walkingforrochester.android.di
 import android.content.Context
 import coil3.ImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
-import coil3.util.DebugLogger
-import coil3.util.Logger
 import com.squareup.moshi.Moshi
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
@@ -79,9 +77,9 @@ class AppModule {
                 )
             }
 
-            if (BuildConfig.DEBUG) {
-                logger(DebugLogger(Logger.Level.Verbose))
-            }
+            //if (BuildConfig.DEBUG) {
+            //    logger(DebugLogger(Logger.Level.Verbose))
+            //}
         }.build()
     }
 

@@ -22,7 +22,9 @@ android {
 
         // For now only supporting English, so stripping out other languages
         // Will strip pseudoLocales en-rXA or ar-rXB as well if testing.
-        resourceConfigurations += "en"
+        androidResources {
+            localeFilters += listOf("en")
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -162,17 +162,9 @@ class WalkRepositoryImpl @Inject constructor(
     }
 
     private fun simplifyPath(path: List<LatLng>): List<LatLng> {
-        if (path.size < 2) return path
+        if (path.size <= 2) return path
 
-        val polyList = mutableListOf<LatLng>()
-        polyList.addAll(path)
-        polyList.add(path.first())
-
-        val simplifiedPoly = PolyUtil.simplify(polyList, 1.0).apply {
-            removeAt(size - 1)
-        }
-
-        return simplifiedPoly.toList()
+        return PolyUtil.simplify(path, 1.0)
     }
 
     private fun isBetterLocation(location: Location): Boolean {

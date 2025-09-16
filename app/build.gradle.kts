@@ -173,7 +173,7 @@ dependencies {
     ksp(libs.moshi.kotlin.codegen)
 
     // Dagger/Hilt
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.dagger.hilt.android)
     ksp(libs.dagger.hilt.compilier)
 

@@ -21,10 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -204,10 +201,6 @@ fun LoginScreenContent(
             .padding(contentPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // track autofill status to avoid prompting to save password if came from autofill
-        var autofillEmail by remember { mutableStateOf(false) }
-        var autofillPassword by remember { mutableStateOf(false) }
-
         Spacer(modifier = Modifier.weight(1f))
         SocialLoginButtons(
             onContinueWithGoogle = onContinueWithGoogle,
@@ -221,13 +214,11 @@ fun LoginScreenContent(
         )
         LoginForm(
             loginScreenState = uiState,
-            onEmailAddressValueChange = { newEmailAddress, autofillPerformed ->
+            onEmailAddressValueChange = { newEmailAddress ->
                 onEmailChanged(newEmailAddress)
-                autofillEmail = autofillPerformed
             },
-            onPasswordValueChange = { newPassword, autofillPerformed ->
+            onPasswordValueChange = { newPassword ->
                 onPasswordChanged(newPassword)
-                autofillPassword = autofillPerformed
             }
         )
         Spacer(modifier = Modifier.height(24.dp))

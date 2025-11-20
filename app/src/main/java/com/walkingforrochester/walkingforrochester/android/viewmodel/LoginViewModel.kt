@@ -34,7 +34,10 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginScreenState())
     val uiState = _uiState.asStateFlow()
 
-    private val _eventFlow = MutableSharedFlow<LoginScreenEvent>()
+    private val _eventFlow = MutableSharedFlow<LoginScreenEvent>(
+        // Using capacity of one to allow exception handler to emit outside of coroutine
+        extraBufferCapacity = 1
+    )
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
@@ -46,7 +49,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
 
         if (throwable is ProfileException) {
             Timber.e("Login failed: %s", throwable.message)

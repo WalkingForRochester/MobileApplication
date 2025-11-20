@@ -31,7 +31,10 @@ class SubmitWalkViewModel @Inject constructor(
     @param:DefaultDispatcher val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private val _walkEvent = MutableSharedFlow<SubmitWalkEvent>()
+    private val _walkEvent = MutableSharedFlow<SubmitWalkEvent>(
+        // Using capacity of one to allow exception handler to emit outside of coroutine
+        extraBufferCapacity = 1
+    )
     val walkEvent = _walkEvent.asSharedFlow()
 
     val currentWalk = walkRepository.walkData
@@ -46,7 +49,7 @@ class SubmitWalkViewModel @Inject constructor(
             initialValue = false
         )
 
-    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Timber.e(throwable, "Unexpected error submitting a walk")
 
         if (!_walkEvent.tryEmit(SubmitWalkEvent.UnexpectedError)) {

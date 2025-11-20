@@ -26,10 +26,13 @@ class ForgotPasswordViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ForgotPasswordScreenState())
     val uiState = _uiState.asStateFlow()
 
-    private val _eventFlow = MutableSharedFlow<ForgotPasswordScreenEvent>()
+    private val _eventFlow = MutableSharedFlow<ForgotPasswordScreenEvent>(
+        // Using capacity of one to allow exception handler to emit outside of coroutine
+        extraBufferCapacity = 1
+    )
     val eventFlow = _eventFlow.asSharedFlow()
 
-    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Timber.e(throwable, "Unexpected error processing profile")
 
         if (!_eventFlow.tryEmit(ForgotPasswordScreenEvent.UnexpectedError)) {

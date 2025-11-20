@@ -43,7 +43,7 @@ class ProfileViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _accountProfile = MutableStateFlow<AccountProfile>(AccountProfile.DEFAULT_PROFILE)
+    private val _accountProfile = MutableStateFlow(AccountProfile.DEFAULT_PROFILE)
     val accountProfile = _accountProfile.asStateFlow()
 
     private val _uiState = MutableStateFlow(ProfileScreenState())
@@ -51,14 +51,14 @@ class ProfileViewModel @Inject constructor(
 
     // Because the network error may occur BEF
     private val _eventFlow = MutableSharedFlow<ProfileScreenEvent>(
+        // Using capacity of one to allow exception handler to emit outside of coroutine
         extraBufferCapacity = 1,
-        //onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val eventFlow = _eventFlow.asSharedFlow()
 
     private var previousProfile = AccountProfile.DEFAULT_PROFILE
 
-    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Timber.e(throwable, "Unexpected error processing profile")
 
         if (!_eventFlow.tryEmit(ProfileScreenEvent.UnexpectedError)) {

@@ -26,7 +26,10 @@ class LogAWalkViewModel @Inject constructor(
     @param:DefaultDispatcher val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private val _eventFlow = MutableSharedFlow<LogAWalkEvent>()
+    private val _eventFlow = MutableSharedFlow<LogAWalkEvent>(
+        // Using capacity of one to allow exception handler to emit outside of coroutine
+        extraBufferCapacity = 1
+    )
     val eventFlow = _eventFlow.asSharedFlow()
 
     val permissionPreferences = preferenceRepository.permissionPreferences
@@ -40,7 +43,7 @@ class LogAWalkViewModel @Inject constructor(
     val currentLocation = walkRepository.currentLocation
     val currentWalk = walkRepository.walkData
 
-    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Timber.e(throwable, "Unexpected error submitting a walk")
 
         if (!_eventFlow.tryEmit(LogAWalkEvent.UnexpectedError)) {

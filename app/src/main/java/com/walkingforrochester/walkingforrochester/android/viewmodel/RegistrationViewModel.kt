@@ -32,12 +32,15 @@ class RegistrationViewModel @Inject constructor(
     private val _registrationProfile = MutableStateFlow(AccountProfile.DEFAULT_PROFILE)
     val registrationProfile = _registrationProfile.asStateFlow()
 
-    private val _eventFlow = MutableSharedFlow<RegistrationScreenEvent>()
+    private val _eventFlow = MutableSharedFlow<RegistrationScreenEvent>(
+        // Using capacity of one to allow exception handler to emit outside of coroutine
+        extraBufferCapacity = 1
+    )
     val eventFlow = _eventFlow.asSharedFlow()
 
     fun prefill(profile: AccountProfile) = _registrationProfile.update { profile }
 
-    private val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Timber.e(throwable, "Unexpected error registering account")
 
         if (!_eventFlow.tryEmit(RegistrationScreenEvent.UnexpectedError)) {

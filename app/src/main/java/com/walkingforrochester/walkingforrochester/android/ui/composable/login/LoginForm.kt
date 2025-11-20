@@ -23,8 +23,8 @@ import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenS
 fun LoginForm(
     modifier: Modifier = Modifier,
     loginScreenState: LoginScreenState,
-    onEmailAddressValueChange: (String, Boolean) -> Unit,
-    onPasswordValueChange: (String, Boolean) -> Unit
+    onEmailAddressValueChange: (String) -> Unit,
+    onPasswordValueChange: (String) -> Unit
 ) {
     Column(
         modifier = modifier.padding(horizontal = 16.dp),
@@ -32,7 +32,7 @@ fun LoginForm(
     ) {
         WFRTextField(
             value = loginScreenState.emailAddress,
-            onValueChange = { email -> onEmailAddressValueChange(email, false) },
+            onValueChange = { email -> onEmailAddressValueChange(email) },
             labelRes = R.string.email_address,
             modifier = Modifier.semantics { contentType = ContentType.EmailAddress },
             testTag = "login_email",
@@ -44,7 +44,7 @@ fun LoginForm(
         )
         WFRPasswordField(
             value = loginScreenState.password,
-            onValueChange = { password -> onPasswordValueChange(password, false) },
+            onValueChange = { password -> onPasswordValueChange(password) },
             labelRes = R.string.password,
             modifier = Modifier.semantics { contentType = ContentType.Password },
             testTag = "login_password",

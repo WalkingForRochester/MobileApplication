@@ -105,6 +105,8 @@ fun LogAWalkMap(
             zoomGesturesEnabled = showCurrentLocation
         ),
         onMyLocationButtonClick = {
+            // This log message is to ensure last location is believed to be read
+            Timber.d("last location: %s", lastLocation)
             followCamera = true
             // indicate camera should animate to current location
             false

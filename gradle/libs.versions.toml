@@ -36,7 +36,8 @@ retrofit-bom = "3.0.0"
 
 # google services
 play-services-location = "21.3.0"
-play-services-maps = "20.0.0"
+# maps 20.0.0 requires http apache to be in manifest, see if fixed on newer version before upgrading
+play-services-maps = "19.2.0"
 google-android-maps-compose = "7.0.0"
 google-android-maps-utils = "3.20.1"
 google-libphonenumber = "9.0.22"

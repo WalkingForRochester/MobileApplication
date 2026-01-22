@@ -41,10 +41,10 @@ play-services-maps = "19.2.0"
 google-android-maps-compose = "7.0.0"
 google-android-maps-utils = "3.20.1"
 google-libphonenumber = "9.0.22"
-google-googleid = "1.1.1"
+google-googleid = "1.2.0"
 
 # dagger/hilt
-dagger-hilt = "2.58"
+dagger-hilt = "2.59"
 
 accompanist = "0.37.3"
 coil-bom = "3.3.0"

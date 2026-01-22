@@ -27,13 +27,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.PermissionStatus
@@ -65,18 +68,26 @@ fun LogAWalkScreen(
 ) {
     val snackbarHostState = LocalSnackbarHostState.current
     val context = LocalContext.current
+    val resources = LocalResources.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(
+        resources,
+        logAWalkViewModel.eventFlow,
+        lifecycleOwner
+    ) {
         Timber.d("Collecting events...")
-        logAWalkViewModel.eventFlow.collect { event ->
-            when (event) {
-                LogAWalkEvent.WalkCompleted -> {
-                    onNavigateToSubmitWalk()
-                }
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            logAWalkViewModel.eventFlow.collect { event ->
+                when (event) {
+                    LogAWalkEvent.WalkCompleted -> {
+                        onNavigateToSubmitWalk()
+                    }
 
-                LogAWalkEvent.UnexpectedError -> snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.unexpected_error)
-                )
+                    LogAWalkEvent.UnexpectedError -> snackbarHostState.showSnackbar(
+                        message = resources.getString(R.string.unexpected_error)
+                    )
+                }
             }
         }
     }

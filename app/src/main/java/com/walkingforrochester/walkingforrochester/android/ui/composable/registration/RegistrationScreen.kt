@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -58,8 +59,14 @@ fun RegistrationScreen(
     val registrationProfile by registrationViewModel.registrationProfile.collectAsStateWithLifecycle()
     val autofillManager = LocalAutofillManager.current
     val activityContext = LocalActivity.current ?: context
+    val resources = LocalResources.current
 
-    LaunchedEffect(lifecycleOwner, registrationViewModel) {
+    LaunchedEffect(
+        resources,
+        registrationProfile.email,
+        uiState.password,
+        lifecycleOwner
+    ) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             registrationViewModel.eventFlow.collect { event ->
                 when (event) {
@@ -76,7 +83,7 @@ fun RegistrationScreen(
                     }
 
                     RegistrationScreenEvent.UnexpectedError -> {
-                        snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
+                        snackbarHostState.showSnackbar(resources.getString(R.string.unexpected_error))
                     }
                 }
             }

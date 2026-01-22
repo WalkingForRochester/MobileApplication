@@ -59,14 +59,17 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.computeWindowSizeClass
 import coil3.compose.AsyncImage
@@ -100,13 +103,15 @@ fun SubmitWalkScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit = {},
     onTakePicture: () -> Unit = {},
-    windowSizeClass: WindowSizeClass = WindowSizeClass.BREAKPOINTS_V1.computeWindowSizeClass(widthDp = 410.dp.value, heightDp = 800.dp.value),
+    windowSizeClass: WindowSizeClass = WindowSizeClass.BREAKPOINTS_V1.computeWindowSizeClass(
+        widthDp = 410.dp.value,
+        heightDp = 800.dp.value
+    ),
     submitWalkViewModel: SubmitWalkViewModel = hiltViewModel()
 ) {
     val walkData by submitWalkViewModel.currentWalk.collectAsStateWithLifecycle()
     val cameraRationalShown by submitWalkViewModel.cameraRationalShown.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -117,31 +122,39 @@ fun SubmitWalkScreen(
     var submissionInProgress by remember { mutableStateOf(false) }
 
     val snackbarHostState = LocalSnackbarHostState.current
+    val resources = LocalResources.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
-        Timber.d("Collecting walk events...")
-        submitWalkViewModel.walkEvent.collect { event ->
-            Timber.d("Event received: %s", event)
-            when (event) {
-                SubmitWalkEvent.SubmissionInProgress -> {
-                    submissionInProgress = true
-                }
+    LaunchedEffect(
+        resources,
+        submitWalkViewModel.walkEvent,
+        lifecycleOwner
+    ) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            Timber.d("Collecting walk events...")
+            submitWalkViewModel.walkEvent.collect { event ->
+                Timber.d("Event received: %s", event)
+                when (event) {
+                    SubmitWalkEvent.SubmissionInProgress -> {
+                        submissionInProgress = true
+                    }
 
-                SubmitWalkEvent.WalkSubmitted -> {
-                    submissionInProgress = false
-                    onNavigateBack()
-                }
+                    SubmitWalkEvent.WalkSubmitted -> {
+                        submissionInProgress = false
+                        onNavigateBack()
+                    }
 
-                SubmitWalkEvent.WalkDiscarded -> {
-                    submissionInProgress = false
-                    onNavigateBack()
-                }
+                    SubmitWalkEvent.WalkDiscarded -> {
+                        submissionInProgress = false
+                        onNavigateBack()
+                    }
 
-                SubmitWalkEvent.UnexpectedError -> {
-                    submissionInProgress = false
-                    snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.submission_error)
-                    )
+                    SubmitWalkEvent.UnexpectedError -> {
+                        submissionInProgress = false
+                        snackbarHostState.showSnackbar(
+                            message = resources.getString(R.string.submission_error)
+                        )
+                    }
                 }
             }
         }
@@ -149,7 +162,7 @@ fun SubmitWalkScreen(
 
     // Using launched effect so that this is sent after we are monitoring events
     // order matters so
-    LaunchedEffect(Unit) {
+    LaunchedEffect(submitWalkViewModel) {
         submitWalkViewModel.checkWalk()
     }
 

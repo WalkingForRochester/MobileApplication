@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
@@ -68,8 +69,13 @@ fun ForgotPasswordScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val autofillManager = LocalAutofillManager.current
     val activityContext = LocalActivity.current ?: context
+    val resources = LocalResources.current
 
-    LaunchedEffect(lifecycleOwner, context) {
+    LaunchedEffect(
+        resources,
+        forgotPasswordViewModel.eventFlow,
+        lifecycleOwner
+    ) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             forgotPasswordViewModel.eventFlow.collect { event ->
                 when (event) {
@@ -82,7 +88,7 @@ fun ForgotPasswordScreen(
 
                         lifecycleOwner.lifecycleScope.launch {
                             snackbarHostState.showSnackbar(
-                                message = context.getString(R.string.password_reset_done)
+                                message = resources.getString(R.string.password_reset_done)
                             )
                         }
 
@@ -93,9 +99,8 @@ fun ForgotPasswordScreen(
                     }
 
                     ForgotPasswordScreenEvent.UnexpectedError -> {
-
                         snackbarHostState.showSnackbar(
-                            message = context.getString(R.string.unexpected_error),
+                            message = resources.getString(R.string.unexpected_error),
                         )
                     }
                 }

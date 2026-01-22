@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -87,8 +88,13 @@ fun LoginScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = LocalSnackbarHostState.current
     val activityContext = LocalActivity.current ?: context
+    val resources = LocalResources.current
 
-    LaunchedEffect(lifecycleOwner) {
+    LaunchedEffect(
+        resources,
+        loginViewModel.eventFlow,
+        lifecycleOwner
+    ) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             loginViewModel.eventFlow.collect { event ->
                 when (event) {
@@ -121,14 +127,14 @@ fun LoginScreen(
                     }
 
                     LoginScreenEvent.UnexpectedError -> {
-                        snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
+                        snackbarHostState.showSnackbar(resources.getString(R.string.unexpected_error))
                     }
                 }
             }
         }
     }
 
-    LaunchedEffect(activityContext, lifecycleOwner) {
+    LaunchedEffect(activityContext, loginViewModel, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
             // small delay before showing password manager
             delay(250L)

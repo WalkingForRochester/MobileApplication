@@ -18,7 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,16 +48,20 @@ fun LeaderboardScreen(
     val filtersState by leaderboardViewModel.leaderboardFilters.collectAsStateWithLifecycle()
     val leaderData by leaderboardViewModel.currentLeaders.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = LocalSnackbarHostState.current
+    val resources = LocalResources.current
 
-    LaunchedEffect(lifecycleOwner, leaderboardViewModel) {
+    LaunchedEffect(
+        resources,
+        leaderboardViewModel.eventFlow,
+        lifecycleOwner
+    ) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             leaderboardViewModel.eventFlow.collect { event ->
                 when (event) {
                     LeaderboardScreenEvent.UnexpectedError -> {
-                        snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
+                        snackbarHostState.showSnackbar(resources.getString(R.string.unexpected_error))
                     }
                 }
             }

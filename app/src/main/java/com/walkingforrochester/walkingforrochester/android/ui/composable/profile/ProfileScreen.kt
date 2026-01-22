@@ -21,11 +21,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
@@ -46,28 +50,33 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val resources = LocalResources.current
     val snackbarHostState = LocalSnackbarHostState.current
-    LaunchedEffect(Unit) {
-        profileViewModel.eventFlow.collect { event ->
-            when (event) {
-                ProfileScreenEvent.Logout -> {
-                    GoogleCredentialUtil.performSignOut(context = context)
-                    onLogoutComplete()
-                }
 
-                ProfileScreenEvent.AccountDeleted -> {
-                    GoogleCredentialUtil.performSignOut(context = context)
-                    onLogoutComplete()
-                }
+    LaunchedEffect(
+        resources,
+        profileViewModel.eventFlow,
+        lifecycleOwner
+    ) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            profileViewModel.eventFlow.collect { event ->
+                when (event) {
+                    ProfileScreenEvent.Logout,
+                    ProfileScreenEvent.AccountDeleted -> {
+                        GoogleCredentialUtil.performSignOut(context = context)
+                        onLogoutComplete()
+                    }
 
-                ProfileScreenEvent.UnexpectedError -> {
-                    snackbarHostState.showSnackbar(context.getString(R.string.unexpected_error))
+                    ProfileScreenEvent.UnexpectedError -> {
+                        snackbarHostState.showSnackbar(resources.getString(R.string.unexpected_error))
+                    }
                 }
             }
         }
     }
 
-    LifecycleStartEffect(Unit) {
+    LifecycleStartEffect(profileViewModel) {
         profileViewModel.loadProfile()
         onStopOrDispose {}
     }

@@ -23,11 +23,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ktx.safeStartActivity
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
-import androidx.core.net.toUri
 
 @Composable
 fun ContactUsScreen(
@@ -98,7 +98,7 @@ fun ContactUsScreen(
 
 fun callOffice(context: Context) {
     val intent = Intent(Intent.ACTION_DIAL).apply {
-        data = "tel:+15853586888".toUri()
+        data = "tel:+15855774820".toUri()
         flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 

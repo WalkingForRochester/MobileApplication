@@ -68,18 +68,18 @@ fun WFRNavigationDrawer(
 
     NavigationDrawer(
         drawerState = drawerState,
-        uiState = uiState,
+        enableDrawerGestures = currentScreen.enableDrawerGestures,
+        darkMode = uiState.darkMode,
         menuItems = drawerDestinations,
-        currentScreen = currentScreen,
         onScreenSelected = { screen ->
             navController.navigate(screen.route) {
                 launchSingleTop = true
             }
         },
+        onToggleDarkMode = onToggleDarkMode,
         onCloseDrawer = {
             scope.launch { drawerState.close() }
-        },
-        onToggleDarkMode = onToggleDarkMode
+        }
     ) {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         AppScreen(

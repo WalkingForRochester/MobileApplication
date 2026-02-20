@@ -9,9 +9,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -20,26 +19,30 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.ui.state.MainUiState
+import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @Composable
 fun NavigationDrawer(
-    modifier: Modifier = Modifier,
     drawerState: DrawerState,
-    uiState: MainUiState,
-    menuItems: List<Destination>,
-    currentScreen: Destination,
-    onScreenSelected: (Destination) -> Unit,
-    onToggleDarkMode: (Boolean) -> Unit,
-    onCloseDrawer: () -> Unit,
+    modifier: Modifier = Modifier,
+    enableDrawerGestures: Boolean = false,
+    darkMode: Boolean = false,
+    menuItems: List<Destination> = drawerDestinations,
+    onScreenSelected: (Destination) -> Unit = {},
+    onToggleDarkMode: (Boolean) -> Unit = {},
+    onCloseDrawer: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     if (drawerState.isOpen) {
@@ -47,14 +50,13 @@ fun NavigationDrawer(
             onCloseDrawer()
         }
     }
-    val gesturesEnabled = currentScreen.enableDrawerGestures || drawerState.isOpen
+    val gesturesEnabled = enableDrawerGestures || drawerState.isOpen
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(
                 menuItems = menuItems,
-                currentScreen = currentScreen,
-                darkMode = uiState.darkMode,
+                darkMode = darkMode,
                 onScreenSelected = onScreenSelected,
                 onToggleDarkMode = onToggleDarkMode,
                 onCloseDrawer = onCloseDrawer
@@ -71,7 +73,6 @@ fun NavigationDrawer(
 fun DrawerContent(
     modifier: Modifier = Modifier,
     menuItems: List<Destination>,
-    currentScreen: Destination,
     darkMode: Boolean,
     onScreenSelected: (Destination) -> Unit,
     onToggleDarkMode: (Boolean) -> Unit,
@@ -96,14 +97,14 @@ fun DrawerContent(
 
                 menuItems.forEach {
                     NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = it.icon ?: Icons.Filled.Info,
-                                contentDescription = null
+                        label = {
+                            Text(
+                                text = stringResource(id = it.title),
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1
                             )
                         },
-                        label = { Text(text = stringResource(id = it.title)) },
-                        selected = currentScreen == it,
+                        selected = false,
                         onClick = {
                             if (it.uriTarget == 0) {
                                 onScreenSelected(it)
@@ -113,7 +114,15 @@ fun DrawerContent(
                             }
                             onCloseDrawer()
                         },
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        icon = {
+                            if (it.iconResId != null) {
+                                Icon(
+                                    painter = painterResource(it.iconResId),
+                                    contentDescription = null
+                                )
+                            }
+                        },
                     )
                 }
             }
@@ -128,6 +137,20 @@ fun DrawerContent(
                 Text(text = stringResource(R.string.dark_mode))
                 Switch(checked = darkMode, onCheckedChange = onToggleDarkMode)
             }
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun PreviewNavDrawer() {
+    WalkingForRochesterTheme {
+        NavigationDrawer(
+            enableDrawerGestures = false,
+            menuItems = drawerDestinations,
+            drawerState = rememberDrawerState(DrawerValue.Open)
+        ) {
+            Text("Hello")
         }
     }
 }

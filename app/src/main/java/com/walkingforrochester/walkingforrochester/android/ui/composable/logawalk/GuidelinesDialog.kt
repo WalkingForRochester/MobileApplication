@@ -3,8 +3,6 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.logawa
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -16,6 +14,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.LinkInteractionListener
@@ -56,7 +55,12 @@ fun GuidelinesDialog(
                 Text(text = stringResource(R.string.decline))
             }
         },
-        icon = { Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_info_24dp),
+                contentDescription = null
+            )
+        },
         title = {
             // Manually centering/breaking due to title length
             Text(

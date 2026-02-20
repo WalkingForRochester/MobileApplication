@@ -4,10 +4,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -16,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.walkingforrochester.walkingforrochester.android.R
@@ -39,11 +36,12 @@ fun TopBar(
             modifier = modifier,
             navigationIcon = {
                 IconButton(onClick = { if (currentScreen.showBackButton) onBackButtonClick() else onNavigationButtonClick() }) {
+                    val drawable = if (currentScreen.showBackButton) R.drawable.ic_arrow_back_24dp else R.drawable.ic_menu_24dp
+                    val contentDescription =
+                        if (currentScreen.showBackButton) R.string.back_button else R.string.open_navigation_drawer
                     Icon(
-                        imageVector = if (currentScreen.showBackButton) Icons.AutoMirrored.Filled.ArrowBack else Icons.Filled.Menu,
-                        contentDescription = if (currentScreen.showBackButton) stringResource(R.string.back_button) else stringResource(
-                            R.string.open_navigation_drawer
-                        )
+                        painter = painterResource(drawable),
+                        contentDescription = stringResource(contentDescription)
                     )
                 }
             },
@@ -51,7 +49,7 @@ fun TopBar(
                 if (currentScreen.showProfileButton) {
                     IconButton(onClick = onProfileButtonClick) {
                         Icon(
-                            Icons.Filled.AccountCircle,
+                            painter = painterResource(R.drawable.ic_account_circle_24dp),
                             contentDescription = stringResource(R.string.open_profile_screen)
                         )
                     }

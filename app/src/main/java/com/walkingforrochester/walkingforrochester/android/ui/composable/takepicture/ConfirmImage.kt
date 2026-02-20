@@ -1,6 +1,8 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture
 
 import android.net.Uri
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,9 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -26,8 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
@@ -61,7 +60,7 @@ fun ConfirmImage(
             contentScale = ContentScale.Crop
         )
         val buttonColors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = Color.Black.copy(alpha = 0.3f),
+            containerColor = Color.Black.copy(alpha = 0.4f),
             contentColor = Color.White
         )
 
@@ -79,8 +78,8 @@ fun ConfirmImage(
 
                 ConfirmImageButton(
                     onClick = onDiscardImage,
-                    iconVector = Icons.Filled.Close,
-                    iconDescription = stringResource(R.string.discard_image_desc),
+                    iconResId = R.drawable.ic_close_48dp,
+                    iconDescriptionId = R.string.discard_image_desc,
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )
@@ -88,8 +87,8 @@ fun ConfirmImage(
                 Spacer(buttonModifier)
                 ConfirmImageButton(
                     onClick = onConfirmImage,
-                    iconVector = Icons.Filled.Check,
-                    iconDescription = stringResource(R.string.confirm_image_desc),
+                    iconResId = R.drawable.ic_check_48dp,
+                    iconDescriptionId = R.string.confirm_image_desc,
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )
@@ -110,8 +109,8 @@ fun ConfirmImage(
 
                 ConfirmImageButton(
                     onClick = onConfirmImage,
-                    iconVector = Icons.Filled.Check,
-                    iconDescription = stringResource(R.string.confirm_image_desc),
+                    iconResId = R.drawable.ic_check_48dp,
+                    iconDescriptionId = R.string.confirm_image_desc,
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )
@@ -120,8 +119,8 @@ fun ConfirmImage(
 
                 ConfirmImageButton(
                     onClick = onDiscardImage,
-                    iconVector = Icons.Filled.Close,
-                    iconDescription = stringResource(R.string.discard_image_desc),
+                    iconResId = R.drawable.ic_close_48dp,
+                    iconDescriptionId = R.string.discard_image_desc,
                     modifier = buttonModifier,
                     buttonColors = buttonColors
                 )
@@ -135,8 +134,8 @@ fun ConfirmImage(
 @Composable
 fun ConfirmImageButton(
     onClick: () -> Unit,
-    iconVector: ImageVector,
-    iconDescription: String,
+    @DrawableRes iconResId: Int,
+    @StringRes iconDescriptionId: Int,
     modifier: Modifier = Modifier,
     buttonColors: IconButtonColors = IconButtonDefaults.filledIconButtonColors()
 ) {
@@ -146,8 +145,8 @@ fun ConfirmImageButton(
         colors = buttonColors
     ) {
         Icon(
-            imageVector = iconVector,
-            contentDescription = iconDescription,
+            painter = painterResource(iconResId),
+            contentDescription = stringResource(iconDescriptionId),
             modifier = modifier.padding(8.dp),
         )
     }

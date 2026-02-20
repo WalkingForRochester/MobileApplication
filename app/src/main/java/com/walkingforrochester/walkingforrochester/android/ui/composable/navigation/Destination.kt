@@ -2,11 +2,6 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.naviga
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.navArgument
 import com.walkingforrochester.walkingforrochester.android.R
@@ -14,7 +9,6 @@ import com.walkingforrochester.walkingforrochester.android.R
 data class Destination(
     val route: String,
     @param:StringRes val title: Int,
-    val icon: ImageVector? = null,
     @param:DrawableRes val iconResId: Int? = null,
     val showBottomBar: Boolean = true,
     val showTopBar: Boolean = true,
@@ -59,21 +53,21 @@ val Registration = Destination(
 val LogAWalk = Destination(
     route = "logAWalk",
     title = R.string.log_a_walk,
-    icon = Icons.AutoMirrored.Default.DirectionsWalk,
+    iconResId = R.drawable.ic_directions_walk_24dp,
     enableDrawerGestures = false
 )
 
 val Leaderboard = Destination(
     route = "leaderboard",
     title = R.string.leaderboard,
-    icon = Icons.Default.BarChart,
+    iconResId = R.drawable.ic_bar_chart_24dp,
     enableDrawerGestures = true
 )
 
 val NewsFeed = Destination(
     route = "newsFeed",
     title = R.string.news_feed,
-    icon = Icons.Default.Newspaper
+    iconResId = R.drawable.ic_newspaper_24dp
 )
 
 val ProfileDestination = Destination(

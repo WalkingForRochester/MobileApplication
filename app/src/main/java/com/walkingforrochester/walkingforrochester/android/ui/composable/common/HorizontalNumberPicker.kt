@@ -5,21 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowLeft
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,7 +51,7 @@ fun HorizontalNumberPicker(
             enabled = adjustedValue > minValue
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Default.ArrowLeft,
+                painter = painterResource(R.drawable.ic_arrow_left_24dp),
                 modifier = Modifier.size(buttonSize),
                 contentDescription = stringResource(R.string.decrease_value)
             )
@@ -77,7 +71,7 @@ fun HorizontalNumberPicker(
             enabled = adjustedValue < maxValue
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Default.ArrowRight,
+                painterResource(R.drawable.ic_arrow_right_24dp),
                 modifier = Modifier.size(buttonSize),
                 contentDescription = stringResource(R.string.increase_value)
             )

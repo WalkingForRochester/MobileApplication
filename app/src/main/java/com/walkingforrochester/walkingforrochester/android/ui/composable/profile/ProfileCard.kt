@@ -17,10 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,9 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -292,7 +288,7 @@ fun ProfilePic(
 ) {
     if (profilePic.isEmpty()) {
         Icon(
-            imageVector = Icons.Filled.AccountCircle,
+            painterResource(R.drawable.ic_account_circle_48dp),
             contentDescription = stringResource(R.string.profile_pic),
             modifier = modifier.size(128.dp)
         )
@@ -331,7 +327,7 @@ fun EditProfilePic(
                     model = localImageUri,
                     contentDescription = stringResource(R.string.profile_pic),
                     contentScale = ContentScale.Crop,
-                    error = rememberVectorPainter(image = Icons.Filled.AccountCircle),
+                    error = painterResource(R.drawable.ic_account_circle_48dp),
                     modifier = Modifier
                         .size(192.dp)
                         .clip(CircleShape)
@@ -340,7 +336,7 @@ fun EditProfilePic(
 
             currentImageUrl.isBlank() -> {
                 Icon(
-                    imageVector = Icons.Filled.AccountCircle,
+                    painterResource(R.drawable.ic_account_circle_48dp),
                     contentDescription = stringResource(R.string.profile_pic),
                     modifier = modifier.size(192.dp)
                 )
@@ -349,7 +345,7 @@ fun EditProfilePic(
             else -> {
                 AsyncImage(
                     model = currentImageUrl,
-                    error = rememberVectorPainter(image = Icons.Filled.AccountCircle),
+                    error = painterResource(R.drawable.ic_account_circle_48dp),
                     contentScale = ContentScale.Crop,
                     contentDescription = stringResource(R.string.profile_pic),
                     modifier = Modifier
@@ -385,13 +381,13 @@ fun ProfileActions(
     ) {
         IconButton(onClick = onEdit, enabled = enabled) {
             Icon(
-                imageVector = Icons.Filled.Edit,
+                painter = painterResource(R.drawable.ic_edit_24dp),
                 contentDescription = stringResource(R.string.edit_profile)
             )
         }
         IconButton(onClick = onShare, enabled = enabled) {
             Icon(
-                imageVector = Icons.Filled.Share,
+                painter = painterResource(R.drawable.ic_share_24dp),
                 contentDescription = stringResource(R.string.share_profile)
             )
         }

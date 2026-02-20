@@ -1,15 +1,17 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.common
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -21,8 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.password
 import androidx.compose.ui.semantics.semantics
@@ -30,7 +32,10 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -130,10 +135,10 @@ fun WFRPasswordField(
 
 @Composable
 fun WFROutlinedTextField(
-    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     @StringRes labelRes: Int,
+    modifier: Modifier = Modifier,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -173,7 +178,7 @@ private fun ClearTextButton(
     onClearText: () -> Unit
 ) {
     IconButton(onClick = onClearText) {
-        Icon(imageVector = Icons.Filled.Clear, contentDescription = null)
+        Icon(painterResource(R.drawable.ic_cancel_24dp), contentDescription = null)
     }
 }
 
@@ -182,12 +187,29 @@ private fun PasswordVisibilityButton(
     visible: Boolean,
     onToggleVisibility: () -> Unit
 ) {
-    val icon = if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+    val iconResId =
+        if (visible) R.drawable.ic_visibility_off_24dp else R.drawable.ic_visibility_24dp
     val desc = if (visible) R.string.hide_password else R.string.show_password
     IconButton(onClick = onToggleVisibility) {
         Icon(
-            painter = rememberVectorPainter(image = icon),
+            painter = painterResource(iconResId),
             contentDescription = stringResource(desc)
         )
+    }
+}
+
+@Composable
+@PreviewLightDark
+private fun PreviewWFRTextField() {
+    WalkingForRochesterTheme {
+        Column(Modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(8.dp)) {
+            WFRTextField("Test", onValueChange = {}, labelRes = R.string.first_name)
+            Spacer(Modifier.height(4.dp))
+            WFROutlinedTextField("", onValueChange = {}, labelRes = R.string.first_name)
+            Spacer(Modifier.height(4.dp))
+            WFRPasswordField("test", onValueChange = {}, labelRes = R.string.password)
+        }
     }
 }

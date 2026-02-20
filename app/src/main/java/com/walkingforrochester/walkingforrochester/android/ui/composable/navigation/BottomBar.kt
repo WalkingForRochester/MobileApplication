@@ -6,14 +6,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
@@ -34,10 +33,12 @@ fun BottomBar(
             menuItems.forEach {
                 NavigationBarItem(
                     icon = {
-                        Icon(
-                            imageVector = it.icon ?: Icons.Filled.Info,
-                            contentDescription = null
-                        )
+                        if (it.iconResId != null) {
+                            Icon(
+                                painter = painterResource(it.iconResId),
+                                contentDescription = null
+                            )
+                        }
                     },
                     label = { Text(text = stringResource(id = it.title)) },
                     selected = currentScreen == it,

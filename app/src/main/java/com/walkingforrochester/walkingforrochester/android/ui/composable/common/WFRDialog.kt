@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -123,7 +122,7 @@ fun PreviewWFRDialog() {
     WalkingForRochesterTheme {
         WFRDialog(
             onDismissRequest = { /*TODO*/ },
-            icon = { Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
+            icon = { Icon(painterResource(R.drawable.ic_info_24dp), contentDescription = null) },
             title = { Text(text = stringResource(R.string.safety_guidelines)) },
             buttons = {
                 TextButton(onClick = { /*TODO*/ }) {

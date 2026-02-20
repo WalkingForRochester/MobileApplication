@@ -25,9 +25,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,6 +59,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -231,7 +229,7 @@ fun SubmitWalkContent(
                 navigationIcon = {
                     IconButton(onClick = { showDiscardWalkDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            painter = painterResource(R.drawable.ic_close_24dp),
                             contentDescription = stringResource(R.string.discard_button)
                         )
                     }
@@ -539,7 +537,7 @@ fun SubmitWalkDetails(
                 modifier = Modifier.size(100.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.AddAPhoto,
+                    painter = painterResource(R.drawable.ic_add_a_photo_48dp),
                     contentDescription = stringResource(
                         R.string.take_picture_of_litter_description
                     ),

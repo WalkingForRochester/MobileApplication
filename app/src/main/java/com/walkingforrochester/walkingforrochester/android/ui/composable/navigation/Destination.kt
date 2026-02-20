@@ -1,10 +1,9 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.navigation
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
-import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -16,6 +15,7 @@ data class Destination(
     val route: String,
     @param:StringRes val title: Int,
     val icon: ImageVector? = null,
+    @param:DrawableRes val iconResId: Int? = null,
     val showBottomBar: Boolean = true,
     val showTopBar: Boolean = true,
     val showBackButton: Boolean = false,
@@ -103,25 +103,35 @@ val TakePicture = Destination(
 val SafetyGuidelines = Destination(
     route = "safetyGuidelines",
     title = R.string.safety_guidelines,
+    iconResId = R.drawable.ic_health_and_safety_24dp,
     uriTarget = R.string.guidelines_url
 )
+
 val Waiver = Destination(
     route = "waiver",
     title = R.string.waiver,
+    iconResId = R.drawable.ic_contract_24dp,
     uriTarget = R.string.waiver_url
 )
 
 val OurStory = Destination(
     route = "ourStory",
     title = R.string.our_story,
-    icon = Icons.AutoMirrored.Default.Article,
+    iconResId = R.drawable.ic_article_24dp,
     uriTarget = R.string.our_story_url
+)
+
+val ReportLitter = Destination(
+    route = "reportLitter",
+    title = R.string.report_litter,
+    iconResId = R.drawable.ic_delete_24dp,
+    uriTarget = R.string.report_litter_url
 )
 
 val ContactUs = Destination(
     route = "contactUs",
     title = R.string.contact_us,
-    icon = Icons.AutoMirrored.Default.Help,
+    iconResId = R.drawable.ic_help_24dp,
     showBackButton = true,
     showProfileButton = false,
     showBottomBar = false
@@ -140,6 +150,7 @@ val Destinations = listOf(
     SafetyGuidelines,
     Waiver,
     OurStory,
+    ReportLitter,
     ContactUs
 )
 
@@ -153,5 +164,6 @@ val drawerDestinations = listOf(
     SafetyGuidelines,
     Waiver,
     OurStory,
+    ReportLitter,
     ContactUs
 )

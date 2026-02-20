@@ -73,6 +73,7 @@
     <string name="guidelines_url" translatable="false">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/guidelines.pdf</string>
     <string name="waiver_url" translatable="false">https://walkingforrochester.org/waiver-form/</string>
     <string name="our_story_url" translatable="false">https://walkingforrochester.org/our-story/</string>
+    <string name="report_litter_url" translatable="false">https://walkingforrochester.org/report-litter/</string>
 
     <!-- Destinations -->
     <string name="login">Login</string>
@@ -87,6 +88,7 @@
     <string name="safety_guidelines">Safety Guidelines</string>
     <string name="waiver">Waiver</string>
     <string name="our_story">Our Story</string>
+    <string name="report_litter">Report Litter</string>
     <string name="contact_us">Contact Us</string>
 
 

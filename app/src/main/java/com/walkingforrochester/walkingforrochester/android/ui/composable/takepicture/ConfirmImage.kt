@@ -26,12 +26,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import coil3.compose.AsyncImage
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
@@ -52,7 +55,10 @@ fun ConfirmImage(
 
     Box(modifier = modifier) {
         AsyncImage(
-            model = imageUri,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUri)
+                .memoryCachePolicy(CachePolicy.DISABLED)
+                .build(),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()

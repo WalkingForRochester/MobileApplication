@@ -60,7 +60,7 @@ fun ContactUsScreen(
             }
             Column {
                 Text(
-                    text = "585-358-6888",
+                    text = "585-577-4820",
                     modifier = Modifier
                         .clickable {
                             callOffice(context)

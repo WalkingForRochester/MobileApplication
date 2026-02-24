@@ -56,6 +56,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
@@ -71,6 +72,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.computeWindowSizeClass
 import coil3.compose.AsyncImage
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
@@ -547,7 +550,10 @@ fun SubmitWalkDetails(
             Spacer(Modifier.height(100.dp))
         } else {
             AsyncImage(
-                model = walkData.imageUri,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(walkData.imageUri)
+                    .memoryCachePolicy(CachePolicy.DISABLED)
+                    .build(),
                 contentDescription = null,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)

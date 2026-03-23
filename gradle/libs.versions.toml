@@ -1,14 +1,14 @@
 [versions]
 
-androidx-activity = "1.12.4"
+androidx-activity = "1.13.0"
 androidx-annotation = "1.9.1"
 androidx-browser = "1.9.0"
 androidx-camera = "1.5.3"
-androidx-core = "1.17.0"
+androidx-core = "1.18.0"
 androidx-core-splashscreen = "1.2.0"
-androidx-compose-bom = "2026.02.00"
+androidx-compose-bom = "2026.03.00"
 androidx-credentials = "1.5.0"
-androidx-datastore = "1.2.0"
+androidx-datastore = "1.2.1"
 androidx-exifinterface = "1.4.2"
 androidx-hilt = "1.3.0"
 androidx-lifecycle = "2.10.0"
@@ -23,7 +23,7 @@ androidx-window = "1.5.1"
 junit = "4.13.2"
 
 # kotlin
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 kotlinx-coroutines-bom = "1.10.2"
 ksp = "2.3.6"
 
@@ -38,13 +38,13 @@ retrofit-bom = "3.0.0"
 play-services-location = "21.3.0"
 # maps 20.0.0 requires http apache to be in manifest, see if fixed on newer version before upgrading
 play-services-maps = "20.0.0"
-google-android-maps-compose = "8.1.0"
-google-android-maps-utils = "4.0.0"
-google-libphonenumber = "9.0.24"
+google-android-maps-compose = "8.2.2"
+google-android-maps-utils = "4.1.1"
+google-libphonenumber = "9.0.26"
 google-googleid = "1.2.0"
 
 # dagger/hilt
-dagger-hilt = "2.59.1"
+dagger-hilt = "2.59.2"
 
 accompanist = "0.37.3"
 coil-bom = "3.4.0"
@@ -53,7 +53,7 @@ facebook = "18.1.3"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "9.0.1"
+androidGradlePlugin = "9.1.0"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]

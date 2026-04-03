@@ -122,6 +122,13 @@ val ReportLitter = Destination(
     uriTarget = R.string.report_litter_url
 )
 
+val AboutApp = Destination(
+    route = "aboutApp",
+    title = R.string.about_app,
+    iconResId = R.drawable.ic_info_24dp,
+    uriTarget = R.string.about_app_url
+)
+
 val ContactUs = Destination(
     route = "contactUs",
     title = R.string.contact_us,
@@ -145,6 +152,7 @@ val Destinations = listOf(
     Waiver,
     OurStory,
     ReportLitter,
+    AboutApp,
     ContactUs
 )
 
@@ -159,5 +167,6 @@ val drawerDestinations = listOf(
     Waiver,
     OurStory,
     ReportLitter,
+    AboutApp,
     ContactUs
 )

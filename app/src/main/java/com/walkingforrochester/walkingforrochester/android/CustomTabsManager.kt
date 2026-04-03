@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
 import androidx.annotation.ColorInt
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsClient
@@ -13,6 +12,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.browser.customtabs.CustomTabsServiceConnection
 import androidx.browser.customtabs.CustomTabsSession
 import androidx.compose.ui.platform.UriHandler
+import androidx.core.net.toUri
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -108,9 +108,9 @@ class CustomTabsManager(
         }
 
         val session = session
-        val referrer = Uri.parse("android-app://${context.packageName}")
+        val referrer = "android-app://${context.packageName}".toUri()
 
-        val uri = Uri.parse(uriString)
+        val uri = uriString.toUri()
 
         // If able to bind to a custom tab service, then indicate the url to load
         if (customTabsAvailable && session != null) {

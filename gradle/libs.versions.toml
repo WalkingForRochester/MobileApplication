@@ -2,11 +2,11 @@
 
 androidx-activity = "1.13.0"
 androidx-annotation = "1.9.1"
-androidx-browser = "1.9.0"
-androidx-camera = "1.5.3"
+androidx-browser = "1.10.0"
+androidx-camera = "1.6.0"
 androidx-core = "1.18.0"
 androidx-core-splashscreen = "1.2.0"
-androidx-compose-bom = "2026.03.00"
+androidx-compose-bom = "2026.03.01"
 androidx-credentials = "1.5.0"
 androidx-datastore = "1.2.1"
 androidx-exifinterface = "1.4.2"
@@ -30,7 +30,7 @@ ksp = "2.3.6"
 # square
 leakcanary = "2.14"
 moshi = "1.15.2"
-okio = "3.16.4"
+okio = "3.17.0"
 okhttp-bom = "5.3.2"
 retrofit-bom = "3.0.0"
 
@@ -40,7 +40,7 @@ play-services-location = "21.3.0"
 play-services-maps = "20.0.0"
 google-android-maps-compose = "8.2.2"
 google-android-maps-utils = "4.1.1"
-google-libphonenumber = "9.0.26"
+google-libphonenumber = "9.0.27"
 google-googleid = "1.2.0"
 
 # dagger/hilt
@@ -49,7 +49,7 @@ dagger-hilt = "2.59.2"
 accompanist = "0.37.3"
 coil-bom = "3.4.0"
 # Default graph version set in application, if this is changed see if that line is still needed
-facebook = "18.1.3"
+facebook = "18.2.3"
 timber = "5.0.1"
 
 # Plugins

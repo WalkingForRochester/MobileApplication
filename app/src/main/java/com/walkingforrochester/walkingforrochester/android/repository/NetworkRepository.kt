@@ -4,7 +4,7 @@ import android.net.Uri
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.model.Leader
 import com.walkingforrochester.walkingforrochester.android.model.LeaderboardPeriod
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 interface NetworkRepository {
@@ -27,18 +27,18 @@ interface NetworkRepository {
 
     suspend fun fetchLeaderboard(
         period: LeaderboardPeriod
-    ) : List<Leader>
+    ): List<Leader>
 
     suspend fun uploadProfileImage(
         accountId: Long,
         imageUri: Uri,
-        time: LocalDate = LocalDate.now()
+        time: LocalDateTime = LocalDateTime.now()
     ): String
 
     suspend fun uploadWalkImage(
         accountId: Long,
         imageUri: Uri,
-        time: LocalDate = LocalDate.now()
+        time: LocalDateTime = LocalDateTime.now()
     ): String
 
     suspend fun submitWalk(

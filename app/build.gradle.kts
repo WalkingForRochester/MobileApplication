@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.walkingforrochester.walkingforrochester.android"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.walkingforrochester.walkingforrochester.android"
@@ -173,6 +173,8 @@ dependencies {
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.dagger.hilt.android)
     ksp(libs.dagger.hilt.compilier)
+    // Needed to keep hilt in sync with kotlin
+    ksp(libs.kotlin.metadata.jvm)
 
     androidTestImplementation(libs.dagger.hilt.android.testing)
     kspAndroidTest(libs.dagger.hilt.compilier)

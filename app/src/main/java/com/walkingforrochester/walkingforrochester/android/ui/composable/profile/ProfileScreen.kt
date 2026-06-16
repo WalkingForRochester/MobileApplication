@@ -151,7 +151,8 @@ fun ProfileScreenContent(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            accountProfile.accountId == AccountProfile.NO_ACCOUNT -> {
+            uiState.profileDataLoading ||
+            uiState.profileDataSaving -> {
                 Spacer(
                     modifier = Modifier.height(8.dp)
                 )
@@ -162,12 +163,16 @@ fun ProfileScreenContent(
                     modifier = Modifier.height(16.dp)
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                WFROutlinedButton(
-                    onClick = { showDeleteAccountDialog = true },
-                    label = R.string.delete_account,
-                    modifier = Modifier.widthIn(min = 200.dp)
-                )
-                Spacer(Modifier.height(12.dp))
+
+                // If account failed, let user still logout
+                if (accountProfile.accountId != AccountProfile.NO_ACCOUNT) {
+                    WFROutlinedButton(
+                        onClick = { showDeleteAccountDialog = true },
+                        label = R.string.delete_account,
+                        modifier = Modifier.widthIn(min = 200.dp)
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
                 WFRButton(
                     onClick = onLogout,
                     label = R.string.logout,
@@ -209,6 +214,17 @@ fun PreviewEditProfileScreen() {
                 nickname = "Bob",
                 communityService = false,
             )
+        )
+    }
+}
+
+@Preview(showBackground = true, apiLevel = 34)
+@Composable
+fun PreviewNoProfileScreen() {
+    WalkingForRochesterTheme {
+        ProfileScreenContent(
+            uiState = ProfileScreenState(),
+            accountProfile = AccountProfile.DEFAULT_PROFILE
         )
     }
 }

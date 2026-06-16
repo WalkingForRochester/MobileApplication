@@ -29,6 +29,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okio.FileNotFoundException
 import timber.log.Timber
 import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -145,7 +146,7 @@ class NetworkRepositoryImpl @Inject constructor(
     override suspend fun uploadProfileImage(
         accountId: Long,
         imageUri: Uri,
-        time: LocalDate
+        time: LocalDateTime
     ): String {
         val fileName = "IMG_PROFILE_${
             time.format(WFRDateFormatter.formatter)
@@ -160,7 +161,7 @@ class NetworkRepositoryImpl @Inject constructor(
     override suspend fun uploadWalkImage(
         accountId: Long,
         imageUri: Uri,
-        time: LocalDate
+        time: LocalDateTime
     ): String {
         val fileName = "IMG_WALKING_PICKIMAGE_${
             time.format(WFRDateFormatter.formatter)

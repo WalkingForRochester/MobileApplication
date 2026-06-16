@@ -129,6 +129,6 @@ class LocalDateAdapter {
 
 class WFRDateFormatter {
     companion object {
-        val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM_dd_yyyy")
+        val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM_dd_yyyy_HH_MM_SS")
     }
 }

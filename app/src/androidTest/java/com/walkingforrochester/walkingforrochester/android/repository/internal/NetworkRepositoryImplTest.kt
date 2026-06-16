@@ -7,7 +7,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.squareup.moshi.Moshi
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
 import com.walkingforrochester.walkingforrochester.android.md5
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.model.Leader
@@ -39,6 +38,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.net.HttpURLConnection
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -50,6 +51,8 @@ class NetworkRepositoryImplTest {
     private lateinit var networkRepository: NetworkRepository
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    private val formatter = DateTimeFormatter.ofPattern("MM_dd_yyyy_HH_MM_SS")
 
     @Before
     fun setup() {
@@ -381,7 +384,7 @@ class NetworkRepositoryImplTest {
             .path(R.drawable.wfr_logo_small.toString())
             .build()
 
-        val time = LocalDate.now()
+        val time = LocalDateTime.now()
         val result = networkRepository.uploadProfileImage(
             accountId = 12345,
             imageUri = imageUri,
@@ -389,7 +392,7 @@ class NetworkRepositoryImplTest {
         )
 
         val expectedFile = "IMG_PROFILE_${
-            time.format(WFRDateFormatter.formatter)
+            time.format(formatter)
         }_${md5(12345.toString())}"
 
         assertEquals("https://walkingforrochester.com/images/profile/${expectedFile}.jpg", result)
@@ -415,7 +418,7 @@ class NetworkRepositoryImplTest {
             .path(R.drawable.wfr_logo_small.toString())
             .build()
 
-        val time = LocalDate.now()
+        val time = LocalDateTime.now()
         val result = networkRepository.uploadWalkImage(
             accountId = 12345,
             imageUri = imageUri,
@@ -423,7 +426,7 @@ class NetworkRepositoryImplTest {
         )
 
         val expectedFile = "IMG_WALKING_PICKIMAGE_${
-            time.format(WFRDateFormatter.formatter)
+            time.format(formatter)
         }_${md5(12345.toString())}"
 
         assertEquals(expectedFile, result)

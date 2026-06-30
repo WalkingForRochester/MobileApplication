@@ -43,7 +43,7 @@ class WalkRepositoryImpl @Inject constructor(
     override val locationPermissionGranted: Flow<Boolean> = flow {
 
         while (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            delay(100)
+            delay(timeMillis = 100)
         }
 
         Timber.d("location permission granted")
@@ -164,7 +164,7 @@ class WalkRepositoryImpl @Inject constructor(
     private fun simplifyPath(path: List<LatLng>): List<LatLng> {
         if (path.size <= 2) return path
 
-        return PolyUtil.simplify(path, 1.0)
+        return PolyUtil.simplify(path, SIMPLIFICATION_TOLERANCE)
     }
 
     private fun isBetterLocation(location: Location): Boolean {
@@ -184,7 +184,7 @@ class WalkRepositoryImpl @Inject constructor(
             isSignificantlyNewer -> true
             isSignificantlyOlder -> {
                 Timber.d("significantly older... if emulator reboot")
-                return false
+                false
             }
             // Newer and more accurate
             timeDelta > 0 && accuracyDelta < 0f -> true
@@ -204,7 +204,8 @@ class WalkRepositoryImpl @Inject constructor(
     companion object {
         const val FIFTEEN_SECONDS = 15 * 1000
         const val TWO_MINUTES = 2 * 60 * 1000
-        private const val MINIMUM_ACCURACY_DELTA = 200f
+        private const val MINIMUM_ACCURACY_DELTA = 60f
         private const val MOVED_DISTANCE = 1f
+        private const val SIMPLIFICATION_TOLERANCE = 1.5
     }
 }

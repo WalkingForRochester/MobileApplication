@@ -227,7 +227,7 @@ fun SubmitWalkContent(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Walk Details")
+                    Text(text = stringResource(R.string.submit_walk))
                 },
                 navigationIcon = {
                     IconButton(onClick = { showDiscardWalkDialog = true }) {

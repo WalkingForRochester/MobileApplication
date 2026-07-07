@@ -224,8 +224,8 @@ class ProfileViewModel @Inject constructor(
 
     fun onDeleteAccount() = viewModelScope.launch(context = exceptionHandler) {
         Timber.d("Deleting account...")
-        val accountId = _accountProfile.value.accountId
-        networkRepository.deleteUser(accountId)
+        val profile = _accountProfile.value
+        networkRepository.deleteUser(accountId = profile.accountId, email = profile.email)
         // If no errors, treat as a logout...
         preferenceRepository.removeAccountInfo()
         _eventFlow.emit(ProfileScreenEvent.AccountDeleted)

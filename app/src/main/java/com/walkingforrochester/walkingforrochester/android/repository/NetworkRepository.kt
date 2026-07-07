@@ -50,5 +50,5 @@ interface NetworkRepository {
         encodedPolyline: String
     )
 
-    suspend fun deleteUser(accountId: Long)
+    suspend fun deleteUser(accountId: Long, email: String)
 }

@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.squareup.moshi.Moshi
+import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.LocalDateAdapter
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.md5
@@ -299,9 +300,14 @@ class NetworkRepositoryImplTest {
                 .setBody(buildPasswordResetResponse())
         )
 
-        val code = networkRepository.forgotPassword(EMAIL)
+        var code = networkRepository.forgotPassword(EMAIL)
         assertEquals(CODE, code)
 
+        // Ensure test account doesn't trigger network call
+        code = networkRepository.forgotPassword(BuildConfig.testEmailAccount)
+        assertEquals("test1234", code)
+
+        // Should only have one call
         assertEquals(1, mockWebServer.requestCount)
         val request = mockWebServer.takeRequest()
         val json = JSONObject(request.body.readUtf8())
@@ -481,15 +487,19 @@ class NetworkRepositoryImplTest {
     @Test
     fun testDeleteAccount() = runTest {
         mockWebServer.enqueue(MockResponse().setResponseCode(HttpURLConnection.HTTP_OK))
-        networkRepository.deleteUser(ACCOUNT_ID)
+        networkRepository.deleteUser(ACCOUNT_ID, EMAIL)
 
+        // Simulate delete for test email which should not actually invoke network.
+        networkRepository.deleteUser(ACCOUNT_ID, BuildConfig.testEmailAccount)
+
+        // Ensure only one network request
         assertEquals(1, mockWebServer.requestCount)
         val request = mockWebServer.takeRequest()
         val json = JSONObject(request.body.readUtf8())
         assertEquals(ACCOUNT_ID, json.getLong("accountId"))
 
         testHttpError {
-            networkRepository.deleteUser(ACCOUNT_ID)
+            networkRepository.deleteUser(ACCOUNT_ID, EMAIL)
         }
     }
 

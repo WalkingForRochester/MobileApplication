@@ -2,6 +2,7 @@ package com.walkingforrochester.walkingforrochester.android.repository.internal
 
 import android.content.Context
 import android.net.Uri
+import com.walkingforrochester.walkingforrochester.android.BuildConfig
 import com.walkingforrochester.walkingforrochester.android.WFRDateFormatter
 import com.walkingforrochester.walkingforrochester.android.di.IODispatcher
 import com.walkingforrochester.walkingforrochester.android.md5
@@ -112,8 +113,16 @@ class NetworkRepositoryImpl @Inject constructor(
     }
 
     override suspend fun forgotPassword(email: String): String {
-        val result = restApiService.forgotPassword(EmailAddressRequest(email = email))
-        return result.code
+        return when {
+            email.equals(BuildConfig.testEmailAccount, ignoreCase = true) -> {
+                Timber.d("Simulate test account forgot password")
+                "test1234"
+            }
+            else -> {
+                val result = restApiService.forgotPassword(EmailAddressRequest(email = email))
+                result.code
+            }
+        }
     }
 
     override suspend fun resetPassword(email: String, password: String) {
@@ -193,8 +202,15 @@ class NetworkRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun deleteUser(accountId: Long) {
-        restApiService.deleteUser(AccountIdRequest(accountId = accountId))
+    override suspend fun deleteUser(accountId: Long, email: String) {
+        when {
+            email.equals(BuildConfig.testEmailAccount, ignoreCase = true) -> {
+                Timber.d("Simulate test account delete request")
+            }
+            else -> {
+                restApiService.deleteUser(AccountIdRequest(accountId = accountId))
+            }
+        }
     }
 
     private suspend fun uploadImage(

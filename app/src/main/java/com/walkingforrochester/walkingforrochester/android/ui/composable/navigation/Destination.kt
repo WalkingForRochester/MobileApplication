@@ -74,6 +74,7 @@ val ProfileDestination = Destination(
     route = "profile",
     title = R.string.profile,
     showBottomBar = false,
+    showTopBar = false,
     showProfileButton = false,
     showBackButton = true,
 )

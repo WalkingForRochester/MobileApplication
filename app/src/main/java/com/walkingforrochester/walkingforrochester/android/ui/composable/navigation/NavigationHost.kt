@@ -128,13 +128,15 @@ fun NavigationHost(
 
         composable(route = ProfileDestination.route) {
             ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
                 onLogoutComplete = {
                     navController.navigateAndClearBackStack(
                         route = LoginDestination.route,
                         clearToRoot = true
                     )
                 },
-                contentPadding = contentPadding
             )
         }
 

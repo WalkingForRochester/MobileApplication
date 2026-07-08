@@ -1,9 +1,9 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.profile
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -12,6 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -37,6 +45,7 @@ import com.walkingforrochester.walkingforrochester.android.network.GoogleCredent
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedButton
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.ProfileDestination
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenEvent
 import com.walkingforrochester.walkingforrochester.android.ui.state.ProfileScreenState
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
@@ -45,8 +54,8 @@ import com.walkingforrochester.walkingforrochester.android.viewmodel.ProfileView
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {},
     onLogoutComplete: () -> Unit = {},
-    contentPadding: PaddingValues = PaddingValues(),
     profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -87,8 +96,8 @@ fun ProfileScreen(
     ProfileScreenContent(
         uiState = uiState,
         accountProfile = accountProfile,
-        contentPadding = contentPadding,
         modifier = modifier,
+        onNavigateBack = onNavigateBack,
         onEdit = { profileViewModel.onEdit() },
         onShare = { context.safeStartActivity(profileViewModel.onShare(context)) },
         onProfileChange = { profileViewModel.onProfileChange(it) },
@@ -105,7 +114,7 @@ fun ProfileScreenContent(
     uiState: ProfileScreenState,
     accountProfile: AccountProfile,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(),
+    onNavigateBack: () -> Unit = {},
     onEdit: () -> Unit = {},
     onShare: () -> Unit = {},
     onProfileChange: (AccountProfile) -> Unit = {},
@@ -125,60 +134,93 @@ fun ProfileScreenContent(
         )
     }
 
-    Column(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(contentPadding)
-            .imePadding()
-    ) {
-        Spacer(modifier = Modifier.height(8.dp))
-        ProfileCard(
-            uiState = uiState,
-            accountProfile = accountProfile,
-            modifier = Modifier.padding(horizontal = 8.dp),
-            onEdit = onEdit,
-            onShare = onShare,
-            onProfileChange = onProfileChange,
-            onChoosePhoto = onChoosePhoto,
-            onSaveProfile = onSaveProfile,
-            onCancelEdits = onCancelEdits
-        )
-        when {
-            uiState.editProfile -> {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+    val onNavigate: () -> Unit = {
+        when (uiState.editProfile) {
+            true -> onCancelEdits()
+            else -> onNavigateBack()
+        }
+    }
 
-            uiState.profileDataLoading ||
-            uiState.profileDataSaving -> {
-                Spacer(
-                    modifier = Modifier.height(8.dp)
-                )
-            }
+    BackHandler(true) {
+        onNavigate()
+    }
 
-            else -> {
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
-                Spacer(modifier = Modifier.weight(1f))
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            @OptIn(ExperimentalMaterial3Api::class)
+            CenterAlignedTopAppBar(
+                title = { Text(text = stringResource(ProfileDestination.title)) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigate) {
+                        val (iconResId, descriptionResId) = when (uiState.editProfile) {
+                            true -> R.drawable.ic_close_24dp to R.string.cancel
+                            else -> R.drawable.ic_arrow_back_24dp to R.string.back_button
+                        }
+                        Icon(
+                            painter = painterResource(iconResId),
+                            contentDescription = stringResource(descriptionResId)
+                        )
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(padding)
+                .imePadding()
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+            ProfileCard(
+                uiState = uiState,
+                accountProfile = accountProfile,
+                modifier = Modifier.padding(horizontal = 8.dp),
+                onEdit = onEdit,
+                onShare = onShare,
+                onProfileChange = onProfileChange,
+                onChoosePhoto = onChoosePhoto,
+                onSaveProfile = onSaveProfile,
+                onCancelEdits = onCancelEdits
+            )
+            when {
+                uiState.editProfile -> {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
-                // If account failed, let user still logout
-                if (accountProfile.accountId != AccountProfile.NO_ACCOUNT) {
-                    WFROutlinedButton(
-                        onClick = { showDeleteAccountDialog = true },
-                        label = R.string.delete_account,
+                uiState.profileDataLoading ||
+                    uiState.profileDataSaving -> {
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+                }
+
+                else -> {
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // If account failed, let user still logout
+                    if (accountProfile.accountId != AccountProfile.NO_ACCOUNT) {
+                        WFROutlinedButton(
+                            onClick = { showDeleteAccountDialog = true },
+                            label = R.string.delete_account,
+                            modifier = Modifier.widthIn(min = 200.dp)
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    WFRButton(
+                        onClick = onLogout,
+                        label = R.string.logout,
                         modifier = Modifier.widthIn(min = 200.dp)
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                WFRButton(
-                    onClick = onLogout,
-                    label = R.string.logout,
-                    modifier = Modifier.widthIn(min = 200.dp)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

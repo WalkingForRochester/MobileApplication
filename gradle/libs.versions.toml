@@ -6,54 +6,54 @@ androidx-browser = "1.10.0"
 androidx-camera = "1.6.1"
 androidx-core = "1.19.0"
 androidx-core-splashscreen = "1.2.0"
-androidx-compose-bom = "2026.05.01"
+androidx-compose-bom = "2026.06.01"
 androidx-credentials = "1.6.0"
 androidx-datastore = "1.2.1"
 androidx-exifinterface = "1.4.2"
-androidx-hilt = "1.4.0-rc01"
-androidx-lifecycle = "2.10.0"
+androidx-hilt = "1.4.0"
+androidx-lifecycle = "2.11.0"
 androidx-material = "1.14.0"
 androidx-navigation = "2.9.8"
 androidx-test-espresso = "3.7.0"
 androidx-test-junit = "1.3.0"
-androidx-test-uiautomator = "2.3.0"
+androidx-test-uiautomator = "2.4.0"
 androidx-webkit = "1.16.0"
 androidx-window = "1.5.1"
 
 junit = "4.13.2"
 
 # kotlin
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 kotlinx-coroutines-bom = "1.11.0"
 ksp = "2.3.6"
 
 # square
 leakcanary = "2.14"
 moshi = "1.15.2"
-okio = "3.17.0"
+okio = "3.18.0"
 okhttp-bom = "5.4.0"
 retrofit-bom = "3.0.0"
 
 # google services
-play-services-location = "21.3.0"
+play-services-location = "21.4.0"
 # maps 20.0.0 requires http apache to be in manifest, see if fixed on newer version before upgrading
 play-services-maps = "20.0.0"
-google-android-maps-compose = "8.3.0"
-google-android-maps-utils = "4.4.0"
-google-libphonenumber = "9.0.32"
+google-android-maps-compose = "8.4.0"
+google-android-maps-utils = "5.0.0"
+google-libphonenumber = "9.0.35"
 google-googleid = "1.2.0"
 
 # dagger/hilt
-dagger-hilt = "2.59.2"
+dagger-hilt = "2.60.1"
 
 accompanist = "0.37.3"
 coil-bom = "3.5.0"
 # Default graph version set in application, if this is changed see if that line is still needed
-facebook = "18.2.3"
+facebook = "18.3.0"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "9.2.1"
+androidGradlePlugin = "9.3.1"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]
@@ -61,8 +61,8 @@ mapsSecretsPlugin = "2.0.1"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidx-camera" }
+androidx-camera-compose = { module = "androidx.camera:camera-compose", version.ref = "androidx-camera"}
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidx-camera" }
-androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidx-camera" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "androidx-exifinterface" }

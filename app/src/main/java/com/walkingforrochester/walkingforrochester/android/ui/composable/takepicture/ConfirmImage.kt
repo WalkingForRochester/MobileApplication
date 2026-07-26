@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -25,17 +24,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowSizeClass
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import com.walkingforrochester.walkingforrochester.android.R
+import com.walkingforrochester.walkingforrochester.android.ktx.isPortraitMode
 import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 
@@ -43,16 +43,12 @@ import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRo
 @Composable
 fun ConfirmImage(
     imageUri: Uri,
-    windowSizeClass: WindowSizeClass,
+    portraitMode: Boolean,
     modifier: Modifier = Modifier,
     onConfirmImage: () -> Unit = {},
     onDiscardImage: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues()
 ) {
-    val portrait =
-        windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
-            && !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
-
     Box(modifier = modifier) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -63,6 +59,8 @@ fun ConfirmImage(
             modifier = Modifier
                 .fillMaxSize()
                 .backgroundInPreview(Color.Gray),
+            error = ColorPainter(Color.Gray),
+            fallback = ColorPainter(Color.Gray),
             contentScale = ContentScale.Crop
         )
         val buttonColors = IconButtonDefaults.filledIconButtonColors(
@@ -72,7 +70,7 @@ fun ConfirmImage(
 
         val buttonModifier = Modifier.size(56.dp)
 
-        if (portrait) {
+        if (portraitMode) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,7 +105,7 @@ fun ConfirmImage(
                 modifier = Modifier
                     .fillMaxHeight()
                     .padding(end = 24.dp)
-                    .safeDrawingPadding()
+                    .padding(contentPadding)
                     .align(Alignment.CenterEnd)
             ) {
 
@@ -163,10 +161,10 @@ fun ConfirmImageButton(
 private fun PreviewConfirmImage() {
     WalkingForRochesterTheme {
         Surface {
-            val info = currentWindowAdaptiveInfo()
+            val portraitMode = currentWindowAdaptiveInfo().windowSizeClass.isPortraitMode()
             ConfirmImage(
                 imageUri = Uri.EMPTY,
-                windowSizeClass = info.windowSizeClass
+                portraitMode = portraitMode
             )
         }
     }

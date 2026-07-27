@@ -17,7 +17,7 @@ class WalkingForRochesterApp : Application() {
         }
 
         // Manually bump the graph api version
-        FacebookSdk.setGraphApiVersion("v24.0")
+        FacebookSdk.setGraphApiVersion("v25.0")
         //FacebookSdk.setIsDebugEnabled(true)
         //FacebookSdk.addLoggingBehavior(LoggingBehavior.REQUESTS)
 

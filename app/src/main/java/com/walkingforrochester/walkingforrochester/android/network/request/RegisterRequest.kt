@@ -8,9 +8,8 @@ data class RegisterRequest(
     val firstName: String,
     val lastName: String,
     val email: String,
-    val phone: String,
     val password: String,
-    val dateOfBirth: LocalDate,
+    val dateOfBirth: LocalDate = LocalDate.now(),
     val nickname: String,
     val communityService: Boolean,
     val facebookId: String?

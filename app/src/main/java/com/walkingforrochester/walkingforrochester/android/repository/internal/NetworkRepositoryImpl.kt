@@ -68,7 +68,6 @@ class NetworkRepositoryImpl @Inject constructor(
             UpdateProfileRequest(
                 accountId = profile.accountId,
                 email = profile.email,
-                phone = profile.phoneNumber,
                 nickname = profile.nickname,
                 communityService = profile.communityService,
                 imgUrl = profile.imageUrl,
@@ -96,9 +95,7 @@ class NetworkRepositoryImpl @Inject constructor(
                 firstName = profile.firstName,
                 lastName = profile.lastName,
                 email = profile.email,
-                phone = profile.phoneNumber,
                 nickname = profile.nickname,
-                dateOfBirth = LocalDate.now(),
                 password = password,
                 communityService = profile.communityService,
                 facebookId = profile.facebookId

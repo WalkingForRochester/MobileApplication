@@ -6,7 +6,6 @@ import com.squareup.moshi.JsonClass
 data class UpdateProfileRequest (
     val accountId: Long,
     val email: String,
-    val phone: String,
     val nickname: String,
     val communityService: Boolean,
     val imgUrl: String,

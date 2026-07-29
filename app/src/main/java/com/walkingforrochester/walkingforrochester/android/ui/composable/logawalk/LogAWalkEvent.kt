@@ -2,5 +2,6 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.logawa
 
 enum class LogAWalkEvent {
     WalkCompleted,
+    Logout,
     UnexpectedError
 }

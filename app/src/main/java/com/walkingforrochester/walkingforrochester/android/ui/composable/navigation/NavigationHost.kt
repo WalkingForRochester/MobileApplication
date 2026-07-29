@@ -114,6 +114,12 @@ fun NavigationHost(
                 onNavigateToSubmitWalk = {
                     navController.navigate(SubmitWalk.route)
                 },
+                onLogoutComplete = {
+                    navController.navigateAndClearBackStack(
+                        route = LoginDestination.route,
+                        clearToRoot = true
+                    )
+                },
                 contentPadding = contentPadding
             )
         }

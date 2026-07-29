@@ -30,7 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -226,7 +226,7 @@ fun ProfileScreenContent(
     }
 }
 
-@Preview(showBackground = true, apiLevel = 34)
+@PreviewLightDark
 @Composable
 fun PreviewProfileScreen() {
     WalkingForRochesterTheme {
@@ -235,7 +235,6 @@ fun PreviewProfileScreen() {
             accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
                 accountId = 1234L,
                 email = "test@email.com",
-                phoneNumber = "5551234567",
                 nickname = "Bob",
                 communityService = false,
             )
@@ -243,7 +242,7 @@ fun PreviewProfileScreen() {
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 fun PreviewEditProfileScreen() {
     WalkingForRochesterTheme {
@@ -252,7 +251,6 @@ fun PreviewEditProfileScreen() {
             accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
                 accountId = 1234L,
                 email = "test@email.com",
-                phoneNumber = "5551234567",
                 nickname = "Bob",
                 communityService = false,
             )
@@ -260,7 +258,7 @@ fun PreviewEditProfileScreen() {
     }
 }
 
-@Preview(showBackground = true, apiLevel = 34)
+@PreviewLightDark
 @Composable
 fun PreviewNoProfileScreen() {
     WalkingForRochesterTheme {

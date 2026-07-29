@@ -46,7 +46,7 @@ class ProfileViewModel @Inject constructor(
     private val _accountProfile = MutableStateFlow(AccountProfile.DEFAULT_PROFILE)
     val accountProfile = _accountProfile.asStateFlow()
 
-    private val _uiState = MutableStateFlow(ProfileScreenState())
+    private val _uiState = MutableStateFlow(ProfileScreenState(profileDataLoading = true))
     val uiState = _uiState.asStateFlow()
 
     // Because the network error may occur BEF
@@ -96,13 +96,10 @@ class ProfileViewModel @Inject constructor(
         if (accountProfile.email != oldProfile.email) {
             _uiState.update { it.copy(emailValidationMessageId = 0) }
         }
-        if (accountProfile.phoneNumber != oldProfile.phoneNumber) {
-            _uiState.update { it.copy(phoneValidationMessageId = 0) }
-        }
-        _accountProfile.update {
-            it.copy(
+
+        _accountProfile.update { profile ->
+            profile.copy(
                 email = accountProfile.email.trim(),
-                phoneNumber = accountProfile.phoneNumber.filter { it.isDigit() },
                 nickname = accountProfile.nickname.filter { it != '\n' },
                 communityService = accountProfile.communityService
             )
@@ -235,7 +232,6 @@ class ProfileViewModel @Inject constructor(
     private suspend fun validateForm(): Boolean {
         var isValid = true
         var emailValidationMessageId = 0
-        var phoneValidationMessageId = 0
 
         with(_accountProfile.value) {
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -247,16 +243,11 @@ class ProfileViewModel @Inject constructor(
                 emailValidationMessageId = R.string.email_in_use
                 isValid = false
             }
-            if (phoneNumber.length != 10) {
-                phoneValidationMessageId = R.string.invalid_phone
-                isValid = false
-            }
         }
 
         _uiState.update {
             it.copy(
                 emailValidationMessageId = emailValidationMessageId,
-                phoneValidationMessageId = phoneValidationMessageId
             )
         }
         return isValid
@@ -285,8 +276,8 @@ class ProfileViewModel @Inject constructor(
             _accountProfile.update {
                 it.copy(
                     email = savedStateHandle[EMAIL_KEY] ?: it.email,
-                    phoneNumber = savedStateHandle[PHONE_KEY] ?: it.phoneNumber,
-                    nickname = savedStateHandle[NICKNAME_KEY] ?: it.nickname
+                    nickname = savedStateHandle[NICKNAME_KEY] ?: it.nickname,
+                    communityService = savedStateHandle[COMMUNITY_SERVICE_KEY] ?: it.communityService
                 )
             }
         }
@@ -298,16 +289,16 @@ class ProfileViewModel @Inject constructor(
 
         savedStateHandle[EDIT_PROFILE_KEY] = uiState.editProfile
         savedStateHandle[EMAIL_KEY] = accountProfile.email
-        savedStateHandle[PHONE_KEY] = accountProfile.phoneNumber
         savedStateHandle[NICKNAME_KEY] = accountProfile.nickname
+        savedStateHandle[COMMUNITY_SERVICE_KEY] = accountProfile.communityService
         savedStateHandle[PROFILE_IMAGE_KEY] = uiState.localProfilePicUri
     }
 
     companion object {
         private const val EDIT_PROFILE_KEY = "editProfile"
         private const val EMAIL_KEY = "email"
-        private const val PHONE_KEY = "phoneNumber"
         private const val NICKNAME_KEY = "nickName"
+        private const val COMMUNITY_SERVICE_KEY = "communityService"
         private const val PROFILE_IMAGE_KEY = "profileImage"
 
         private const val CHOICE_FILE_NAME = "wfr_profile_choice.jpg"

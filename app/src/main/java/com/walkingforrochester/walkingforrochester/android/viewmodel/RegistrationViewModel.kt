@@ -67,16 +67,11 @@ class RegistrationViewModel @Inject constructor(
             _uiState.update { it.copy(lastNameValidationMessageId = 0) }
         }
 
-        if (profile.phoneNumber != currentProfile.phoneNumber) {
-            _uiState.update { it.copy(phoneValidationMessageId = 0) }
-        }
-
-        _registrationProfile.update {
-            it.copy(
+        _registrationProfile.update { registration ->
+            registration.copy(
                 email = profile.email.trim(),
                 firstName = profile.firstName.filter { it != '\n' },
                 lastName = profile.lastName.filter { it != '\n' },
-                phoneNumber = profile.phoneNumber.filter { it.isDigit() },
                 nickname = profile.nickname.filter { it != '\n' },
                 communityService = profile.communityService
             )
@@ -123,7 +118,6 @@ class RegistrationViewModel @Inject constructor(
         var emailValidationMessageId = 0
         var firstNameValidationMessageId = 0
         var lastNameValidationMessageId = 0
-        var phoneValidationMessageId = 0
         var passwordValidationMessageId = 0
         var confirmPasswordValidationMessageId = 0
 
@@ -146,10 +140,6 @@ class RegistrationViewModel @Inject constructor(
                 emailValidationMessageId = R.string.email_already_registered
                 isValid = false
             }
-            if (phoneNumber.length != 10) {
-                phoneValidationMessageId = R.string.invalid_phone
-                isValid = false
-            }
         }
 
         with(localState) {
@@ -168,7 +158,6 @@ class RegistrationViewModel @Inject constructor(
                 emailValidationMessageId = emailValidationMessageId,
                 firstNameValidationMessageId = firstNameValidationMessageId,
                 lastNameValidationMessageId = lastNameValidationMessageId,
-                phoneValidationMessageId = phoneValidationMessageId,
                 passwordValidationMessageId = passwordValidationMessageId,
                 confirmPasswordValidationMessageId = confirmPasswordValidationMessageId
             )

@@ -1,6 +1,5 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.registration
 
-import android.content.res.Configuration
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -11,21 +10,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
-import com.walkingforrochester.walkingforrochester.android.ui.PhoneNumberVisualTransformation
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRPasswordField
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRTextField
@@ -96,21 +92,6 @@ fun RegistrationForm(
         )
 
         WFRTextField(
-            value = registrationProfile.phoneNumber,
-            onValueChange = { onProfileChange(registrationProfile.copy(phoneNumber = it)) },
-            labelRes = R.string.phone_number,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .semantics { contentType = ContentType.PhoneNumber },
-            visualTransformation = PhoneNumberVisualTransformation(LocalContext.current),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Phone,
-                imeAction = ImeAction.Next
-            ),
-            validationError = errorMessage(uiState.phoneValidationMessageId),
-        )
-
-        WFRTextField(
             value = registrationProfile.nickname,
             onValueChange = { onProfileChange(registrationProfile.copy(nickname = it)) },
             labelRes = R.string.nickname,
@@ -158,8 +139,7 @@ fun RegistrationForm(
     }
 }
 
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@PreviewLightDark
 @Composable
 fun RegistrationFormPreview() {
     WalkingForRochesterTheme {

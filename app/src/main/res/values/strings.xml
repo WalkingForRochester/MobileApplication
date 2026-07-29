@@ -16,20 +16,16 @@
     <string name="email_address">Email Address</string>
     <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
-    <string name="phone_number">Phone Number</string>
     <string name="nickname">Display Name</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm Password</string>
 
-    <string name="date_of_birth">Date Of Birth</string>
     <string name="toggle_password_visibility">Toggle password visibility</string>
     <string name="show_password">Show password</string>
     <string name="hide_password">Hide password</string>
-    <string name="dob_date_picker">Date Of Birth Date Picker</string>
     <string name="invalid_email">Please enter a valid email address</string>
     <string name="invalid_password">Password must be at least 8 characters long</string>
     <string name="invalid_field_empty">Field cannot be empty</string>
-    <string name="invalid_phone">Please enter a valid 10 digit phone number</string>
     <string name="invalid_date_of_birth">Age must be over 18</string>
     <string name="invalid_password_match">Passwords must match</string>
     <string name="invalid_code">The provided code does not match</string>
@@ -115,6 +111,8 @@
     <string name="email_subject">App question</string>
     <string name="app_version">App Version: %1$s</string>
 
+    <string name="account_id">AccountID: %1$d</string>
+    <string name="community_service">Community service: YES</string>
     <string name="distances">Distances</string>
     <string name="durations">Durations</string>
     <string name="profile_disclaimer">This may not be a 100% accurate depiction of your litter progress. For verification, please contact our office directly.</string>
@@ -137,9 +135,6 @@
 
     <string name="discard_image_desc">Discard image</string>
     <string name="confirm_image_desc">Confirm image</string>
-
-    <string name="did_you_pick_up_litter">Did you pick up litter?</string>
-    <string name="continue_walking">Continue\nWalking</string>
 
     <string name="submit">Submit</string>
     <string name="how_many_bags_collected">How many bags of litter did you collect?</string>

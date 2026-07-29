@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -25,30 +26,27 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.formatDouble
 import com.walkingforrochester.walkingforrochester.android.formatElapsedMilli
 import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
-import com.walkingforrochester.walkingforrochester.android.ui.PhoneNumberVisualTransformation
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.CommunityServiceCheckbox
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFROutlinedButton
@@ -102,7 +100,6 @@ fun ProfileCard(
                 EditableProfile(
                     uiState = uiState,
                     accountProfile = accountProfile,
-                    modifier = Modifier,
                     onEdit = onEdit,
                     onShare = onShare,
                     onProfileChange = onProfileChange,
@@ -180,7 +177,10 @@ fun EditableProfile(
 
 @Composable
 fun ProfileStats(
-    label: String, previousStat: String, overallStat: String, modifier: Modifier = Modifier
+    label: String,
+    previousStat: String,
+    overallStat: String,
+    modifier: Modifier = Modifier
 ) {
     val style = MaterialTheme.typography.bodyMedium
     Column(
@@ -210,13 +210,17 @@ fun ProfileDataAndActions(
     onShare: () -> Unit = {}
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
     ) {
         ProfilePic(
             profilePic = accountProfile.imageUrl,
             modifier = Modifier.padding(16.dp),
         )
-        Column(modifier.padding(top = 4.dp, bottom = 16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp, bottom = 16.dp)
+        ) {
             ProfileActions(
                 enabled = accountProfile.accountId != 0L,
                 onEdit = onEdit,
@@ -225,9 +229,9 @@ fun ProfileDataAndActions(
             ProfileInfo(
                 accountId = accountProfile.accountId,
                 email = accountProfile.email,
-                phone = accountProfile.phoneNumber,
-                nickname = accountProfile.nickname,
-                communityService = accountProfile.communityService
+                name = accountProfile.nickname.ifBlank { accountProfile.firstName },
+                communityService = accountProfile.communityService,
+                modifier = Modifier.heightIn(min = 80.dp)
             )
         }
     }
@@ -259,7 +263,6 @@ fun EditProfile(
         EditProfileInfo(
             accountProfile = accountProfile,
             emailValidationMessageId = uiState.emailValidationMessageId,
-            phoneValidationMessageId = uiState.phoneValidationMessageId,
             onProfileChange = onProfileChange
         )
         Row(
@@ -398,33 +401,26 @@ fun ProfileActions(
 fun ProfileInfo(
     accountId: Long,
     email: String,
-    phone: String,
-    nickname: String,
+    name: String,
     communityService: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.Center,
         modifier = modifier
-            .padding(end = 16.dp)
             .fillMaxWidth()
+            .padding(end = 16.dp)
     ) {
-        val context = LocalContext.current
-        val formattedPhone = remember(phone) {
-            val transform = PhoneNumberVisualTransformation(context)
-            transform.filter(AnnotatedString(phone)).text
-        }
-
         val style = MaterialTheme.typography.bodyMedium
-        Text(text = "AccountID: $accountId", style = style)
-        if (nickname.isNotBlank()) {
-            Text(text = nickname, style = style)
+
+        Text(text = stringResource(R.string.account_id, accountId), style = style)
+        if (name.isNotBlank()) {
+            Text(text = name, style = style)
         }
         Text(text = email, style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(text = formattedPhone, style = style)
         if (communityService) {
-            Text("Community service: YES", style = style)
+            Text(stringResource(R.string.community_service), style = style)
         }
     }
 }
@@ -433,7 +429,6 @@ fun ProfileInfo(
 fun EditProfileInfo(
     accountProfile: AccountProfile,
     emailValidationMessageId: Int,
-    phoneValidationMessageId: Int,
     modifier: Modifier = Modifier,
     onProfileChange: (AccountProfile) -> Unit = {}
 ) {
@@ -456,20 +451,6 @@ fun EditProfileInfo(
                 imeAction = ImeAction.Next
             ),
             validationError = errorMessage(emailValidationMessageId)
-        )
-        WFROutlinedTextField(
-            modifier = Modifier.padding(horizontal = 12.dp),
-            value = accountProfile.phoneNumber,
-            onValueChange = { newPhone ->
-                onProfileChange(accountProfile.copy(phoneNumber = newPhone))
-            },
-            labelRes = R.string.phone_number,
-            visualTransformation = PhoneNumberVisualTransformation(LocalContext.current),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Phone,
-                imeAction = ImeAction.Next
-            ),
-            validationError = errorMessage(phoneValidationMessageId)
         )
         WFROutlinedTextField(
             modifier = Modifier.padding(horizontal = 12.dp),
@@ -503,47 +484,53 @@ private fun errorMessage(@StringRes msgId: Int): String {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 fun PreviewProfileCard() {
     WalkingForRochesterTheme {
-        ProfileCard(
-            uiState = ProfileScreenState(),
-            accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
-                accountId = 1234L,
-                email = "test@email.com",
-                phoneNumber = "5551234567",
-                nickname = "Bob",
-                communityService = true,
+        Surface {
+            ProfileCard(
+                uiState = ProfileScreenState(),
+                accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
+                    accountId = 1234L,
+                    email = "test@email.com",
+                    nickname = "Bob",
+                    firstName = "Robert",
+                    communityService = false,
+                )
             )
-        )
+        }
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 fun PreviewNoAccount() {
     WalkingForRochesterTheme {
-        ProfileCard(
-            uiState = ProfileScreenState(),
-            accountProfile = AccountProfile.DEFAULT_PROFILE
-        )
+        Surface {
+            ProfileCard(
+                uiState = ProfileScreenState(),
+                accountProfile = AccountProfile.DEFAULT_PROFILE
+            )
+        }
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 fun PreviewProfileCardEditing() {
     WalkingForRochesterTheme {
-        ProfileCard(
-            uiState = ProfileScreenState(editProfile = true),
-            accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
-                accountId = 1234L,
-                email = "test@email.com",
-                phoneNumber = "5551234567",
-                nickname = "Bob",
-                communityService = true,
+        Surface {
+            ProfileCard(
+                uiState = ProfileScreenState(editProfile = true),
+                accountProfile = AccountProfile.DEFAULT_PROFILE.copy(
+                    accountId = 1234L,
+                    email = "test@email.com",
+                    nickname = "Bob",
+                    firstName = "Robert",
+                    communityService = true,
+                )
             )
-        )
+        }
     }
 }

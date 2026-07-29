@@ -62,6 +62,7 @@ import timber.log.Timber
 fun LogAWalkScreen(
     modifier: Modifier = Modifier,
     onNavigateToSubmitWalk: () -> Unit = {},
+    onLogoutComplete: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
     logAWalkViewModel: LogAWalkViewModel = hiltViewModel()
 ) {
@@ -81,6 +82,10 @@ fun LogAWalkScreen(
                 when (event) {
                     LogAWalkEvent.WalkCompleted -> {
                         onNavigateToSubmitWalk()
+                    }
+
+                    LogAWalkEvent.Logout -> {
+                        onLogoutComplete()
                     }
 
                     LogAWalkEvent.UnexpectedError -> snackbarHostState.showSnackbar(
@@ -126,6 +131,8 @@ fun LogAWalkScreen(
                 showLocationRational = false
             }
         )
+        logAWalkViewModel.validateProfile()
+
         onStopOrDispose {
             when (lifecycle.currentState) {
                 Lifecycle.State.CREATED -> Timber.d("stopped...")

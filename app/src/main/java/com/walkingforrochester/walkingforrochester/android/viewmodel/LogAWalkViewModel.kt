@@ -3,8 +3,11 @@ package com.walkingforrochester.walkingforrochester.android.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkingforrochester.walkingforrochester.android.di.DefaultDispatcher
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.model.PermissionPreferences
+import com.walkingforrochester.walkingforrochester.android.model.ProfileException
 import com.walkingforrochester.walkingforrochester.android.model.WalkData.WalkState
+import com.walkingforrochester.walkingforrochester.android.repository.NetworkRepository
 import com.walkingforrochester.walkingforrochester.android.repository.PreferenceRepository
 import com.walkingforrochester.walkingforrochester.android.repository.WalkRepository
 import com.walkingforrochester.walkingforrochester.android.ui.composable.logawalk.LogAWalkEvent
@@ -21,11 +24,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LogAWalkViewModel @Inject constructor(
+    private val networkRepository: NetworkRepository,
     private val preferenceRepository: PreferenceRepository,
     private val walkRepository: WalkRepository,
     @param:DefaultDispatcher val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
+    private var profileValidated = false
     private val _eventFlow = MutableSharedFlow<LogAWalkEvent>(
         // Using capacity of one to allow exception handler to emit outside of coroutine
         extraBufferCapacity = 1
@@ -44,7 +49,12 @@ class LogAWalkViewModel @Inject constructor(
     val currentWalk = walkRepository.walkData
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        Timber.e(throwable, "Unexpected error submitting a walk")
+        val msg = when {
+            throwable is ProfileException -> "fetching profile"
+            else -> " processing the walk"
+        }
+
+        Timber.e(t = throwable, "Unexpected error $msg")
 
         if (!_eventFlow.tryEmit(LogAWalkEvent.UnexpectedError)) {
             Timber.w("Failed to report error due to no listener")
@@ -81,5 +91,36 @@ class LogAWalkViewModel @Inject constructor(
 
     fun onClearWalk() {
         walkRepository.clearWalk()
+    }
+
+    fun validateProfile() = viewModelScope.launch(exceptionHandler) {
+        if (profileValidated) return@launch
+
+        val accountId = preferenceRepository.fetchAccountId()
+        val profile = if (accountId != AccountProfile.NO_ACCOUNT) {
+            networkRepository.fetchProfile(accountId)
+        } else {
+            AccountProfile.DEFAULT_PROFILE
+        }
+
+        when {
+            profile.accountId == AccountProfile.NO_ACCOUNT -> {
+                Timber.d("Account does not exist, triggering logout")
+                preferenceRepository.removeAccountInfo()
+                _eventFlow.emit(LogAWalkEvent.Logout)
+            }
+
+            profile.phoneNumber.isNotBlank() -> {
+                // Remove the phone number by updating it.
+                Timber.d("Removing legacy phone number from profile")
+                networkRepository.updateProfile(profile)
+                profileValidated = true
+            }
+
+            else -> {
+                Timber.d("Profile is valid")
+                profileValidated = true
+            }
+        }
     }
 }

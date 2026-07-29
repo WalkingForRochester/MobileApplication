@@ -14,7 +14,7 @@ data class WalkData(
     val distanceMeters: Double = 0.0,
     val startPosition: LatLng = DEFAULT_POSITION,
     val endPosition: LatLng = DEFAULT_END_POSITION,
-    val path: List<LatLng> = emptyList<LatLng>(),
+    val path: List<LatLng> = emptyList(),
     val bounds: LatLngBounds = DEFAULT_BOUNDS,
     val bagsOfLitter: Int = 0,
     val imageUri: Uri = Uri.EMPTY

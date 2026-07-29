@@ -75,7 +75,9 @@ class WalkRepositoryImpl @Inject constructor(
                     state = WalkState.COMPLETE,
                     endPosition = adjustedPath.last(),
                     durationMilli = System.currentTimeMillis() - it.startTime,
-                    distanceMeters = SphericalUtil.computeLength(adjustedPath),
+                    // Use raw distance so distance reported as correctly as possible
+                    distanceMeters = SphericalUtil.computeLength(it.path),
+                    // Send simplified path for analysis to reduce data points.
                     path = adjustedPath,
                     bounds = buildBounds(adjustedPath)
                 )

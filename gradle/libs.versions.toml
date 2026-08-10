@@ -30,7 +30,7 @@ ksp = "2.3.6"
 # square
 leakcanary = "2.14"
 moshi = "1.15.2"
-okio = "3.18.0"
+okio = "3.18.1"
 okhttp-bom = "5.4.0"
 retrofit-bom = "3.0.0"
 
@@ -40,7 +40,6 @@ play-services-location = "21.4.0"
 play-services-maps = "20.0.0"
 google-android-maps-compose = "8.4.0"
 google-android-maps-utils = "5.0.0"
-google-libphonenumber = "9.0.35"
 google-googleid = "1.2.0"
 
 # dagger/hilt
@@ -140,7 +139,6 @@ play-services-location = { module = "com.google.android.gms:play-services-locati
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
 google-android-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "google-android-maps-compose" }
 google-android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "google-android-maps-utils" }
-google-libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "google-libphonenumber" }
 google-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "google-googleid" }
 
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil-bom" }

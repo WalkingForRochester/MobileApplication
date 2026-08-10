@@ -187,7 +187,6 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.google.android.maps.compose)
     implementation(libs.google.android.maps.utils)
-    implementation(libs.google.libphonenumber)
 
     val coilBom = platform(libs.coil.bom)
     implementation(coilBom)

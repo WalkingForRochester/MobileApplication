@@ -27,7 +27,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import okio.internal.commonToUtf8String
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.After
@@ -213,7 +212,8 @@ class NetworkRepositoryImplTest {
         assertEquals(EMAIL, json.getString("email"))
         assertEquals(NICKNAME, json.getString("nickname"))
         assertEquals(true, json.getBoolean("communityService"))
-        assertEquals(PHONE, json.getString("phone"))
+        // Ensure phone does not exist in payload
+        assertEquals("", json.optString("phone"))
         assertEquals(IMG_URL, json.getString("imgUrl"))
 
         testHttpError {
@@ -275,7 +275,8 @@ class NetworkRepositoryImplTest {
         assertEquals(FIRST_NAME, json.getString("firstName"))
         assertEquals(LAST_NAME, json.getString("lastName"))
         assertEquals(EMAIL, json.getString("email"))
-        assertEquals(PHONE, json.getString("phone"))
+        // Ensure phone does not exist in payload
+        assertEquals("", json.optString("phone"))
         assertEquals(NICKNAME, json.getString("nickname"))
         // Not used, but set to be current date
         assertEquals(LocalDate.now().toString(), json.getString("dateOfBirth"))
@@ -520,7 +521,7 @@ class NetworkRepositoryImplTest {
             inputStream.readBytes()
         } ?: byteArrayOf()
 
-        val utfBytes = bytes.commonToUtf8String()
+        val utfBytes = bytes.toString(Charsets.UTF_8)
 
         val body = request.body.readUtf8()
 

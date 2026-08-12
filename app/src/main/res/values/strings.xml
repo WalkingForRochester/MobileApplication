@@ -135,6 +135,8 @@
 
     <string name="discard_image_desc">Discard image</string>
     <string name="confirm_image_desc">Confirm image</string>
+    <string name="capture_error">An unexpected error occurred taking the picture.</string>
+    <string name="confirm_error">An unexpected error occurred processing the picture.</string>
 
     <string name="submit">Submit</string>
     <string name="how_many_bags_collected">How many bags of litter did you collect?</string>

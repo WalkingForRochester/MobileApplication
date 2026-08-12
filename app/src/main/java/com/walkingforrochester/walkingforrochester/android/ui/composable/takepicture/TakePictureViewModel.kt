@@ -9,7 +9,6 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
 import androidx.camera.core.Preview
-import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.UseCase
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
@@ -27,6 +26,9 @@ import com.walkingforrochester.walkingforrochester.android.ktx.compressImage
 import com.walkingforrochester.walkingforrochester.android.ktx.mainExecutorCompat
 import com.walkingforrochester.walkingforrochester.android.ktx.takePicture
 import com.walkingforrochester.walkingforrochester.android.repository.WalkRepository
+import com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture.TakePictureEvent.CaptureImage
+import com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture.TakePictureEvent.ConfirmImage
+import com.walkingforrochester.walkingforrochester.android.ui.composable.takepicture.TakePictureEvent.ImageConfirmed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -69,13 +71,18 @@ class TakePictureViewModel @Inject constructor(
         )
         .build()
 
-    private val _surfaceRequest = MutableStateFlow<SurfaceRequest?>(null)
+    private val _takePictureState = MutableStateFlow(
+        // Restore state via savedStateHandle
+        TakePictureState(
+            imageUri = savedStateHandle[IMAGE_URI_KEY] ?: Uri.EMPTY,
+            event = savedStateHandle[EVENT_KEY] ?: CaptureImage
+        )
+    )
+
     private val _camera = MutableStateFlow<Camera?>(null)
     private var cameraProvider: ProcessCameraProvider? = null
 
-    val surfaceRequest = _surfaceRequest.asStateFlow()
-
-    val captureImageUri = savedStateHandle.getStateFlow(IMAGE_URI_KEY, Uri.EMPTY)
+    val takePictureState = _takePictureState.asStateFlow()
 
     fun updateOrientation(@IntRange(from = 0, to = 359) orientation: Int) {
         imageCapture.targetRotation = UseCase.snapToSurfaceRotation(orientation)
@@ -92,7 +99,7 @@ class TakePictureViewModel @Inject constructor(
 
         // CameraX will call this whenever it needs a surface to draw into.
         preview.surfaceProvider = { newRequest ->
-            _surfaceRequest.update { newRequest }
+            _takePictureState.update { it.copy(surfaceRequest = newRequest) }
         }
 
         _camera.update {
@@ -106,9 +113,10 @@ class TakePictureViewModel @Inject constructor(
     }
 
     fun unbindUseCases() {
+        _camera.update { null }
         cameraProvider?.unbindAll()
         preview.surfaceProvider = null
-        _surfaceRequest.update { null }
+        _takePictureState.update { it.copy(surfaceRequest = null) }
         cameraProvider = null
     }
 
@@ -126,36 +134,67 @@ class TakePictureViewModel @Inject constructor(
             ) ?: Uri.EMPTY
             Timber.d("updateImageFile: %s", uri)
             savedStateHandle[IMAGE_URI_KEY] = uri
+            savedStateHandle[EVENT_KEY] = ConfirmImage
+            _takePictureState.update {
+                it.copy(
+                    imageUri = uri,
+                    event = ConfirmImage
+                )
+            }
         } catch (e: CancellationException) {
             Timber.d("Capture cancelled")
             throw e
         } catch (e: Exception) {
             Timber.w(e, "Unexpected exception")
             savedStateHandle[IMAGE_URI_KEY] = Uri.EMPTY
+            _takePictureState.update {
+                it.copy(
+                    imageUri = Uri.EMPTY,
+                    error = TakePictureError.CaptureError
+                )
+            }
         }
     }
 
-    fun discardImage() = viewModelScope.launch {
+    fun discardImage() {
         savedStateHandle[IMAGE_URI_KEY] = Uri.EMPTY
+        savedStateHandle[EVENT_KEY] = CaptureImage
+        _takePictureState.update {
+            it.copy(
+                imageUri = Uri.EMPTY,
+                event = CaptureImage
+            )
+        }
     }
 
     fun confirmImage() = viewModelScope.launch {
+        val imageUri: Uri = _takePictureState.value.imageUri
         val confirmFile = File(context.cacheDir, CONFIRM_FILE_NAME)
-        if (compressImage(confirmFile)) {
+
+        if (compressImage(imageUri, confirmFile)) {
+            Timber.d("Image compressed %s", confirmFile.name)
             walkRepository.updateImageUri(confirmFile.toUri())
+            savedStateHandle[EVENT_KEY] = ImageConfirmed
+            _takePictureState.update { it.copy(event = ImageConfirmed) }
         } else {
-            walkRepository.updateImageUri(Uri.EMPTY)
+            _takePictureState.update { it.copy(error = TakePictureError.ConfirmError) }
         }
+    }
+
+    fun clearError() {
+        _takePictureState.update { it.copy(error = TakePictureError.None) }
     }
 
     fun removeImage() {
         walkRepository.updateImageUri(Uri.EMPTY)
     }
 
-    private suspend fun compressImage(targetFile: File): Boolean = withContext(ioDispatcher) {
+    private suspend fun compressImage(
+        imageUri: Uri,
+        targetFile: File
+    ): Boolean = withContext(ioDispatcher) {
         try {
-            val imageUri: Uri? = savedStateHandle[IMAGE_URI_KEY]
-            if (imageUri != null && imageUri != Uri.EMPTY) {
+            if (imageUri != Uri.EMPTY) {
                 val imageFile = imageUri.toFile()
                 imageFile.compressImage(
                     targetFile = targetFile,
@@ -163,7 +202,7 @@ class TakePictureViewModel @Inject constructor(
                     targetHeight = PHOTO_HEIGHT
                 )
             } else {
-                Timber.w("Image uri is null")
+                Timber.w("Image uri is empty")
                 false
             }
         } catch (e: CancellationException) {
@@ -183,5 +222,6 @@ class TakePictureViewModel @Inject constructor(
         const val PHOTO_HEIGHT = 1024
 
         private const val IMAGE_URI_KEY = "imageUri"
+        private const val EVENT_KEY = "event"
     }
 }

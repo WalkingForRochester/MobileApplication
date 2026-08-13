@@ -69,8 +69,10 @@
     <string name="guidelines_url" translatable="false">https://docs.google.com/viewerng/viewer?embedded=true&amp;url=https://walkingforrochester.com/pdf/guidelines.pdf</string>
     <string name="waiver_url" translatable="false">https://links.walkingforrochester.org/widget/form/LA27eLPPbgnxGtmJFZYK</string>
     <string name="our_story_url" translatable="false">https://walkingforrochester.org/our-story/</string>
-    <string name="report_litter_url" translatable="false">https://walkingforrochester.org/report-litter/</string>
+    <string name="report_litter_url" translatable="false">https://survey123.arcgis.com/share/6412b1c81abf41059a579011dfe92cc0</string>
     <string name="about_app_url" translatable="false">https://walkingforrochester.org/about-_the_app/</string>
+    <string name="season_schedule_url" translatable="false">https://walkingforrochester.org/all-litter-events/</string>
+    <string name="volunteer_url" translatable="false">https://links.walkingforrochester.org/widget/form/Q47Nt9QEMWrhrNFxpmeC?notrack=true</string>
 
     <!-- Destinations -->
     <string name="login">Login</string>
@@ -86,6 +88,8 @@
     <string name="waiver">Waiver</string>
     <string name="our_story">Our Story</string>
     <string name="report_litter">Report Litter</string>
+    <string name="season_schedule">Season Schedule</string>
+    <string name="volunteer">Volunteer</string>
     <string name="about_app">About App</string>
     <string name="contact_us">Contact Us</string>
 

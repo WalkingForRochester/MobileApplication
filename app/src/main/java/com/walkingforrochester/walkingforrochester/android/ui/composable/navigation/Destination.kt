@@ -109,12 +109,26 @@ val Waiver = Destination(
     uriTarget = R.string.waiver_url
 )
 
-val OurStory = Destination(
+val SeasonSchedule = Destination(
+    route = "seasonSchedule",
+    title = R.string.season_schedule,
+    iconResId = R.drawable.ic_calendar_month_24dp,
+    uriTarget = R.string.season_schedule_url
+)
+
+val Volunteer = Destination(
+    route = "volunteer",
+    title = R.string.volunteer,
+    iconResId = R.drawable.ic_volunteer_activism_24dp,
+    uriTarget = R.string.volunteer_url
+)
+
+/*val OurStory = Destination(
     route = "ourStory",
     title = R.string.our_story,
     iconResId = R.drawable.ic_article_24dp,
     uriTarget = R.string.our_story_url
-)
+)*/
 
 val ReportLitter = Destination(
     route = "reportLitter",
@@ -149,11 +163,13 @@ val Destinations = listOf(
     ProfileDestination,
     SubmitWalk,
     TakePicture,
-    SafetyGuidelines,
-    Waiver,
-    OurStory,
+    SeasonSchedule,
+    Volunteer,
     ReportLitter,
     AboutApp,
+    SafetyGuidelines,
+    Waiver,
+    //OurStory,
     ContactUs
 )
 
@@ -164,10 +180,12 @@ val bottomBarDestinations = listOf(
 )
 
 val drawerDestinations = listOf(
-    SafetyGuidelines,
-    Waiver,
-    OurStory,
+    SeasonSchedule,
+    Volunteer,
     ReportLitter,
     AboutApp,
+    SafetyGuidelines,
+    Waiver,
+    //OurStory,
     ContactUs
 )

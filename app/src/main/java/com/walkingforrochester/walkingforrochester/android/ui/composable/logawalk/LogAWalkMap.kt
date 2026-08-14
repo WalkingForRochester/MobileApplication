@@ -35,10 +35,10 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkingforrochester.walkingforrochester.android.R
-import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.model.LocationData
 import com.walkingforrochester.walkingforrochester.android.model.WalkData
 import com.walkingforrochester.walkingforrochester.android.model.WalkData.WalkState
+import com.walkingforrochester.walkingforrochester.android.ui.modifier.backgroundInPreview
 import com.walkingforrochester.walkingforrochester.android.ui.theme.MapPathBlue
 import timber.log.Timber
 
@@ -55,6 +55,7 @@ fun LogAWalkMap(
     val cameraPositionState = rememberCameraPositionState()
     var lastLocation by rememberSaveable { mutableStateOf(LocationData.DEFAULT.latLng) }
     var followCamera by rememberSaveable { mutableStateOf(true) }
+    var initialZoom by rememberSaveable { mutableStateOf(true) }
 
     if (cameraPositionState.isMoving &&
         cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
@@ -62,8 +63,12 @@ fun LogAWalkMap(
         followCamera = false
     }
 
-    LaunchedEffect(followCamera, currentLocation) {
-        if (followCamera && currentLocation != lastLocation) {
+    LaunchedEffect(followCamera, currentLocation, initialZoom) {
+        if (initialZoom) {
+            Timber.d("Initial zoom: %s", currentLocation)
+            cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(currentLocation, 16f))
+            initialZoom = false
+        } else if (followCamera && currentLocation != lastLocation) {
             val dist = SphericalUtil.computeDistanceBetween(currentLocation, lastLocation)
             val cameraUpdate = CameraUpdateFactory.newLatLng(currentLocation)
             when {
@@ -148,7 +153,6 @@ fun RenderWalkDataOnMap(currentWalk: WalkData) {
             width = width,
             startCap = RoundCap(),
             endCap = RoundCap(),
-
         )
     }
 

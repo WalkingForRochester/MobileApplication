@@ -1,7 +1,7 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -36,7 +36,7 @@ fun NavigationHost(
         }
     }
 
-    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
 
     NavHost(
         navController = navController,

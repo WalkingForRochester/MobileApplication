@@ -3,56 +3,56 @@
 androidx-activity = "1.13.0"
 androidx-annotation = "1.10.0"
 androidx-browser = "1.10.0"
-androidx-camera = "1.6.1"
+androidx-camera = "1.6.2"
 androidx-core = "1.19.0"
 androidx-core-splashscreen = "1.2.0"
-androidx-compose-bom = "2026.06.01"
+androidx-compose-bom = "2026.09.00"
 androidx-credentials = "1.6.0"
 androidx-datastore = "1.2.1"
 androidx-exifinterface = "1.4.2"
 androidx-hilt = "1.4.0"
 androidx-lifecycle = "2.11.0"
 androidx-material = "1.14.0"
-androidx-navigation = "2.9.8"
+androidx-navigation = "2.10.1"
 androidx-test-espresso = "3.7.0"
 androidx-test-junit = "1.3.0"
 androidx-test-uiautomator = "2.4.0"
-androidx-webkit = "1.16.0"
+androidx-webkit = "1.17.0"
 androidx-window = "1.5.1"
 
 junit = "4.13.2"
 
 # kotlin
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 kotlinx-coroutines-bom = "1.11.0"
 ksp = "2.3.6"
 
 # square
 leakcanary = "2.14"
 moshi = "1.15.2"
-okio = "3.18.1"
-okhttp-bom = "5.4.0"
+okio = "3.18.2"
+okhttp-bom = "5.5.0"
 retrofit-bom = "3.0.0"
 
 # google services
 play-services-location = "21.4.0"
 # maps 20.0.0 requires http apache to be in manifest, see if fixed on newer version before upgrading
 play-services-maps = "20.0.0"
-google-android-maps-compose = "8.4.0"
-google-android-maps-utils = "5.0.0"
-google-googleid = "1.2.0"
+google-android-maps-compose = "8.6.0"
+google-android-maps-utils = "5.2.0"
+google-googleid = "1.2.1"
 
 # dagger/hilt
 dagger-hilt = "2.60.1"
 
 accompanist = "0.37.3"
-coil-bom = "3.5.0"
+coil-bom = "3.6.2"
 # Default graph version set in application, if this is changed see if that line is still needed
 facebook = "18.3.0"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "9.3.1"
+androidGradlePlugin = "9.4.0"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]

@@ -1,10 +1,12 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.login
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -34,7 +36,9 @@ fun LoginForm(
             value = loginScreenState.emailAddress,
             onValueChange = { email -> onEmailAddressValueChange(email) },
             labelRes = R.string.email_address,
-            modifier = Modifier.semantics { contentType = ContentType.EmailAddress },
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .semantics { contentType = ContentType.EmailAddress },
             testTag = "login_email",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
@@ -46,7 +50,9 @@ fun LoginForm(
             value = loginScreenState.password,
             onValueChange = { password -> onPasswordValueChange(password) },
             labelRes = R.string.password,
-            modifier = Modifier.semantics { contentType = ContentType.Password },
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .semantics { contentType = ContentType.Password },
             testTag = "login_password",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,

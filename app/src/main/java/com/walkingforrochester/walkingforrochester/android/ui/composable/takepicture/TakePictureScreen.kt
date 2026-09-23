@@ -23,7 +23,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -229,7 +229,7 @@ fun TakePictureContent(
 fun PreviewTakePicture() {
     WalkingForRochesterTheme {
         Surface {
-            val portraitMode = currentWindowAdaptiveInfo().windowSizeClass.isPortraitMode()
+            val portraitMode = currentWindowAdaptiveInfoV2().windowSizeClass.isPortraitMode()
             TakePictureContent(
                 portraitMode = portraitMode,
                 takePictureState = TakePictureState()

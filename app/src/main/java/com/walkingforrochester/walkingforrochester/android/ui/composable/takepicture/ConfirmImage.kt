@@ -19,7 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -161,7 +161,7 @@ fun ConfirmImageButton(
 private fun PreviewConfirmImage() {
     WalkingForRochesterTheme {
         Surface {
-            val portraitMode = currentWindowAdaptiveInfo().windowSizeClass.isPortraitMode()
+            val portraitMode = currentWindowAdaptiveInfoV2().windowSizeClass.isPortraitMode()
             ConfirmImage(
                 imageUri = Uri.EMPTY,
                 portraitMode = portraitMode

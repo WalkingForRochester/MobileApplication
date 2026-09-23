@@ -16,7 +16,7 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.RippleDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -98,7 +98,7 @@ fun CaptureImage(
 private fun PreviewCaptureImage() {
     WalkingForRochesterTheme {
         Surface {
-            val portraitMode = currentWindowAdaptiveInfo().windowSizeClass.isPortraitMode()
+            val portraitMode = currentWindowAdaptiveInfoV2().windowSizeClass.isPortraitMode()
 
             CaptureImage(
                 portraitMode = portraitMode

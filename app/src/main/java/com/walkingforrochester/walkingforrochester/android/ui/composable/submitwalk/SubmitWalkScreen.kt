@@ -41,7 +41,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -620,7 +620,7 @@ fun PhotoRequiredDialog(
 fun SubmitWalkContentPreview() {
     WalkingForRochesterTheme {
         Surface {
-            val info = currentWindowAdaptiveInfo()
+            val info = currentWindowAdaptiveInfoV2()
 
             SubmitWalkContent(
                 walkData = WalkData(

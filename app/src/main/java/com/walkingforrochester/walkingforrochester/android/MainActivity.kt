@@ -35,6 +35,9 @@ import com.walkingforrochester.walkingforrochester.android.ui.composable.common.
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.NoConnectionOverlay
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WalkingForRochesterAppScreen
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.observeConnectivityAsFlow
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.HomeRoute
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.LoginRoute
+import com.walkingforrochester.walkingforrochester.android.ui.composable.navigation.rememberRootRouteBackStack
 import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRochesterTheme
 import com.walkingforrochester.walkingforrochester.android.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -110,6 +113,8 @@ class MainActivity : ComponentActivity() {
 
             if (initialized) {
                 val darkMode = uiState.darkMode
+                val backStack =
+                    rememberRootRouteBackStack(if (uiState.loggedIn) HomeRoute else LoginRoute)
 
                 WalkingForRochesterTheme(darkTheme = darkMode) {
                     Surface {
@@ -128,6 +133,10 @@ class MainActivity : ComponentActivity() {
                                     navigationBarDividerColor = dividerColor
                                 )
                             ) {
+                                /*RootNavDisplay(
+                                    backStack,
+                                    onToggleDarkMode = { mainViewModel.onToggleDarkMode(it) }
+                                )*/
                                 WalkingForRochesterAppScreen(
                                     onToggleDarkMode = { mainViewModel.onToggleDarkMode(it) },
                                     uiState = uiState

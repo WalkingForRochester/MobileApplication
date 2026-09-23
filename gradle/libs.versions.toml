@@ -14,6 +14,7 @@ androidx-hilt = "1.4.0"
 androidx-lifecycle = "2.11.0"
 androidx-material = "1.14.0"
 androidx-navigation = "2.10.1"
+androidx-navigation3 = "1.1.7"
 androidx-test-espresso = "3.7.0"
 androidx-test-junit = "1.3.0"
 androidx-test-uiautomator = "2.4.0"
@@ -25,7 +26,8 @@ junit = "4.13.2"
 # kotlin
 kotlin = "2.4.20"
 kotlinx-coroutines-bom = "1.11.0"
-ksp = "2.3.6"
+kotlinx-serialization = "1.11.0"
+ksp = "2.3.12"
 
 # square
 leakcanary = "2.14"
@@ -36,7 +38,6 @@ retrofit-bom = "3.0.0"
 
 # google services
 play-services-location = "21.4.0"
-# maps 20.0.0 requires http apache to be in manifest, see if fixed on newer version before upgrading
 play-services-maps = "20.0.0"
 google-android-maps-compose = "8.6.0"
 google-android-maps-utils = "5.2.0"
@@ -46,13 +47,13 @@ google-googleid = "1.2.1"
 dagger-hilt = "2.60.1"
 
 accompanist = "0.37.3"
-coil-bom = "3.6.2"
+coil-bom = "3.6.3"
 # Default graph version set in application, if this is changed see if that line is still needed
 facebook = "18.3.0"
 timber = "5.0.1"
 
 # Plugins
-androidGradlePlugin = "9.4.0"
+androidGradlePlugin = "9.4.1"
 mapsSecretsPlugin = "2.0.1"
 
 [libraries]
@@ -70,6 +71,7 @@ androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-ru
 androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
@@ -95,6 +97,8 @@ androidx-hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifec
 androidx-material = { module = "com.google.android.material:material", version.ref = "androidx-material" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
 androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "androidx-navigation" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "androidx-navigation3" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "androidx-navigation3" }
 
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-test-espresso" }
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-junit" }
@@ -118,6 +122,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android" }
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 
 # Square
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
@@ -155,6 +160,7 @@ android-library = { id = "com.android.library", version.ref = "androidGradlePlug
 
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger-hilt" }

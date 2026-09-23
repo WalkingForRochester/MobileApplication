@@ -15,12 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +32,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +50,6 @@ import com.walkingforrochester.walkingforrochester.android.R
 import com.walkingforrochester.walkingforrochester.android.network.FacebookLoginCallback
 import com.walkingforrochester.walkingforrochester.android.network.GoogleCredentialUtil
 import com.walkingforrochester.walkingforrochester.android.network.PasswordCredentialUtil
-import com.walkingforrochester.walkingforrochester.android.ui.composable.common.LocalSnackbarHostState
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButton
 import com.walkingforrochester.walkingforrochester.android.ui.composable.common.WFRButtonDefaults
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenEvent
@@ -53,19 +58,19 @@ import com.walkingforrochester.walkingforrochester.android.ui.theme.WalkingForRo
 import com.walkingforrochester.walkingforrochester.android.viewmodel.LoginViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
     onForgotPassword: () -> Unit = {},
     onRegister: (
-        email: String?,
-        firstName: String?,
-        lastName: String?,
+        email: String,
+        firstName: String,
+        lastName: String,
         facebookId: String?
     ) -> Unit = { _, _, _, _ -> },
     onLoginComplete: () -> Unit = {},
-    contentPadding: PaddingValues = PaddingValues(),
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -86,50 +91,50 @@ fun LoginScreen(
 
     val autofillManager = LocalAutofillManager.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val snackbarHostState = LocalSnackbarHostState.current
     val activityContext = LocalActivity.current ?: context
     val resources = LocalResources.current
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(
-        resources,
-        loginViewModel.eventFlow,
-        lifecycleOwner
+        uiState.event,
+        resources
     ) {
-        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            loginViewModel.eventFlow.collect { event ->
-                when (event) {
-                    LoginScreenEvent.LoginComplete -> {
-                        LoginManager.getInstance().unregisterCallback(callbackManager)
-                        // Commit the autofill session, as nothing in theory should happen
-                        autofillManager?.commit()
-                        onLoginComplete()
-                    }
+        when (uiState.event) {
+            LoginScreenEvent.None -> {
+                Timber.d("Showing login")
+            }
 
-                    LoginScreenEvent.LoginCompleteManual -> {
-                        LoginManager.getInstance().unregisterCallback(callbackManager)
+            LoginScreenEvent.LoginComplete -> {
+                LoginManager.getInstance().unregisterCallback(callbackManager)
+                // Commit the autofill session, as nothing in theory should happen
+                autofillManager?.commit()
+                onLoginComplete()
+            }
 
-                        PasswordCredentialUtil.savePasswordCredential(
-                            activityContext = activityContext,
-                            email = uiState.emailAddress,
-                            password = uiState.password
-                        )
+            LoginScreenEvent.LoginCompleteManual -> {
+                LoginManager.getInstance().unregisterCallback(callbackManager)
 
-                        // Cancel autofill here as we already prompted saving the credential
-                        // and no need to do it twice
-                        autofillManager?.cancel()
+                PasswordCredentialUtil.savePasswordCredential(
+                    activityContext = activityContext,
+                    email = uiState.emailAddress,
+                    password = uiState.password
+                )
 
-                        onLoginComplete()
-                    }
+                // Cancel autofill here as we already prompted saving the credential
+                // and no need to do it twice
+                autofillManager?.cancel()
+                onLoginComplete()
+            }
 
-                    LoginScreenEvent.NeedsRegistration -> with(uiState) {
-                        LoginManager.getInstance().unregisterCallback(callbackManager)
-                        onRegister(emailAddress, firstName, lastName, facebookId)
-                    }
+            LoginScreenEvent.NeedsRegistration -> with(uiState) {
+                LoginManager.getInstance().unregisterCallback(callbackManager)
+                onRegister(emailAddress, firstName, lastName, facebookId)
+            }
 
-                    LoginScreenEvent.UnexpectedError -> {
-                        snackbarHostState.showSnackbar(resources.getString(R.string.unexpected_error))
-                    }
-                }
+            LoginScreenEvent.UnexpectedError -> {
+                snackbarHostState.showSnackbar(resources.getString(R.string.unexpected_error))
+                loginViewModel.clearEvent()
             }
         }
     }
@@ -137,7 +142,7 @@ fun LoginScreen(
     LaunchedEffect(activityContext, loginViewModel, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
             // small delay before showing password manager
-            delay(250L)
+            delay(timeMillis = 250L)
             PasswordCredentialUtil.performPasswordSignIn(
                 activityContext = activityContext,
                 performLogin = { newEmail, newPassword ->
@@ -152,31 +157,35 @@ fun LoginScreen(
 
     val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
 
-    LoginScreenContent(
-        uiState = uiState,
+    Scaffold(
         modifier = modifier,
-        contentPadding = contentPadding,
-        onForgotPassword = onForgotPassword,
-        onRegister = { onRegister(null, null, null, null) },
-        onContinueWithGoogle = {
-            coroutineScope.launch {
-                GoogleCredentialUtil.performSignIn(
-                    activityContext = activityContext,
-                    processCredential = loginViewModel::continueWithGoogle
-                )
-            }
-        },
-        onContinueWithFacebook = {
-            activityResultRegistryOwner?.let {
-                LoginManager.getInstance().logInWithReadPermissions(
-                    it, callbackManager, listOf("email", "public_profile")
-                )
-            }
-        },
-        onEmailChanged = { loginViewModel.onEmailAddressValueChange(it) },
-        onPasswordChanged = { loginViewModel.onPasswordValueChange(it) },
-        onLoginClicked = { loginViewModel.onLoginClicked() }
-    )
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { contentPadding ->
+        LoginScreenContent(
+            uiState = uiState,
+            contentPadding = contentPadding,
+            onForgotPassword = onForgotPassword,
+            onRegister = { onRegister("", "", "", null) },
+            onContinueWithGoogle = {
+                coroutineScope.launch {
+                    GoogleCredentialUtil.performSignIn(
+                        activityContext = activityContext,
+                        processCredential = loginViewModel::continueWithGoogle
+                    )
+                }
+            },
+            onContinueWithFacebook = {
+                activityResultRegistryOwner?.let {
+                    LoginManager.getInstance().logInWithReadPermissions(
+                        it, callbackManager, listOf("email", "public_profile")
+                    )
+                }
+            },
+            onEmailChanged = { loginViewModel.onEmailAddressValueChange(it) },
+            onPasswordChanged = { loginViewModel.onPasswordValueChange(it) },
+            onLoginClicked = { loginViewModel.onLoginClicked() }
+        )
+    }
 }
 
 @Composable
@@ -199,6 +208,14 @@ fun LoginScreenContent(
         contentDescription = "background_image",
         contentScale = ContentScale.Crop
     )
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val onSubmit: () -> Unit = {
+        onLoginClicked()
+        keyboardController?.hide()
+        focusManager.clearFocus()
+    }
 
     Column(
         modifier = modifier
@@ -225,13 +242,12 @@ fun LoginScreenContent(
             },
             onPasswordValueChange = { newPassword ->
                 onPasswordChanged(newPassword)
-            }
+            },
+            onSubmit = onSubmit
         )
         Spacer(modifier = Modifier.height(24.dp))
         WFRButton(
-            onClick = {
-                onLoginClicked()
-            },
+            onClick = onSubmit,
             label = R.string.sign_in,
             testTag = "login_button",
             loading = uiState.loading,

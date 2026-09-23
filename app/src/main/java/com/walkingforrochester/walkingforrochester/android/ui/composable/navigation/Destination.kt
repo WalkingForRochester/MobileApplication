@@ -2,9 +2,96 @@ package com.walkingforrochester.walkingforrochester.android.ui.composable.naviga
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.navArgument
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.walkingforrochester.walkingforrochester.android.R
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
+
+@Serializable
+sealed interface RootRoute : NavKey
+
+@Serializable
+data object LoginRoute : RootRoute
+
+@Serializable
+data object ForgotPasswordRoute : RootRoute
+
+@Serializable
+data class RegistrationRoute(
+    val email: String,
+    val firstName: String,
+    val lastName: String,
+    val facebookId: String?
+) : RootRoute
+
+@Serializable
+data object HomeRoute : RootRoute
+
+@Serializable
+data object ProfileRoute : RootRoute
+
+@Serializable
+data object SubmitWalkRoute : RootRoute
+
+@Serializable
+data object TakePictureRoute : RootRoute
+
+// Nav drawer items
+@Serializable
+sealed interface DrawerRoute : RootRoute {
+
+    @Serializable
+    data object SafetyGuidelinesRoute : DrawerRoute
+
+    @Serializable
+    data object WaiverRoute : DrawerRoute
+
+    @Serializable
+    data object SeasonScheduleRoute : DrawerRoute
+
+    @Serializable
+    data object VolunteerRoute : DrawerRoute
+
+    @Serializable
+    data object ReportLitterRoute : DrawerRoute
+
+    @Serializable
+    data object AboutAppRoute : DrawerRoute
+
+    @Serializable
+    data object ContactUsRoute : DrawerRoute
+}
+
+
+@Composable
+fun rememberRootRouteBackStack(vararg elements: RootRoute): NavBackStack<RootRoute> {
+    return rememberSerializable(serializer = serializer()) {
+        NavBackStack(*elements)
+    }
+}
+
+/*sealed interface BottomBarRoute : NavKey {
+    @Serializable
+    data object LogAWalkRoute : BottomBarRoute
+
+    @Serializable
+    data object LeaderboardRoute : BottomBarRoute
+
+    @Serializable
+    data object NewsFeedRoute : BottomBarRoute
+}
+
+@Composable
+fun rememberBottomBarRouteBackStack(vararg elements: BottomBarRoute): NavBackStack<BottomBarRoute> {
+    return rememberSerializable(serializer = serializer()) {
+        NavBackStack(*elements)
+    }
+}*/
 
 data class Destination(
     val route: String,

@@ -12,8 +12,9 @@ data class LoginScreenState(
     val firstName: String = "",
     val lastName: String = "",
     val facebookId: String = "",
+    val event: LoginScreenEvent = LoginScreenEvent.None
 )
 
 enum class LoginScreenEvent {
-    LoginComplete, LoginCompleteManual, NeedsRegistration, UnexpectedError
+    None, LoginComplete, LoginCompleteManual, NeedsRegistration, UnexpectedError
 }

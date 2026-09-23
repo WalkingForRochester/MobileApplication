@@ -66,8 +66,7 @@ fun NavigationHost(
                         route = LogAWalk.route,
                         clearToRoot = true
                     )
-                },
-                contentPadding = contentPadding
+                }
             )
         }
 

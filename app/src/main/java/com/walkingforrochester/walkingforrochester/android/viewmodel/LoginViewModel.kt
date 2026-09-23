@@ -14,9 +14,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenE
 import com.walkingforrochester.walkingforrochester.android.ui.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,12 +32,6 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginScreenState())
     val uiState = _uiState.asStateFlow()
 
-    private val _eventFlow = MutableSharedFlow<LoginScreenEvent>(
-        // Using capacity of one to allow exception handler to emit outside of coroutine
-        extraBufferCapacity = 1
-    )
-    val eventFlow = _eventFlow.asSharedFlow()
-
     init {
         // Restore email from saved state. Not doing password for security reasons.
         _uiState.update {
@@ -51,19 +43,25 @@ class LoginViewModel @Inject constructor(
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
 
+        var event = LoginScreenEvent.None
+        var authenticationErrorMessage = ""
+        var authenticationErrorMessageId = 0
+
         if (throwable is ProfileException) {
             Timber.e("Login failed: %s", throwable.message)
-            setAuthenticationError(throwable.message)
+            authenticationErrorMessage = throwable.message ?: ""
+            authenticationErrorMessageId = if (authenticationErrorMessage.isBlank()) R.string.auth_error else 0
         } else {
             Timber.e(throwable, "Unexpected error processing login")
+            event = LoginScreenEvent.UnexpectedError
         }
-
-        if (!_eventFlow.tryEmit(LoginScreenEvent.UnexpectedError)) {
-            Timber.w("Failed to report error due to no listener")
-        }
-
         _uiState.update {
-            it.copy(loading = false)
+            it.copy(
+                authenticationErrorMessage = authenticationErrorMessage,
+                authenticationErrorMessageId = authenticationErrorMessageId,
+                loading = false,
+                event = event
+            )
         }
     }
 
@@ -75,7 +73,7 @@ class LoginViewModel @Inject constructor(
         googleCredential: GoogleIdTokenCredential
     ) = viewModelScope.launch(context = exceptionHandler) {
         socialSignIn(
-            email = googleCredential.id,
+            email = googleCredential.email ?: "",
             firstName = googleCredential.givenName ?: "",
             lastName = googleCredential.familyName ?: "",
         )
@@ -137,9 +135,9 @@ class LoginViewModel @Inject constructor(
                     firstName = firstName,
                     lastName = lastName,
                     facebookId = facebookId,
+                    event = LoginScreenEvent.NeedsRegistration
                 )
             }
-            _eventFlow.emit(LoginScreenEvent.NeedsRegistration)
         }
         _uiState.update { it.copy(loading = false) }
     }
@@ -176,6 +174,12 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun clearEvent() {
+        _uiState.update { state ->
+            state.copy(event = LoginScreenEvent.None)
+        }
+    }
+
     private fun validateCredentials(): Boolean {
         var isValid = true
         var emailAddressValidationMessageId = 0
@@ -205,24 +209,14 @@ class LoginViewModel @Inject constructor(
         return isValid
     }
 
-    private fun setAuthenticationError(errorMessage: String?) {
-        _uiState.update {
-            it.copy(
-                authenticationErrorMessage = errorMessage ?: "",
-                authenticationErrorMessageId = if (errorMessage.isNullOrBlank()) R.string.auth_error else 0
-            )
-        }
-    }
-
     private suspend fun completeLogin(accountId: Long, manualLogin: Boolean = false) {
         preferenceRepository.updateAccountId(accountId = accountId)
 
-        _eventFlow.emit(
-            when (manualLogin) {
-                true -> LoginScreenEvent.LoginCompleteManual
-                else -> LoginScreenEvent.LoginComplete
-            }
-        )
+        val event = when (manualLogin) {
+            true -> LoginScreenEvent.LoginCompleteManual
+            else -> LoginScreenEvent.LoginComplete
+        }
+        _uiState.update { it.copy(event = event) }
     }
 
     companion object {

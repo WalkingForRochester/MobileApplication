@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.maps.secrets.plugin)
@@ -91,10 +92,13 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.exifinterface)
 
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.service)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    // TODO remove once nav3 active
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.window)
 
@@ -110,12 +114,14 @@ dependencies {
     implementation(libs.androidx.compose.material3.adaptive)
     implementation(libs.androidx.compose.material3.window.size)
 
-    androidTestImplementation(composeBom)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // Navigation
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    // TODO remove after nav3 migration
     implementation(libs.androidx.navigation.compose)
     androidTestImplementation(libs.androidx.navigation.testing)
 
@@ -134,7 +140,7 @@ dependencies {
     val kotlinBom = platform(libs.kotlin.bom)
     implementation(kotlinBom)
     implementation(libs.kotlin.stdlib)
-    androidTestImplementation(kotlinBom)
+    implementation(libs.kotlinx.serialization.core)
 
     // Coroutines
     val coroutinesBom = platform(libs.kotlinx.coroutines.bom)
@@ -143,7 +149,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.play.services)
 
-    androidTestImplementation(coroutinesBom)
     androidTestImplementation(libs.kotlinx.coroutines.test)
 
     // okhttp
@@ -151,7 +156,6 @@ dependencies {
     implementation(okHttpBom)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
-    androidTestImplementation(okHttpBom)
     androidTestImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.okhttp.tls)
 

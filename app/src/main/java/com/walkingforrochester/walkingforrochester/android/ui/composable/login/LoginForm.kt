@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -26,7 +27,8 @@ fun LoginForm(
     modifier: Modifier = Modifier,
     loginScreenState: LoginScreenState,
     onEmailAddressValueChange: (String) -> Unit,
-    onPasswordValueChange: (String) -> Unit
+    onPasswordValueChange: (String) -> Unit,
+    onSubmit: () -> Unit
 ) {
     Column(
         modifier = modifier.padding(horizontal = 16.dp),
@@ -57,6 +59,9 @@ fun LoginForm(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { onSubmit() }
             ),
             validationError = errorMessage(
                 msgId = loginScreenState.authenticationErrorMessageId,

@@ -5,12 +5,12 @@ import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -93,7 +93,6 @@ fun LoginScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val activityContext = LocalActivity.current ?: context
     val resources = LocalResources.current
-
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(
@@ -157,42 +156,37 @@ fun LoginScreen(
 
     val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
 
-    Scaffold(
+    LoginScreenContent(
+        uiState = uiState,
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { contentPadding ->
-        LoginScreenContent(
-            uiState = uiState,
-            contentPadding = contentPadding,
-            onForgotPassword = onForgotPassword,
-            onRegister = { onRegister("", "", "", null) },
-            onContinueWithGoogle = {
-                coroutineScope.launch {
-                    GoogleCredentialUtil.performSignIn(
-                        activityContext = activityContext,
-                        processCredential = loginViewModel::continueWithGoogle
-                    )
-                }
-            },
-            onContinueWithFacebook = {
-                activityResultRegistryOwner?.let {
-                    LoginManager.getInstance().logInWithReadPermissions(
-                        it, callbackManager, listOf("email", "public_profile")
-                    )
-                }
-            },
-            onEmailChanged = { loginViewModel.onEmailAddressValueChange(it) },
-            onPasswordChanged = { loginViewModel.onPasswordValueChange(it) },
-            onLoginClicked = { loginViewModel.onLoginClicked() }
-        )
-    }
+        onForgotPassword = onForgotPassword,
+        onRegister = { onRegister("", "", "", null) },
+        onContinueWithGoogle = {
+            coroutineScope.launch {
+                GoogleCredentialUtil.performSignIn(
+                    activityContext = activityContext,
+                    processCredential = loginViewModel::continueWithGoogle
+                )
+            }
+        },
+        onContinueWithFacebook = {
+            activityResultRegistryOwner?.let {
+                LoginManager.getInstance().logInWithReadPermissions(
+                    it, callbackManager, listOf("email", "public_profile")
+                )
+            }
+        },
+        onEmailChanged = { loginViewModel.onEmailAddressValueChange(it) },
+        onPasswordChanged = { loginViewModel.onPasswordValueChange(it) },
+        onLoginClicked = { loginViewModel.onLoginClicked() }
+    )
 }
 
 @Composable
 fun LoginScreenContent(
     uiState: LoginScreenState,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(),
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onForgotPassword: () -> Unit = {},
     onRegister: () -> Unit = {},
     onContinueWithGoogle: () -> Unit = {},
@@ -201,90 +195,96 @@ fun LoginScreenContent(
     onPasswordChanged: (String) -> Unit = {},
     onLoginClicked: () -> Unit = {}
 ) {
-    // Manually add background here
-    Image(
-        modifier = Modifier.fillMaxSize(),
-        painter = painterResource(R.drawable.rainbowbg),
-        contentDescription = "background_image",
-        contentScale = ContentScale.Crop
-    )
+    Scaffold(
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { contentPadding ->
+        // Manually add background here
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(R.drawable.rainbowbg),
+            contentDescription = "background_image",
+            contentScale = ContentScale.Crop
+        )
 
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-    val onSubmit: () -> Unit = {
-        onLoginClicked()
-        keyboardController?.hide()
-        focusManager.clearFocus()
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(contentPadding),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-        SocialLoginButtons(
-            onContinueWithGoogle = onContinueWithGoogle,
-            onContinueWithFacebook = onContinueWithFacebook,
-            modifier = Modifier.padding(top = 20.dp),
-        )
-        Text(
-            modifier = Modifier.padding(16.dp),
-            text = stringResource(R.string.or),
-            color = Color.White,
-        )
-        LoginForm(
-            loginScreenState = uiState,
-            onEmailAddressValueChange = { newEmailAddress ->
-                onEmailChanged(newEmailAddress)
-            },
-            onPasswordValueChange = { newPassword ->
-                onPasswordChanged(newPassword)
-            },
-            onSubmit = onSubmit
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        WFRButton(
-            onClick = onSubmit,
-            label = R.string.sign_in,
-            testTag = "login_button",
-            loading = uiState.loading,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White
-            ),
-            contentPadding = WFRButtonDefaults.wideContentPadding
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 20.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            TextButton(
-                onClick = onForgotPassword,
-                modifier = Modifier.height(48.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.forgot_password_question),
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = Color.White
-                )
-            }
-            TextButton(
-                onClick = onRegister,
-                Modifier.height(48.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.new_here_sign_up),
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = Color.White
-                )
-            }
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val focusManager = LocalFocusManager.current
+        val onSubmit: () -> Unit = {
+            onLoginClicked()
+            keyboardController?.hide()
+            focusManager.clearFocus()
         }
-        Spacer(modifier = Modifier.weight(1f))
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(contentPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+            SocialLoginButtons(
+                onContinueWithGoogle = onContinueWithGoogle,
+                onContinueWithFacebook = onContinueWithFacebook,
+                modifier = Modifier.padding(top = 20.dp),
+            )
+            Text(
+                modifier = Modifier.padding(16.dp),
+                text = stringResource(R.string.or),
+                color = Color.White,
+            )
+            LoginForm(
+                loginScreenState = uiState,
+                onEmailAddressValueChange = { newEmailAddress ->
+                    onEmailChanged(newEmailAddress)
+                },
+                onPasswordValueChange = { newPassword ->
+                    onPasswordChanged(newPassword)
+                },
+                onSubmit = onSubmit
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            WFRButton(
+                onClick = onSubmit,
+                label = R.string.sign_in,
+                testTag = "login_button",
+                loading = uiState.loading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                contentPadding = WFRButtonDefaults.wideContentPadding
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 20.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TextButton(
+                    onClick = onForgotPassword,
+                    modifier = Modifier.height(48.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.forgot_password_question),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = Color.White
+                    )
+                }
+                TextButton(
+                    onClick = onRegister,
+                    Modifier.height(48.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.new_here_sign_up),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = Color.White
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        }
     }
 }
 

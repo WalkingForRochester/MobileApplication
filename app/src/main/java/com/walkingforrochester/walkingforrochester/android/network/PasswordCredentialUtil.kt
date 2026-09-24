@@ -27,8 +27,8 @@ object PasswordCredentialUtil {
         val credentialManager = CredentialManager.create(activityContext.applicationContext)
         try {
             val result = credentialManager.getCredential(
-                request = buildPasswordCredentialRequest(),
                 context = activityContext,
+                request = buildPasswordCredentialRequest()
             )
             handlePasswordResponse(result, performLogin)
         } catch (e: GetCredentialException) {

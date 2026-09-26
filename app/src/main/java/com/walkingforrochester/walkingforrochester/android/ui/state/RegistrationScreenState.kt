@@ -11,8 +11,9 @@ data class RegistrationScreenState(
     val confirmPassword: String = "",
     @param:StringRes val confirmPasswordValidationMessageId: Int = 0,
     val loading: Boolean = false,
+    val event: RegistrationScreenEvent = RegistrationScreenEvent.None
 )
 
 enum class RegistrationScreenEvent {
-    RegistrationComplete, UnexpectedError
+    None, RegistrationComplete, UnexpectedError
 }

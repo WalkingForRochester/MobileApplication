@@ -104,7 +104,6 @@ fun NavigationHost(
                         clearToRoot = true
                     )
                 },
-                contentPadding = contentPadding
             )
         }
 

@@ -163,6 +163,7 @@
     <string name="enter_an_address">Enter an address</string>
     <string name="confirm">Confirm</string>
     <string name="back_button">Back Button</string>
+    <string name="back_tooltip">Back</string>
     <string name="open_navigation_drawer">Open Navigation Drawer</string>
     <string name="open_profile_screen">Open Profile Screen</string>
     <string name="delete_account">Delete account</string>

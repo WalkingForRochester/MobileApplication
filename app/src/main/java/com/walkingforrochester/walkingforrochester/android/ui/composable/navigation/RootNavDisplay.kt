@@ -8,7 +8,9 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.walkingforrochester.walkingforrochester.android.model.AccountProfile
 import com.walkingforrochester.walkingforrochester.android.ui.composable.login.LoginScreen
+import com.walkingforrochester.walkingforrochester.android.ui.composable.registration.RegistrationScreen
 import timber.log.Timber
 
 @Composable
@@ -59,7 +61,19 @@ fun RootNavDisplay(
                 Text("This is forgot password")
             }
             entry<RegistrationRoute> { registrationRoute ->
-                Text("This is registration $registrationRoute")
+                RegistrationScreen(
+                    profile = AccountProfile.DEFAULT_PROFILE.copy(
+                        email = registrationRoute.email,
+                        firstName = registrationRoute.firstName,
+                        lastName = registrationRoute.lastName,
+                        facebookId = registrationRoute.facebookId
+                    ),
+                    onNavigateBack = navigateBack,
+                    onRegistrationComplete = {
+                        backStack.clear()
+                        backStack.add(HomeRoute)
+                    }
+                )
             }
             entry<HomeRoute> {
                 Text("This is home")

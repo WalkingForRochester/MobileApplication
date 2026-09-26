@@ -11,9 +11,7 @@ import com.walkingforrochester.walkingforrochester.android.ui.state.Registration
 import com.walkingforrochester.walkingforrochester.android.ui.state.RegistrationScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,22 +30,24 @@ class RegistrationViewModel @Inject constructor(
     private val _registrationProfile = MutableStateFlow(AccountProfile.DEFAULT_PROFILE)
     val registrationProfile = _registrationProfile.asStateFlow()
 
-    private val _eventFlow = MutableSharedFlow<RegistrationScreenEvent>(
-        // Using capacity of one to allow exception handler to emit outside of coroutine
-        extraBufferCapacity = 1
-    )
-    val eventFlow = _eventFlow.asSharedFlow()
-
-    fun prefill(profile: AccountProfile) = _registrationProfile.update { profile }
+    var prefilledProfile = AccountProfile.DEFAULT_PROFILE
+    fun prefill(profile: AccountProfile) {
+        // Only prefill if supplied profile changes
+        if (prefilledProfile != profile) {
+            _registrationProfile.update { profile }
+            prefilledProfile = profile
+        }
+    }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Timber.e(throwable, "Unexpected error registering account")
 
-        if (!_eventFlow.tryEmit(RegistrationScreenEvent.UnexpectedError)) {
-            Timber.w("Failed to report error due to no listener")
+        _uiState.update {
+            it.copy(
+                loading = false,
+                event = RegistrationScreenEvent.UnexpectedError
+            )
         }
-
-        _uiState.update { it.copy(loading = false) }
     }
 
     fun onProfileChange(profile: AccountProfile) {
@@ -113,6 +113,10 @@ class RegistrationViewModel @Inject constructor(
         _uiState.update { it.copy(loading = false) }
     }
 
+    fun clearEvent() {
+        _uiState.update { it.copy(event = RegistrationScreenEvent.None) }
+    }
+
     private suspend fun validateForm(): Boolean {
         var isValid = true
         var emailValidationMessageId = 0
@@ -167,7 +171,7 @@ class RegistrationViewModel @Inject constructor(
 
     private fun completeRegistration(accountId: Long) = viewModelScope.launch {
         preferenceRepository.updateAccountId(accountId)
-        _eventFlow.emit(RegistrationScreenEvent.RegistrationComplete)
+        _uiState.update { it.copy(event = RegistrationScreenEvent.RegistrationComplete) }
     }
 
 }

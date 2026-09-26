@@ -1,9 +1,6 @@
 package com.walkingforrochester.walkingforrochester.android.ui.composable.registration
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -38,13 +35,7 @@ fun RegistrationForm(
     onPasswordConfirmationChange: (String) -> Unit = {},
 ) {
     Column(
-        modifier = modifier
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         WFRTextField(
@@ -150,7 +141,7 @@ fun RegistrationFormPreview() {
                 ),
                 registrationProfile = AccountProfile.DEFAULT_PROFILE.copy(
                     firstName = "Bob",
-                    email = "test@"
+                    email = "test@test.com"
                 ),
                 modifier = Modifier.padding(vertical = 16.dp)
             )
